@@ -2,7 +2,7 @@
 # Mark done as `- [x]` with the commit hash, or `- [!]` with a one-line reason if it failed after 3 rounds.
 
 ## A. Scale journey (Pamela chose this first, Nov 13)
-- [ ] journey-core: the **scale journey** framework. See "journey-core spec" below.
+- [x] journey-core: the **scale journey** framework. See "journey-core spec" below. (0771175, judge 7→8/10)
 - [ ] piece milky-way: the Milky Way (barred spiral, ~100,000 ly; where the Sun is, in the Orion Arm)
 - [ ] piece local-group: the Local Group (Milky Way, Andromeda, Triangulum, dwarf galaxies)
 - [ ] piece andromeda: Andromeda galaxy M31
