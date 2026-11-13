@@ -1,0 +1,17 @@
+vr button: true
+1-neighbourhood → {"level":"neighbourhood","piece":null,"mode":"mode-journey"}
+2-galaxy → {"level":"galaxy","piece":null,"mode":"mode-journey"}
+3-local-group → {"level":"local-group","piece":null,"mode":"mode-journey"}
+4-supercluster → {"level":"supercluster","piece":null,"mode":"mode-journey"}
+5-universe → {"level":"universe","piece":null,"mode":"mode-journey"}
+click centre → {"level":"universe","piece":"observable-universe","mode":"mode-journey"} info visible: true
+back → {"level":"universe","piece":null,"mode":"mode-journey"}
+wheel in → {"level":"supercluster","piece":null,"mode":"mode-journey"}
+wheel in → {"level":"local-group","piece":null,"mode":"mode-journey"}
+wheel in → {"level":"galaxy","piece":null,"mode":"mode-journey"}
+hand dwell on galaxy → {"level":"galaxy","piece":"milky-way","mode":"mode-journey"}
+fist1 → {"level":"galaxy","piece":null,"mode":"mode-journey"}
+fist2 → {"level":null,"piece":null,"mode":"mode-overview"}
+open local-group → {"level":"local-group","piece":"local-group","mode":"mode-journey"}
+webcam pinch-drag at galaxy → {"level":"local-group","piece":null,"mode":"mode-journey"}
+errors: http 404 http://localhost:8765/api/voice?kind=sfx&name=whoosh-out | console: Failed to load resource: the server responded with a status of 404 (File not found)

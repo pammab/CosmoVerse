@@ -6,16 +6,22 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const ORDER = ['i18n', 'data', 'noise', 'textures', 'maps', 'bodies', 'highlights', 'habitability', 'gestures', 'voice', 'narration-text', 'narration', 'chat', 'xr-hands', 'xr', 'main'];
+// Journey pieces (pieces/*.js) are picked up automatically, before pieces/index · 自动包含 pieces/ 目录
+const PIECE_FILES = fs.readdirSync(path.join(root, 'pieces')).filter(f => f.endsWith('.js') && f !== 'index.js').sort().map(f => 'pieces/' + f.slice(0, -3));
+const ORDER = ['i18n', 'data', 'noise', 'textures', 'maps', 'bodies', 'highlights', 'habitability', 'gestures', 'voice', 'narration-text', 'narration', 'chat', 'xr-hands', 'xr', 'shapes', ...PIECE_FILES, 'pieces/index', 'journey', 'main'];
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 
+// Module ids are paths without .js ('main', 'pieces/milky-way'); relative imports resolve against the module's folder.
+const resolve = (from, rel) => path.posix.normalize(path.posix.join(path.posix.dirname(from), rel)).replace(/\.js$/, '');
 function convert(name, src) {
   const exported = [];
-  const code = src
+  let code = src
     .replace(/^import \* as T from 'three';\s*$/m, '')
-    .replace(/^import\s*\{([^}]*)\}\s*from\s*'\.\/([\w-]+)\.js';\s*$/gm, (_, names, mod) =>
-      `const { ${names.split(',').map(n => n.trim()).filter(Boolean).map(n => n.replace(/\s+as\s+/, ': ')).join(', ')} } = __m['${mod}'];`)
+    .replace(/^import\s*\{([^}]*)\}\s*from\s*'(\.\.?\/[\w\/-]+\.js)';\s*$/gm, (_, names, mod) =>
+      `const { ${names.split(',').map(n => n.trim()).filter(Boolean).map(n => n.replace(/\s+as\s+/, ': ')).join(', ')} } = __m['${resolve(name, mod)}'];`)
+    .replace(/^import\s+([\w$]+)\s+from\s*'(\.\.?\/[\w\/-]+\.js)';\s*$/gm, (_, id, mod) => `const ${id} = __m['${resolve(name, mod)}'].default;`)
     .replace(/^export\s+(async\s+function|function|const|let|class)\s+([\w$]+)/gm, (_, kind, id) => { exported.push(id); return `${kind} ${id}`; });
+  if (/^export default /m.test(code)) { code = code.replace(/^export default /m, 'const __default = '); exported.push('default: __default'); }
   return `__m['${name}'] = (() => {\n${code}\nreturn { ${exported.join(', ')} };\n})();\n`;
 }
 const esc = s => s.replace(/<\/script/gi, '<\\/script');

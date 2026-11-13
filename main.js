@@ -15,6 +15,8 @@ import { buildHighlights, HIGHLIGHTS } from './highlights.js';
 import { initHabitability } from './habitability.js';
 import { narrate, stopNarration, sfx } from './narration.js';
 import { initXR } from './xr.js';
+import { createJourney, levelById, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, quad, tr, SCALE_NOTE, UI as JUI } from './journey.js';
+import { PIECES } from './pieces/index.js';
 const $ = s => document.querySelector(s), clamp = T.MathUtils.clamp, bi = window.bi;
 const nameOf = p => [p.en.charAt(0) + p.en.slice(1).toLowerCase(), p.zh, p.es.charAt(0) + p.es.slice(1).toLowerCase()];
 const wrapPI = a => ((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
@@ -41,13 +43,17 @@ const bodies = [sun, ...planets], bodyById = Object.fromEntries(bodies.map(b => 
 const belt = buildAsteroidBelt(orbitUnits(2.2), orbitUnits(3.3)); scene.add(belt);
 bodies.forEach(b => { b.tint = '#ffffff'; b.glow = 0.14; b.spinOn = true; b.anchor.position.set(b.orbit ? Math.cos(b.angle) * b.orbit : 0, 0, b.orbit ? Math.sin(b.angle) * b.orbit : 0); });
 
+// Scale journey: zoom out past the Solar System to the universe · 尺度之旅
+const journey = createJourney({ T, scene, pieces: PIECES, sizeScale: () => xr.sizeScale(), onOpen: id => select('j:' + id),
+  viewHeight: () => { const c = renderer.xr.isPresenting && renderer.xr.getCamera().cameras?.[0]; return c?.viewport?.w || renderer.domElement.height; } });
+
 // Line-up positions: true sizes side by side, starting at the Sun's edge · 按真实大小并排
 const lineX = {}; { let x = sun.r + 1.6; for (const b of planets) { const half = b.ring && b.p.id === 'saturn' ? b.r * 2.4 : b.r; x += half; lineX[b.p.id] = x; x += half + 0.9; } lineX.end = x; }
 
 /* ───────── State · 状态 ───────── */
 let mode = 'overview', focus = null, paused = false, lineBlend = 0, orbitSpeed = 1;
 let sliderSpread = 0, handSpread = 0, expansion = 0, last = performance.now();
-const zooms = { overview: 1, lineup: 1, focus: 1, trajectory: 1 };
+const zooms = { overview: 1, lineup: 1, focus: 1, trajectory: 1, journey: 1 };
 const rig = { target: new T.Vector3(), logDist: Math.log(300), yaw: 0.6, pitch: 0.55 }, goal = { yaw: 0.6, pitch: 0.55 };
 const from = { target: new T.Vector3(), logDist: 0 }; let trans = 1;
 const tanHalf = () => Math.tan(T.MathUtils.degToRad(camera.fov / 2));
@@ -57,8 +63,9 @@ const baseDist = {
   overview: () => Math.max(170, 112 / (tanHalf() * fitAspect())),
   lineup: () => ((lineX.end - sun.r * 0.55) / 2) / (tanHalf() * fitAspect()),
   focus: () => focus.r * (focus.isSun ? 2.6 : focus.ring ? 4.6 : 3.3) / Math.min(1, camera.aspect * 0.9),
+  journey: () => journey.viewRadius() * (journey.piece ? 1.55 : 1.6) / (tanHalf() * fitAspect()),
 };
-const zoomLimits = { trajectory: () => [0.45, 4], overview: () => [0.45, baseDist.overview() / (sun.r * 1.9)], lineup: () => [0.6, 6], focus: () => [0.45, focus?.isSun ? 2 : 5] };
+const zoomLimits = { trajectory: () => [0.45, 4], overview: () => [0.45, baseDist.overview() / (sun.r * 1.9)], lineup: () => [0.6, 6], focus: () => [0.45, focus?.isSun ? 2 : 5], journey: () => journey.piece ? [0.5, 3] : [0.5, 2.4] };
 const clampZoom = (z, m = mode) => clamp(z, ...zoomLimits[m]());
 const lineCenter = () => (sun.r * 0.55 + lineX.end) / 2;
 
@@ -66,6 +73,7 @@ function startTransition() { camera.fov=mode==='trajectory'?52:42;camera.updateP
 function goalTarget(out) {
   if (mode === 'focus') return out.copy(focus.anchor.position);
   if (mode === 'lineup') return out.set(lineCenter(), 0, 0);
+  if (mode === 'journey') return journey.target(out);
   return out.set(0, 0, 0);
 }
 const goalDist = () => baseDist[mode]() / zooms[mode];
@@ -80,7 +88,7 @@ bodies.forEach(b => {
 });
 let hoverId = null;
 function setHover(id) {
-  if (id === hoverId) return; hoverId = id;
+  if (id === hoverId) return; hoverId = id; journey?.setHover(id?.startsWith('j:') ? id.slice(2) : null);
   bodies.forEach(b => { b.tag.classList.toggle('hover', b.p.id === id); if (b.line) b.line.material.opacity = b.p.id === id ? 0.75 : 0.3; });
   renderer.domElement.style.cursor = id ? 'pointer' : '';
 }
@@ -96,6 +104,7 @@ function screenOf(b) {
 }
 function pickAt(x, y, minPx = 22) {
   if (mode === 'focus') return null;
+  if (mode === 'journey') { const id = journey.pick(camera, x, y, minPx); return id ? 'j:' + id : null; }
   if (mode === 'trajectory') {
     flight.updateMatrixWorld(true);
     flightPickNdc.set(x/innerWidth*2-1,1-y/innerHeight*2);flightPickRay.setFromCamera(flightPickNdc,camera);
@@ -201,7 +210,7 @@ function flightPosition(item,t,out) {
 function updateFlight(dt) {
   const active=mode==='trajectory'; flight.visible=active;flightPanel.style.display=active?'block':'none';
   $('#trajectory').classList.toggle('active',active);$('#trajectory').setAttribute('aria-pressed',active);
-  bodies.forEach(b=>b.anchor.visible=!active);belt.visible=!active;
+  bodies.forEach(b=>b.anchor.visible=!active&&mode!=='journey');belt.visible=!active&&mode!=='journey';
   flightItems.forEach(item=>item.label.style.display='none');
   if(!active)return;
   if(!paused) flightTime+=dt*.35*flightRate;
@@ -264,6 +273,7 @@ function lineup() {
 }
 function select(id) {
   if (!id) return home();
+  if (id.startsWith('j:')) return openPiece(id.slice(2));
   const b = bodyById[id]; if (!b) return;
   if (mode === 'focus' && focus === b) return;
   // Whoosh in, then Cosmo introduces the planet once the camera arrives · 飞入音效后语音介绍
@@ -312,11 +322,103 @@ function showHighlights(b) {
 }
 function hideParticles() { bodies.forEach(b => { if (b.particles) b.particles.visible = b === focus; if (b.ringParticles) b.ringParticles.visible = b === focus; }); }
 
+/* ───────── Scale journey · 尺度之旅 ───────── */
+const lang = () => document.documentElement.dataset.lang || 'en';
+const edge = { out: 0, in: 0, lock: 0 };
+// Zoom by a factor; pushing past the limit moves between levels · 缩放；越过边界则切换层级
+const zoomKey = () => mode + ':' + (journey.level || '') + ':' + (journey.piece || '');
+function zoomBy(f) {
+  if (!(f > 0) || f === 1) return;
+  const r = edgeStep(edge, zooms[mode], f, zoomLimits[mode]());
+  zooms[mode] = r.z;
+  if (!r.action || performance.now() < edge.lock || trans < 0.6 || journey.busy) return;
+  if (mode === 'overview' && r.action === 'up') goLevel('neighbourhood', 'up');
+  else if (mode === 'journey' && journey.piece) { if (r.action === 'up') closePiece(); }
+  else if (mode === 'journey') {
+    const next = r.action === 'up' ? outerLevel(journey.level) : innerLevel(journey.level);
+    if (!next) { noticeQ(JUI.edge, 3000); return; }
+    if (next === 'solar-system') home(); else goLevel(next, r.action);
+  }
+}
+function noticeQ(o, ms = 4500) { const s = $('#status'); s.innerHTML = quad(o); s.style.display = 'block'; clearTimeout(notice.t); notice.t = setTimeout(() => s.style.display = 'none', ms); }
+function goLevel(id, dir = 'up') {
+  if (!levelById(id)) return;
+  if (id === 'solar-system') return home();
+  sfx(dir === 'up' ? 'whoosh-out' : 'whoosh-in'); stopNarration();
+  edge.lock = performance.now() + 1500; edge.out = edge.in = 0;
+  const wasJourney = mode === 'journey';
+  mode = 'journey'; focus = null; journey.go(id, dir); zooms.journey = 1; startTransition();
+  if (!wasJourney) { goal.pitch = 0.5; goal.yaw = rig.yaw; }
+  document.body.className = document.body.className.replace(/\bmode-\w+/g, '') + ' mode-journey';
+  $('#info').classList.add('hidden'); setHover(null); hideParticles(); showHighlights(null); highlightNav(null); setIntro('journey'); chat?.refresh();
+}
+function openPiece(id) {
+  const p = journey.pieceData(id); if (!p) return;
+  if (mode !== 'journey' || journey.level !== p.level) goLevel(p.level, 'down');
+  if (journey.piece === id) return;
+  sfx('whoosh-in'); stopNarration();
+  journey.open(id); zooms.journey = 1; startTransition(); edge.lock = performance.now() + 1200;
+  setHover(null); renderPieceInfo(p); setIntro('journey');
+}
+function closePiece() {
+  if (!journey.piece) return;
+  sfx('whoosh-out'); journey.close(); zooms.journey = 1; startTransition(); edge.lock = performance.now() + 1200;
+  $('#info').classList.add('hidden'); setIntro('journey');
+}
+// Fist / ⟵ Back: piece → its level view → the Solar System · 返回：天体 → 层级 → 太阳系
+function back() { if (mode === 'journey' && journey.piece) closePiece(); else home(); }
+
+function renderPieceInfo(p) {
+  const accent = p.shape.colors[0];
+  document.documentElement.style.setProperty('--accent', accent);
+  const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
+  $('#info').innerHTML = `
+    <div class="jtop"><div class="eyebrow">${quad(p.type)}</div><button id="pieceBack" class="jback">${quad(JUI.back)}</button></div>
+    <h2>${quad(p.names)}</h2>
+    <p>${quad(p.narration)}</p>
+    <div class="facts">${p.facts.map(f => `<div><small>${quad(f.label)}</small><b>${quad(f.value)}</b><a class="src" href="${f.source.url}" target="_blank" rel="noopener" title="${host(f.source.url)}">${f.source.name} ↗</a></div>`).join('')}</div>
+    ${p.youAreHere ? `<p class="feature">◉ ${quad(p.youAreHere)}</p>` : ''}
+    <small class="jnote">${quad(SCALE_NOTE)}</small>`;
+  $('#info').classList.remove('hidden'); $('#info').scrollTop = 0;
+  $('#pieceBack').onclick = closePiece;
+}
+// "You are here" breadcrumb (screen) · 位置指示
+const crumb = document.createElement('nav'); crumb.id = 'journeyCrumb'; crumb.className = 'jcrumb'; crumb.setAttribute('aria-label', 'Scale journey');
+document.body.append(crumb); let crumbKey = '';
+crumb.onclick = e => { const b = e.target.closest('button[data-level]'); if (!b) return; const id = b.dataset.level, cur = mode === 'journey' ? journey.level : 'solar-system';
+  if (id === cur) { if (journey.piece) closePiece(); return; } const ids = pathFrom('universe'); goLevel(id, ids.indexOf(id) < ids.indexOf(cur) ? 'up' : 'down'); };
+// Keep the breadcrumb on one line: current, next, …, Solar System · 面包屑保持一行
+const shortPath = id => { const p = pathFrom(id); return p.length > 4 ? [p[0], p[1], '…', p[p.length - 1]] : p; };
+function updateCrumb() {
+  const show = mode === 'overview' || mode === 'journey', cur = mode === 'journey' ? journey.level : 'solar-system';
+  const key = show + ':' + cur + ':' + mode;
+  if (key === crumbKey) return; crumbKey = key;
+  crumb.style.display = show ? 'flex' : 'none'; if (!show) return;
+  const out = outerLevel(cur);
+  crumb.innerHTML = `<span class="lbl">${quad(JUI.here)}:</span>` +
+    shortPath(cur).map((id, i) => `${i ? '<i>▸</i>' : ''}${id === '…' ? '<i>…</i>' : `<button type="button" data-level="${id}" class="${id === cur ? 'on' : ''}">${quad(levelById(id).names)}</button>`}`).join('') +
+    (out ? `<button type="button" data-level="${out}" class="upbtn" title="${tr(levelById(out).names, 'en')}">⤢</button>` : '') +
+    `<small>${mode === 'overview' ? quad(JUI.out) : quad(SCALE_NOTE)}</small>`;
+}
+// VR panel while journeying · VR 面板
+function journeyPanel(hint, hintColor, g) {
+  const l = lang(), p = journey.piece && journey.pieceData(journey.piece), here = tr(JUI.here, l) + ': ' + pathFrom(journey.level).map(id => tr(levelById(id).names, l)).join(' ▸ ');
+  if (p) return { eyebrow: tr(p.type, l), title: tr(p.names, l), accent: p.shape.colors[0], text: tr(p.narration, l), facts: p.facts.map(f => [tr(f.label, l), tr(f.value, l)]),
+    hint: g === 'none' || g === 'other' ? tr(JUI.vrBack, l) : hint, hintColor };
+  const lv = levelById(journey.level);
+  return { eyebrow: here, title: tr(lv.names, l), accent: '#cfe0ff', text: tr(lv.blurb, l) + ' ' + tr(SCALE_NOTE, l),
+    facts: JUI.vrGuide.map(([a, b]) => [tr(a, l), tr(b, l)]), hint: g === 'none' || g === 'other' ? tr(JUI.vrHint, l) : hint, hintColor };
+}
+
 /* ───────── Panels & text · 面板与文字 ───────── */
 function setIntro(m, b) {
   if (m === 'focus') {
     const idx = b.isSun ? 'STAR' : 'PLANET / ' + String(PLANETS.indexOf(b.p) + 1).padStart(2, '0'), idxZh = b.isSun ? '恒星' : '行星 / ' + String(PLANETS.indexOf(b.p) + 1).padStart(2, '0');
     $('#headline').innerHTML = bi(...nameOf(b.p)); $('#subtitle').innerHTML = bi(idx, idxZh, idx.replace('STAR', 'ESTRELLA').replace('PLANET', 'PLANETA'));
+  } else if (m === 'journey') {
+    const lv = levelById(journey.level || 'neighbourhood'), p = journey.piece && journey.pieceData(journey.piece);
+    $('#headline').innerHTML = quad(p ? p.names : lv.names);
+    $('#subtitle').innerHTML = quad(p ? p.type : lv.blurb);
   } else if (m === 'trajectory') {
     $('#headline').innerHTML = bi('Worlds in motion.', '群星，向前。', 'Mundos en movimiento.');
     $('#subtitle').innerHTML = bi('Our star moves. Eight worlds travel with it. Explore their luminous paths through a moving reference frame.', '太阳向前，八颗行星与它同行。旋转视角，探索运动参考系下交织的发光轨迹。', 'Nuestra estrella se mueve. Ocho mundos viajan con ella. Explora sus trayectorias luminosas.');
@@ -392,11 +494,12 @@ canvas.addEventListener('pointermove', e => {
   const old = pointers.get(e.pointerId); if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) moved = true;
   if (pointers.size === 1) { goal.yaw -= (e.clientX - old.x) * 0.006; goal.pitch = mode === 'trajectory' ? goal.pitch + (e.clientY-old.y)*.005 : clamp(goal.pitch + (e.clientY - old.y) * 0.005, mode === 'focus' ? -1.35 : 0.02, 1.45); }
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (pointers.size === 2) { const [a, b] = [...pointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y); zooms[mode] = clampZoom(zooms[mode] * d / Math.max(1, pinchDist)); pinchDist = d; }
+  if (pointers.size === 2) { const [a, b] = [...pointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y); zoomBy(d / Math.max(1, pinchDist)); pinchDist = d; }
 });
 canvas.addEventListener('pointerup', e => { pointers.delete(e.pointerId); if (!moved && pointers.size === 0) { const id = pickAt(e.clientX, e.clientY, e.pointerType === 'touch' ? 34 : 22); if (id) select(id); } });
 canvas.addEventListener('pointercancel', e => pointers.delete(e.pointerId));
-canvas.addEventListener('wheel', e => { e.preventDefault(); zooms[mode] = clampZoom(zooms[mode] * Math.exp(-e.deltaY * 0.0012)); }, { passive: false });
+// Wheel anywhere on the scene, including over a planet's label ring · 滚轮缩放（含标签区域）
+addEventListener('wheel', e => { if (!e.target.closest?.('canvas, .tag, .jtag, .mtag, .flight-label')) return; e.preventDefault(); zoomBy(Math.exp(-e.deltaY * 0.0012)); }, { passive: false });
 addEventListener('keydown', e => {
   if (e.target.closest?.('input,textarea,select')) return;
   if (e.key === 'Escape') home(); else if (e.key === 'ArrowRight') cycle(1); else if (e.key === 'ArrowLeft') cycle(-1);
@@ -450,9 +553,9 @@ function onHand(u) {
   if (g === 'pinch') {
     if (onset) {
       const recent = hand.hoverId && now - hand.hoverAt < 900;
-      if (browsing && recent) { select(hand.hoverId); hand.dwellDone = hand.hoverId; hand.pinch = null; }
-      else hand.pinch = { y, z: zooms[mode], m: mode };
-    } else if (hand.pinch && hand.pinch.m === mode) zooms[mode] = clampZoom(hand.pinch.z * Math.exp((hand.pinch.y - y) / innerHeight * 3.4 * gain));
+      if (browsing && recent && mode !== 'journey') { select(hand.hoverId); hand.dwellDone = hand.hoverId; hand.pinch = null; }
+      else hand.pinch = { y, last: 1, m: zoomKey() };
+    } else if (hand.pinch && hand.pinch.m === zoomKey()) { const want = Math.exp((hand.pinch.y - y) / innerHeight * 3.4 * gain); zoomBy(want / hand.pinch.last); hand.pinch.last = want; }
   } else hand.pinch = null;
   if (g === 'open') {
     if (!browsing) handSpread = clamp((u.openness - 1.35) * 1.25, 0, 1);
@@ -460,7 +563,7 @@ function onHand(u) {
   }
   if (g === 'fist') {
     handSpread = 0;
-    if (mode !== 'overview') { progress = Math.min(1, held / 1100); if (held > 1100 && !hand.fistDone) { hand.fistDone = true; home(); } }
+    if (mode !== 'overview') { progress = Math.min(1, held / 1100); if (held > 1100 && !hand.fistDone) { hand.fistDone = true; back(); } }
   } else hand.fistDone = false;
   if (g === 'victory') { progress = Math.min(1, held / 500); if (held > 500 && !hand.vDone) { hand.vDone = true; chat.startVoice(); } } else hand.vDone = false;
 
@@ -483,13 +586,14 @@ const xr = initXR({
   renderer, scene, camera, onHand,
   onEnter: () => { if (tracker.active) $('#cam').click(); document.body.classList.add('xr-on'); },
   onExit: () => { lastNear = 0; document.body.classList.remove('xr-on'); },
-  onBack: () => home(),
+  onBack: () => back(),
   backVisible: () => mode !== 'overview',
-  labels: () => bodies.map(b => ({ obj: b.anchor, text: nameOf(b.p)[0], color: b.isSun ? '#ffd27a' : '#ffffff', r: b.r })),
-  labelsVisible: () => mode === 'overview' || mode === 'lineup',
+  labels: () => [...bodies.map(b => ({ obj: b.anchor, text: nameOf(b.p)[0], color: b.isSun ? '#ffd27a' : '#ffffff', r: b.r, visible: () => mode === 'overview' || mode === 'lineup' })),
+    ...journey.xrLabels(lang())],
+  labelsVisible: () => mode === 'overview' || mode === 'lineup' || mode === 'journey',
   onTwoHand: e => {
-    if (e.phase === 'start') twoHand = { z: zooms[mode], yaw: goal.yaw, m: mode };
-    else if (e.phase === 'move' && twoHand && twoHand.m === mode) { zooms[mode] = clampZoom(twoHand.z * e.ratio); goal.yaw = twoHand.yaw + e.dAngle; }
+    if (e.phase === 'start') twoHand = { last: 1, yaw: goal.yaw, m: zoomKey() };
+    else if (e.phase === 'move' && twoHand && twoHand.m === zoomKey()) { zoomBy(e.ratio / twoHand.last); twoHand.last = e.ratio; goal.yaw = twoHand.yaw + e.dAngle; }
     else twoHand = null;
   },
   panelContent: g => {
@@ -498,6 +602,7 @@ const xr = initXR({
       const p = focus.p;
       return { eyebrow: p.type[0], title: nameOf(p)[0], accent: p.color, text: p.descEn, facts: p.facts.map(f => [f[0], f[2]]), hint: g === 'none' || g === 'other' ? 'Press ⟵ Back or hold a fist to return' : hint, hintColor };
     }
+    if (mode === 'journey') return journeyPanel(hint, hintColor, g);
     const views = { overview: 'The Solar System', lineup: 'True sizes, side by side', trajectory: 'Trajectories' };
     return { eyebrow: 'CosmoVerse', title: views[mode] || 'CosmoVerse', accent: '#ffffff',
       text: 'The universe in the palm of your hand. Use these gestures:', facts: VR_GUIDE, hint, hintColor };
@@ -542,7 +647,7 @@ $('#talk').onclick = () => chat.startVoice();
 /* ───────── Language · 语言 · Idioma ───────── */
 // All text is rendered in all three languages; switching only changes which one shows.
 $('#language').onchange = e => setLanguage(e.target.value);
-onLanguage(l => chat.setVoiceLang(voiceCode(l)));
+onLanguage(l => { chat.setVoiceLang(voiceCode(l)); xr.refreshLabels?.(); });
 setLanguage(initialLanguage());
 
 /* ───────── Background texture upgrades · 后台生成高清纹理 ───────── */
@@ -575,7 +680,7 @@ function animate(now) {
     b.angle += dt * orbitSpeed * (Math.PI * 2 / 60) * (365.25 / b.p.periodDays);   // Earth: one orbit per minute
     orbitPos.set(Math.cos(b.angle) * b.orbit, 0, Math.sin(b.angle) * b.orbit); linePos.set(lineX[b.p.id], 0, 0);
     b.anchor.position.lerpVectors(orbitPos, linePos, ease(lineBlend));
-    b.line.visible = mode !== 'trajectory' && lineBlend < 0.98 && focusFade < 0.97; b.line.material.opacity = (hoverId === b.p.id ? 0.75 : 0.3) * (1 - lineBlend) * (1 - focusFade);
+    b.line.visible = mode !== 'trajectory' && mode !== 'journey' && lineBlend < 0.98 && focusFade < 0.97; b.line.material.opacity = (hoverId === b.p.id ? 0.75 : 0.3) * (1 - lineBlend) * (1 - focusFade);
     if (b.spinOn) b.spin.rotation.y += dt * (Math.PI * 2 / 20) * (23.93 / b.p.rotationHours);     // Earth: one spin per 20 s
     if (b.clouds) b.clouds.rotation.y += dt * 0.012;
   }
@@ -612,13 +717,13 @@ function animate(now) {
   if (inXR) xr.placeRig(camPos, rig.target, camUp, d);   // VR: move the headset's dolly instead · VR：移动头显
   else { camera.position.copy(camPos); camera.up.copy(camUp); camera.lookAt(rig.target); }
   // Keep the focused planet clear of the info panel on wide screens · 让行星避开右侧信息面板
-  viewShift += ((mode === 'focus' && innerWidth > 1100 && !inXR ? 190 : 0) - viewShift) * k;
+  viewShift += (((mode === 'focus' || (mode === 'journey' && journey.piece)) && innerWidth > 1100 && !inXR ? 190 : 0) - viewShift) * k;
   if (Math.abs(viewShift) > 0.5) camera.setViewOffset(innerWidth, innerHeight, viewShift, 0, innerWidth, innerHeight); else if (camera.view?.enabled) camera.clearViewOffset();
   const near = clamp(d * 0.008, 0.002, 4);
   if (!inXR && Math.abs(near - lastNear) / near > 0.05) { camera.near = near; camera.far = Math.max(8000, d * 40); camera.updateProjectionMatrix(); lastNear = near; }
 
   // Screen labels · 屏幕标签
-  const showTags = mode !== 'trajectory' && (mode !== 'focus' || trans < 0.25);
+  const showTags = mode !== 'trajectory' && mode !== 'journey' && (mode !== 'focus' || trans < 0.25);
   for (const b of bodies) {
     if (!showTags) { b.tag.style.display = 'none'; continue; }
     const s = screenOf(b), size = Math.max(14, Math.min(s.r * 2 + 10, 400));
@@ -641,6 +746,7 @@ function animate(now) {
     if (show) it.el.style.transform = `translate(${(hv.x + 1) / 2 * innerWidth}px,${(1 - hv.y) / 2 * innerHeight}px)`;
   }
   updateFlight(dt);
+  journey.update(dt, camera, mode === 'journey'); decayEdge(edge, dt); updateCrumb();
   if (inXR) xr.update(hand.progress || 0);
   renderer.render(scene, camera);
 }
@@ -657,4 +763,4 @@ setIntro('overview'); document.body.classList.add('mode-overview');
 initHabitability();
 // Public hooks for teammates and the console · 供组员调用的接口
 // simulateHand({present:true, gesture:'point', cursor:{x:.5,y:.5}, openness:1}) lets you test gestures without a camera.
-window.SolarAtlas = { trajectory, PLANETS, selectPlanet: select, home, lineup, bodies: bodyById, scene, camera, simulateHand: onHand, screenOf: id => screenOf(bodyById[id]) };
+window.SolarAtlas = { journey: { go: id => goLevel(id, 'up'), open: openPiece, back, get level() { return journey.level; }, get piece() { return journey.piece; }, get busy() { return journey.busy || trans < 1; } }, zoomBy, trajectory, PLANETS, selectPlanet: select, home, lineup, bodies: bodyById, scene, camera, simulateHand: onHand, screenOf: id => screenOf(bodyById[id]) };

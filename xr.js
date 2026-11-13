@@ -83,16 +83,21 @@ export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panel
   const labelSprites = []; let labelsBuilt = false;
   function buildLabels() {
     labelsBuilt = true;
-    for (const { obj, text, color, r } of labels()) {
+    for (const { obj, text, color, r, visible } of labels()) {
       const c = document.createElement('canvas'), g = c.getContext('2d'); g.font = '700 64px Manrope, system-ui, sans-serif';
       c.width = Math.ceil(g.measureText(text).width) + 48; c.height = 96;
       g.font = '700 64px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.shadowColor = 'rgba(0,0,0,0.9)'; g.shadowBlur = 12; g.fillStyle = color || '#ffffff'; g.fillText(text, c.width / 2, c.height / 2 + 2);
       const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace;
       const sp = new T.Sprite(new T.SpriteMaterial({ map: t, transparent: true, depthTest: false, toneMapped: false }));
-      sp.center.set(0.5, 1); sp.renderOrder = 998; sp.userData.xrLabel = { obj, r, aspect: c.width / c.height }; sp.visible = false;
+      sp.center.set(0.5, 1); sp.renderOrder = 998; sp.userData.xrLabel = { obj, r, aspect: c.width / c.height, visible }; sp.visible = false;
       scene.add(sp); labelSprites.push(sp);
     }
+  }
+  // Rebuild the name sprites (e.g. after a language change) · 语言切换后重建标签
+  function refreshLabels() {
+    for (const sp of labelSprites) { scene.remove(sp); sp.material.map.dispose(); sp.material.dispose(); }
+    labelSprites.length = 0; labelsBuilt = false; if (active()) buildLabels();
   }
   const camPosW = new T.Vector3(), objW = new T.Vector3(), upW = new T.Vector3();
   function updateLabels() {
@@ -100,7 +105,8 @@ export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panel
     if (!show) { labelSprites.forEach(sp => sp.visible = false); return; }
     camera.getWorldPosition(camPosW); upW.set(0, 1, 0).applyQuaternion(dolly.quaternion);
     for (const sp of labelSprites) {
-      const { obj, r, aspect } = sp.userData.xrLabel;
+      const { obj, r, aspect, visible } = sp.userData.xrLabel;
+      if (visible && !visible()) { sp.visible = false; continue; }   // per-label visibility (e.g. journey levels) · 单个标签可见性
       obj.getWorldPosition(objW); sp.position.copy(objW).addScaledVector(upW, -r * 1.25);
       const dM = camPosW.distanceTo(sp.position) / pointScale;   // distance in metres
       const hM = 0.028 * dM;                                     // ~1.6° tall, readable at any distance
@@ -277,7 +283,7 @@ export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panel
   // Divide world-unit particle sizes by this in VR (1 outside VR) · VR 中粒子尺寸除以此值
   const sizeScale = () => active() ? pointScale : 1;
 
-  return { dolly, active, enter, supported, placeRig, update, sizeScale };
+  return { dolly, active, enter, supported, placeRig, update, sizeScale, refreshLabels };
 }
 
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
