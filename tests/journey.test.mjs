@@ -102,3 +102,11 @@ test('Laniakea: the Local Group marker sits on a filament at the level origin, a
   assert.equal(LEVELS.find(l => l.id === 'supercluster').marker, undefined);
   const bad = structuredClone(p); bad.spin = 'fast'; assert.ok(validatePiece(bad).some(e => /spin/.test(e)));
 });
+
+test('Sagittarius A* sits at the Milky Way centre with its label moved aside; labelAt is checked', () => {
+  const s = PIECES.find(x => x.id === 'sgr-a-star'), mw = PIECES.find(x => x.id === 'milky-way');
+  assert.ok(s && mw); assert.equal(s.level, mw.level); assert.deepEqual(s.position, mw.position);
+  assert.ok(s.size < mw.size / 10, 'smaller than the galaxy, so picking prefers it at the centre');
+  assert.ok(Math.hypot(...s.labelAt) > 3, 'label offset from the shared centre');
+  const bad = structuredClone(s); bad.labelAt = [1, 2]; assert.ok(validatePiece(bad).some(e => /labelAt/.test(e)));
+});

@@ -99,6 +99,8 @@ export function validatePiece(p) {
   if (p?.youAreHere != null && (!has4(p.youAreHere) || !Array.isArray(p.youAreHere.at) || p.youAreHere.at.length !== 3)) at('youAreHere needs en/zh/es/pt and at:[x,y,z]');
   if (p?.frame != null && !(p.frame > 0)) at('frame must be > 0');
   if (p?.spin != null && !Number.isFinite(p.spin)) at('spin must be a number (rad/s)');
+  if (p?.isolate != null && typeof p.isolate !== 'boolean') at('isolate must be true/false');
+  if (p?.labelAt != null && !(Array.isArray(p.labelAt) && p.labelAt.length === 3 && p.labelAt.every(Number.isFinite))) at('labelAt must be [x, y, z]');
   if (p?.tilt != null && !(Array.isArray(p.tilt) && p.tilt.length === 2 && p.tilt.every(Number.isFinite))) at('tilt must be [rx, rz]');
   for (const lb of p?.labels || []) if (!has4(lb.names) || !Array.isArray(lb.at)) at('labels need names (4 languages) and at');
   return err;
@@ -168,7 +170,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
     const pts = points({ ...pc.shape, seed: pc.shape.seed }, pc.size); spin.add(pts);
     const speed = pc.spin ?? (/spiral/.test(pc.shape.kind) ? 0.012 : pc.shape.kind === 'web' ? 0.005 : 0.003);   // optional spin (rad/s) · 可选自转速度
     L.spin.push([spin, speed]);
-    const centre = new T.Object3D(); holder.add(centre);
+    const centre = new T.Object3D(); holder.add(centre); if (pc.labelAt) centre.position.fromArray(pc.labelAt);   // optional label offset · 可选标签偏移
     const entry = { p: pc, holder, spin, pts, centre, extra: [] };
     entry.tag = tag(centre, pc.names, 'piece', pc.id, pc.level);
     if (pc.youAreHere) { const o = new T.Object3D(); o.position.fromArray(pc.youAreHere.at); spin.add(o, beacon(pc.youAreHere.at)); entry.here = tag(o, pc.youAreHere, 'here', null, pc.level); }
@@ -218,7 +220,8 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
     for (const p of mats) {
       if (!p.visible) continue; let o = p; let vis = true; while (o) { if (!o.visible) { vis = false; break; } o = o.parent; } if (!vis) continue;
       p.getWorldScale(wp); const lv = levelOf(p);
-      const dim = state.piece && p.userData.pieceId && p.userData.pieceId !== state.piece ? 0.3 : 1;
+      // Other pieces dim while one is open; almost vanish if the open piece asks to be isolated (Sgr A* inside the galaxy's bright core) · 其他天体变暗
+      const dim = state.piece && p.userData.pieceId && p.userData.pieceId !== state.piece ? (pieceById[state.piece]?.p.isolate ? 0.04 : 0.3) : 1;
       p.material.uniforms.uSize.value = p.userData.jp.base * wp.x / ss * (p.userData.jp.beacon ? 1 + 0.35 * Math.sin(now * 3) : 1);
       p.material.uniforms.uOpacity.value = p === warp ? p.userData.jp.fade : (lv?.op ?? 0) * (p.userData.jp.beacon ? 1 : dim);
       p.material.uniforms.uViewH.value = vh;

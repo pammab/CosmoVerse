@@ -8,5 +8,6 @@ import pleiades from './pleiades.js';
 import alphaCentauri from './alpha-centauri.js';
 import laniakea from './laniakea.js';
 import betelgeuse from './betelgeuse.js';
+import sgrAStar from './sgr-a-star.js';
 
-export const PIECES = [milkyWay, localGroup, observableUniverse, andromeda, orionNebula, pleiades, alphaCentauri, laniakea, betelgeuse];
+export const PIECES = [milkyWay, localGroup, observableUniverse, andromeda, orionNebula, pleiades, alphaCentauri, laniakea, betelgeuse, sgrAStar];
