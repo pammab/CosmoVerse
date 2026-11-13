@@ -2869,22 +2869,27 @@ function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent
   // Same unit mix-up for particles: a PointsMaterial size is in world units, but with the
   // scaled dolly the view space is in metres, so points come out `scale` times too big.
   // We divide their size by the dolly scale while in VR. · 粒子尺寸按缩放修正
-  const pointMats = new Map(); let pointScale = 1;
+  // Sprites (the Sun's glow) have the same problem: their size is added in view space,
+  // so in VR the glow became huge and tinted the whole sky. · 精灵（太阳光晕）同样修正
+  const pointMats = new Map(), sprites = new Map(); let pointScale = 1;
   function disableCulling() {
     scene.traverse(o => {
       if (o.frustumCulled) { o.frustumCulled = false; unculled.add(o); }
+      if (o.isSprite && !sprites.has(o)) { sprites.set(o, o.scale.clone()); o.scale.divideScalar(pointScale); }
       if (o.isPoints) for (const m of [].concat(o.material)) if (m.isPointsMaterial && m.sizeAttenuation && !pointMats.has(m)) { pointMats.set(m, m.size); m.size /= pointScale; }
     });
   }
   function scalePoints(sc) {
     if (Math.abs(sc - pointScale) / pointScale < 1e-3) return;
     pointScale = sc; pointMats.forEach((base, m) => m.size = base / sc);
+    sprites.forEach((base, o) => o.scale.copy(base).divideScalar(sc));
   }
 
   renderer.xr.addEventListener('sessionstart', () => { panel.visible = true; panelKey = ''; disableCulling(); onEnter?.(); });
   renderer.xr.addEventListener('sessionend', () => {
     unculled.forEach(o => o.frustumCulled = true); unculled.clear();
-    pointMats.forEach((base, m) => m.size = base); pointMats.clear(); pointScale = 1;
+    pointMats.forEach((base, m) => m.size = base); pointMats.clear();
+    sprites.forEach((base, o) => o.scale.copy(base)); sprites.clear(); pointScale = 1;
     dolly.position.set(0, 0, 0); dolly.quaternion.identity(); dolly.scale.setScalar(1);
     panel.visible = false; cursor.visible = false; hands.forEach(h => h.mesh.visible = false);
     filter.reset(); smooth.ok = false; if (present) { present = false; onHand({ present: false, gesture: 'none' }); }
