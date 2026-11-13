@@ -50,3 +50,30 @@ export function anchorJoints(gesture) {
     ? ['wrist', 'index-finger-phalanx-proximal', 'middle-finger-phalanx-proximal', 'ring-finger-phalanx-proximal', 'pinky-finger-phalanx-proximal']
     : ['index-finger-tip'];
 }
+
+// ── Two-hand zoom and turn · 双手缩放与旋转 ──
+// Pinch = thumb tip touching index tip. Hysteresis (close < 2.5 cm, open > 4 cm)
+// so a pinch doesn't flicker on and off at the threshold.
+export class PinchDetector {
+  constructor(close = 0.025, open = 0.04) { this.close = close; this.open = open; this.on = false; }
+  push(thumb, index) {
+    if (!thumb || !index) return (this.on = false);
+    const d = Math.hypot(thumb.x - index.x, thumb.y - index.y, thumb.z - index.z);
+    return (this.on = this.on ? d < this.open : d < this.close);
+  }
+}
+
+// Both hands pinching: pull apart → zoom in (ratio > 1), turn the pair like a
+// steering wheel seen from above → rotate (dAngle, radians).
+// push(left, right): pinch points {x,y,z} in metres, or null when that hand isn't pinching.
+// Returns null (idle), or { phase: 'start' | 'move' | 'end', ratio, dAngle }.
+export class TwoHandGesture {
+  constructor() { this.active = false; }
+  push(a, b) {
+    if (!a || !b) { if (!this.active) return null; this.active = false; return { phase: 'end', ratio: 1, dAngle: 0 }; }
+    const dx = b.x - a.x, dz = b.z - a.z, d = Math.max(0.01, Math.hypot(dx, b.y - a.y, dz)), ang = Math.atan2(dz, dx);
+    if (!this.active) { this.active = true; this.d0 = d; this.a0 = ang; return { phase: 'start', ratio: 1, dAngle: 0 }; }
+    let da = ang - this.a0; da = Math.atan2(Math.sin(da), Math.cos(da));
+    return { phase: 'move', ratio: d / this.d0, dAngle: da };
+  }
+}

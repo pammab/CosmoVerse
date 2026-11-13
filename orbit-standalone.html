@@ -2803,7 +2803,34 @@ function anchorJoints(gesture) {
     : ['index-finger-tip'];
 }
 
-return { MEDIAPIPE_ORDER, toLandmarks, GestureFilter, anchorJoints };
+// ── Two-hand zoom and turn · 双手缩放与旋转 ──
+// Pinch = thumb tip touching index tip. Hysteresis (close < 2.5 cm, open > 4 cm)
+// so a pinch doesn't flicker on and off at the threshold.
+class PinchDetector {
+  constructor(close = 0.025, open = 0.04) { this.close = close; this.open = open; this.on = false; }
+  push(thumb, index) {
+    if (!thumb || !index) return (this.on = false);
+    const d = Math.hypot(thumb.x - index.x, thumb.y - index.y, thumb.z - index.z);
+    return (this.on = this.on ? d < this.open : d < this.close);
+  }
+}
+
+// Both hands pinching: pull apart → zoom in (ratio > 1), turn the pair like a
+// steering wheel seen from above → rotate (dAngle, radians).
+// push(left, right): pinch points {x,y,z} in metres, or null when that hand isn't pinching.
+// Returns null (idle), or { phase: 'start' | 'move' | 'end', ratio, dAngle }.
+class TwoHandGesture {
+  constructor() { this.active = false; }
+  push(a, b) {
+    if (!a || !b) { if (!this.active) return null; this.active = false; return { phase: 'end', ratio: 1, dAngle: 0 }; }
+    const dx = b.x - a.x, dz = b.z - a.z, d = Math.max(0.01, Math.hypot(dx, b.y - a.y, dz)), ang = Math.atan2(dz, dx);
+    if (!this.active) { this.active = true; this.d0 = d; this.a0 = ang; return { phase: 'start', ratio: 1, dAngle: 0 }; }
+    let da = ang - this.a0; da = Math.atan2(Math.sin(da), Math.cos(da));
+    return { phase: 'move', ratio: d / this.d0, dAngle: da };
+  }
+}
+
+return { MEDIAPIPE_ORDER, toLandmarks, GestureFilter, anchorJoints, PinchDetector, TwoHandGesture };
 })();
 
 __m['xr'] = (() => {
@@ -2818,11 +2845,11 @@ __m['xr'] = (() => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { GESTURE_COLORS } = __m['gestures'];
-const { toLandmarks, GestureFilter, anchorJoints } = __m['xr-hands'];
+const { toLandmarks, GestureFilter, anchorJoints, PinchDetector, TwoHandGesture } = __m['xr-hands'];
 const VIEW_DISTANCE_M = 1.4;     // how far (in metres) the object in view should appear
 const PANEL_W = 0.56, PANEL_H = 0.42, PX = 1024;
 
-function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent }) {
+function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent, onTwoHand, onBack, backVisible = () => false, labels = () => [], labelsVisible = () => false }) {
   renderer.xr.enabled = true;
   renderer.xr.setReferenceSpaceType('local');
 
@@ -2853,6 +2880,82 @@ function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent
   panel.renderOrder = 999; panel.position.set(0.52, -0.08, -0.95); panel.rotation.y = -0.42; panel.visible = false; dolly.add(panel);
   let panelKey = '';
 
+  // "Back" button under the panel: point at it and hold, or touch it with a fingertip · 返回按钮
+  const BTN_W = 0.24, BTN_H = 0.075;
+  const btnCanvas = document.createElement('canvas'); btnCanvas.width = 512; btnCanvas.height = Math.round(512 * BTN_H / BTN_W);
+  const btnTex = new T.CanvasTexture(btnCanvas); btnTex.colorSpace = T.SRGBColorSpace;
+  const backBtn = new T.Mesh(new T.PlaneGeometry(BTN_W, BTN_H), new T.MeshBasicMaterial({ map: btnTex, transparent: true, toneMapped: false, depthTest: false }));
+  backBtn.renderOrder = 1001; backBtn.position.set(-PANEL_W / 2 + BTN_W / 2, -PANEL_H / 2 - BTN_H / 2 - 0.02, 0.002); backBtn.visible = false; panel.add(backBtn);
+  let btnKey = '', btnDwell = 0, btnCooldown = 0;
+  function drawButton(hover, p) {
+    const key = hover + ':' + Math.round(p * 20); if (key === btnKey) return; btnKey = key;
+    const g = btnCanvas.getContext('2d'), W = btnCanvas.width, H = btnCanvas.height;
+    g.clearRect(0, 0, W, H);
+    g.fillStyle = hover ? 'rgba(60,140,200,0.95)' : 'rgba(20,32,52,0.92)'; roundRect(g, 0, 0, W, H, H / 2); g.fill();
+    if (p > 0) { g.fillStyle = 'rgba(139,214,255,0.55)'; roundRect(g, 0, 0, W * p, H, H / 2); g.fill(); }
+    g.strokeStyle = '#8bd6ff'; g.lineWidth = 4; roundRect(g, 2, 2, W - 4, H - 4, H / 2 - 2); g.stroke();
+    g.fillStyle = '#ffffff'; g.font = '700 54px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('⟵  Back', W / 2, H / 2 + 2); btnTex.needsUpdate = true;
+  }
+  drawButton(false, 0);
+  const corner = new T.Vector3();
+  function cursorOverButton(cx, cy) {   // cursor (0–1 screen coords) inside the button's projected box?
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+      corner.set(sx * BTN_W / 2, sy * BTN_H / 2, 0); backBtn.localToWorld(corner).project(camera);
+      const x = (corner.x + 1) / 2, y = (1 - corner.y) / 2; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+    }
+    return cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1;
+  }
+  const tipLocal = new T.Vector3();
+  function fingertipTouches(h) {   // index fingertip pressed against the button
+    const j = h?.hand.joints?.['index-finger-tip']; if (!j?.visible) return false;
+    tipLocal.copy(j.position); dolly.localToWorld(tipLocal); backBtn.worldToLocal(tipLocal);
+    return Math.abs(tipLocal.x) < BTN_W / 2 + 0.01 && Math.abs(tipLocal.y) < BTN_H / 2 + 0.01 && tipLocal.z < 0.025 && tipLocal.z > -0.06;
+  }
+
+  // Planet names floating under each planet (overview / line-up) · 行星名称标签
+  const labelSprites = []; let labelsBuilt = false;
+  function buildLabels() {
+    labelsBuilt = true;
+    for (const { obj, text, color, r } of labels()) {
+      const c = document.createElement('canvas'), g = c.getContext('2d'); g.font = '700 64px Manrope, system-ui, sans-serif';
+      c.width = Math.ceil(g.measureText(text).width) + 48; c.height = 96;
+      g.font = '700 64px Manrope, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.shadowColor = 'rgba(0,0,0,0.9)'; g.shadowBlur = 12; g.fillStyle = color || '#ffffff'; g.fillText(text, c.width / 2, c.height / 2 + 2);
+      const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace;
+      const sp = new T.Sprite(new T.SpriteMaterial({ map: t, transparent: true, depthTest: false, toneMapped: false }));
+      sp.center.set(0.5, 1); sp.renderOrder = 998; sp.userData.xrLabel = { obj, r, aspect: c.width / c.height }; sp.visible = false;
+      scene.add(sp); labelSprites.push(sp);
+    }
+  }
+  const camPosW = new T.Vector3(), objW = new T.Vector3(), upW = new T.Vector3();
+  function updateLabels() {
+    const show = labelsVisible();
+    if (!show) { labelSprites.forEach(sp => sp.visible = false); return; }
+    camera.getWorldPosition(camPosW); upW.set(0, 1, 0).applyQuaternion(dolly.quaternion);
+    for (const sp of labelSprites) {
+      const { obj, r, aspect } = sp.userData.xrLabel;
+      obj.getWorldPosition(objW); sp.position.copy(objW).addScaledVector(upW, -r * 1.25);
+      const dM = camPosW.distanceTo(sp.position) / pointScale;   // distance in metres
+      const hM = 0.028 * dM;                                     // ~1.6° tall, readable at any distance
+      sp.scale.set(hM * aspect, hM, 1); sp.visible = true;
+    }
+  }
+
+  // Two-hand zoom and turn · 双手缩放与旋转
+  const pinches = [new PinchDetector(), new PinchDetector()], twoHand = new TwoHandGesture();
+  const pinchPoint = h => { const a = h.hand.joints['thumb-tip'].position, b = h.hand.joints['index-finger-tip'].position; return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 }; };
+  function readTwoHand() {
+    const pts = hands.map((h, i) => {
+      const t = h.hand.joints?.['thumb-tip'], ix = h.hand.joints?.['index-finger-tip'];
+      const on = pinches[i].push(t?.visible ? t.position : null, ix?.visible ? ix.position : null);
+      return on ? { p: pinchPoint(h), side: h.handedness } : null;
+    });
+    const L = pts.find(p => p?.side === 'left') || pts[0], R = pts.find(p => p && p !== L) || null;
+    return twoHand.push(L?.p || null, R?.p || null);
+  }
+
   const filter = new GestureFilter();
   const m4 = new T.Matrix4(), v = new T.Vector3(), q = new T.Quaternion(), s = new T.Vector3(), ndc = new T.Vector3();
   const smooth = { x: 0.5, y: 0.5, ok: false };
@@ -2875,7 +2978,7 @@ function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent
   function disableCulling() {
     scene.traverse(o => {
       if (o.frustumCulled) { o.frustumCulled = false; unculled.add(o); }
-      if (o.isSprite && !sprites.has(o)) { sprites.set(o, o.scale.clone()); o.scale.divideScalar(pointScale); }
+      if (o.isSprite && !o.userData.xrLabel && !sprites.has(o)) { sprites.set(o, o.scale.clone()); o.scale.divideScalar(pointScale); }
       if (o.isPoints) for (const m of [].concat(o.material)) if (m.isPointsMaterial && m.sizeAttenuation && !pointMats.has(m)) { pointMats.set(m, m.size); m.size /= pointScale; }
     });
   }
@@ -2885,13 +2988,14 @@ function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent
     sprites.forEach((base, o) => o.scale.copy(base).divideScalar(sc));
   }
 
-  renderer.xr.addEventListener('sessionstart', () => { panel.visible = true; panelKey = ''; disableCulling(); onEnter?.(); });
+  renderer.xr.addEventListener('sessionstart', () => { panel.visible = true; panelKey = ''; if (!labelsBuilt) buildLabels(); disableCulling(); onEnter?.(); });
   renderer.xr.addEventListener('sessionend', () => {
     unculled.forEach(o => o.frustumCulled = true); unculled.clear();
     pointMats.forEach((base, m) => m.size = base); pointMats.clear();
     sprites.forEach((base, o) => o.scale.copy(base)); sprites.clear(); pointScale = 1;
     dolly.position.set(0, 0, 0); dolly.quaternion.identity(); dolly.scale.setScalar(1);
-    panel.visible = false; cursor.visible = false; hands.forEach(h => h.mesh.visible = false);
+    panel.visible = false; cursor.visible = false; hands.forEach(h => h.mesh.visible = false); labelSprites.forEach(sp => sp.visible = false);
+    if (twoHand.active) { twoHand.active = false; onTwoHand?.({ phase: 'end', ratio: 1, dAngle: 0 }); }
     filter.reset(); smooth.ok = false; if (present) { present = false; onHand({ present: false, gesture: 'none' }); }
     onExit?.();
   });
@@ -2935,12 +3039,24 @@ function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent
   function update(progress = 0) {
     if (!active()) return;
     if (++cullTick % 30 === 0) disableCulling();   // objects added while in VR (e.g. trajectories)
-    drawHands();
+    drawHands(); updateLabels();
+    const now = performance.now(), dt = Math.min(0.1, (now - (update.last || now)) / 1000); update.last = now;
+
+    // Both hands pinching → zoom/turn; the single-hand gestures pause meanwhile · 双手捏合
+    const two = readTwoHand();
+    if (two) onTwoHand?.(two);
+    if (twoHand.active) {
+      cursor.visible = false; filter.reset(); smooth.ok = false;
+      if (present) { present = false; onHand({ present: false, gesture: 'none' }); }
+      backBtn.visible = backVisible(); drawButton(false, 0); btnDwell = 0;
+      drawPanel(panelContent('two')); return;
+    }
+
     const h = trackedHand();
     const lm = h ? toLandmarks(name => { const j = h.hand.joints[name]; return j && j.visible ? j.position : null; }) : null;
     const f = filter.push(lm);
     if (!f) {
-      cursor.visible = false;
+      cursor.visible = false; backBtn.visible = backVisible(); btnDwell = 0; drawButton(false, 0);
       if (present) { present = false; smooth.ok = false; onHand({ present: false, gesture: 'none' }); }
     } else {
       // Cursor: project the fingertip (or palm) onto the view, like aiming with your finger · 指尖投影到视野
@@ -2951,7 +3067,16 @@ function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent
       const x = (ndc.x + 1) / 2, y = (1 - ndc.y) / 2;
       if (!smooth.ok) { smooth.x = x; smooth.y = y; smooth.ok = true; } else { smooth.x += (x - smooth.x) * 0.5; smooth.y += (y - smooth.y) * 0.5; }
       present = true; lastGesture = f.gesture;
-      onHand({ present: true, gesture: f.gesture, raw: f.raw, cursor: { x: Math.min(1, Math.max(0, smooth.x)), y: Math.min(1, Math.max(0, smooth.y)) }, openness: f.openness, pinch: f.pinch, gain: 1 });
+      // Back button: touch it, or point at it and hold · 返回按钮：触碰或指向并停留
+      backBtn.visible = backVisible(); btnCooldown = Math.max(0, btnCooldown - dt);
+      const cx = Math.min(1, Math.max(0, smooth.x)), cy = Math.min(1, Math.max(0, smooth.y));
+      const over = backBtn.visible && (f.gesture === 'point' || f.gesture === 'other') && cursorOverButton(cx, cy);
+      const touch = backBtn.visible && fingertipTouches(h);
+      btnDwell = over && f.gesture === 'point' ? btnDwell + dt / 0.7 : 0;
+      if ((touch || btnDwell >= 1) && !btnCooldown) { btnDwell = 0; btnCooldown = 1.2; onBack?.(); }
+      drawButton(over || touch, Math.min(1, btnDwell));
+      if (over) { lastGesture = 'back'; progress = Math.min(1, btnDwell); }
+      onHand({ present: true, gesture: over ? 'other' : f.gesture, raw: f.raw, cursor: { x: Math.min(1, Math.max(0, smooth.x)), y: Math.min(1, Math.max(0, smooth.y)) }, openness: f.openness, pinch: f.pinch, gain: 1 });
       cursor.visible = true; cursor.material.color.set(GESTURE_COLORS[f.gesture] || '#ffffff');
       cursor.scale.setScalar(1 + progress * 1.6);
     }
@@ -3477,20 +3602,33 @@ const tracker = new HandTracker({ video: $('#video'), overlay: $('#handOverlay')
 
 /* ───────── VR (WebXR, Meta Quest) · VR 模式 ───────── */
 // In VR the headset's own hand tracking drives onHand(), exactly like the webcam.
-const VR_HINTS = { point: 'Point at a planet and hold to open it', pinch: 'Pinch + move up/down to zoom', open: 'Open palm: turn the view · spread to scatter', fist: 'Hold a fist to go back', victory: 'Victory: talk to Cosmo', other: 'Try ☝ point · 🤏 pinch · ✋ palm · ✊ fist', none: 'Raise a hand in front of you' };
+const VR_HINTS = { point: 'Point at a planet and hold to open it', pinch: 'Pinch + move up/down to zoom', open: 'Open palm: turn the view · spread to scatter', fist: 'Hold a fist to go back', victory: 'Victory: talk to Cosmo', other: 'Try ☝ point · 🤏 pinch · ✋ palm · ✊ fist', none: 'Raise a hand in front of you',
+  back: 'Keep pointing to go back', two: 'Both hands: pull apart to zoom · turn to rotate' };
+// Gesture guide shown on the VR panel in the overview · VR 手势指南
+const VR_GUIDE = [['☝ Point + hold', 'Open a planet'], ['🤏 Pinch + up/down', 'Zoom'], ['🤏🤏 Both hands', 'Zoom and turn'], ['✊ Hold a fist', 'Go back'], ['✋ Open palm', 'Turn the view'], ['✌ Victory', 'Talk to Cosmo']];
+let twoHand = null;   // two-hand zoom/turn in progress · 双手手势状态
 const xr = initXR({
   renderer, scene, camera, onHand,
   onEnter: () => { if (tracker.active) $('#cam').click(); document.body.classList.add('xr-on'); },
   onExit: () => { lastNear = 0; document.body.classList.remove('xr-on'); },
+  onBack: () => home(),
+  backVisible: () => mode !== 'overview',
+  labels: () => bodies.map(b => ({ obj: b.anchor, text: nameOf(b.p)[0], color: b.isSun ? '#ffd27a' : '#ffffff', r: b.r })),
+  labelsVisible: () => mode === 'overview' || mode === 'lineup',
+  onTwoHand: e => {
+    if (e.phase === 'start') twoHand = { z: zooms[mode], yaw: goal.yaw, m: mode };
+    else if (e.phase === 'move' && twoHand && twoHand.m === mode) { zooms[mode] = clampZoom(twoHand.z * e.ratio); goal.yaw = twoHand.yaw + e.dAngle; }
+    else twoHand = null;
+  },
   panelContent: g => {
     const hint = VR_HINTS[g] || VR_HINTS.other, hintColor = GESTURE_COLORS[g] || '#9fb2c4';
     if (mode === 'focus' && focus) {
       const p = focus.p;
-      return { eyebrow: p.type[0], title: nameOf(p)[0], accent: p.color, text: p.descEn, facts: p.facts.map(f => [f[0], f[2]]), hint, hintColor };
+      return { eyebrow: p.type[0], title: nameOf(p)[0], accent: p.color, text: p.descEn, facts: p.facts.map(f => [f[0], f[2]]), hint: g === 'none' || g === 'other' ? 'Press ⟵ Back or hold a fist to return' : hint, hintColor };
     }
     const views = { overview: 'The Solar System', lineup: 'True sizes, side by side', trajectory: 'Trajectories' };
     return { eyebrow: 'CosmoVerse', title: views[mode] || 'CosmoVerse', accent: '#ffffff',
-      text: 'The universe in the palm of your hand. Point at any planet and hold to fly there; pinch and move up or down to zoom; hold a fist to come back.', facts: [], hint, hintColor };
+      text: 'The universe in the palm of your hand. Use these gestures:', facts: VR_GUIDE, hint, hintColor };
   },
 });
 {

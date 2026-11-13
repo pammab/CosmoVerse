@@ -474,20 +474,33 @@ const tracker = new HandTracker({ video: $('#video'), overlay: $('#handOverlay')
 
 /* ───────── VR (WebXR, Meta Quest) · VR 模式 ───────── */
 // In VR the headset's own hand tracking drives onHand(), exactly like the webcam.
-const VR_HINTS = { point: 'Point at a planet and hold to open it', pinch: 'Pinch + move up/down to zoom', open: 'Open palm: turn the view · spread to scatter', fist: 'Hold a fist to go back', victory: 'Victory: talk to Cosmo', other: 'Try ☝ point · 🤏 pinch · ✋ palm · ✊ fist', none: 'Raise a hand in front of you' };
+const VR_HINTS = { point: 'Point at a planet and hold to open it', pinch: 'Pinch + move up/down to zoom', open: 'Open palm: turn the view · spread to scatter', fist: 'Hold a fist to go back', victory: 'Victory: talk to Cosmo', other: 'Try ☝ point · 🤏 pinch · ✋ palm · ✊ fist', none: 'Raise a hand in front of you',
+  back: 'Keep pointing to go back', two: 'Both hands: pull apart to zoom · turn to rotate' };
+// Gesture guide shown on the VR panel in the overview · VR 手势指南
+const VR_GUIDE = [['☝ Point + hold', 'Open a planet'], ['🤏 Pinch + up/down', 'Zoom'], ['🤏🤏 Both hands', 'Zoom and turn'], ['✊ Hold a fist', 'Go back'], ['✋ Open palm', 'Turn the view'], ['✌ Victory', 'Talk to Cosmo']];
+let twoHand = null;   // two-hand zoom/turn in progress · 双手手势状态
 const xr = initXR({
   renderer, scene, camera, onHand,
   onEnter: () => { if (tracker.active) $('#cam').click(); document.body.classList.add('xr-on'); },
   onExit: () => { lastNear = 0; document.body.classList.remove('xr-on'); },
+  onBack: () => home(),
+  backVisible: () => mode !== 'overview',
+  labels: () => bodies.map(b => ({ obj: b.anchor, text: nameOf(b.p)[0], color: b.isSun ? '#ffd27a' : '#ffffff', r: b.r })),
+  labelsVisible: () => mode === 'overview' || mode === 'lineup',
+  onTwoHand: e => {
+    if (e.phase === 'start') twoHand = { z: zooms[mode], yaw: goal.yaw, m: mode };
+    else if (e.phase === 'move' && twoHand && twoHand.m === mode) { zooms[mode] = clampZoom(twoHand.z * e.ratio); goal.yaw = twoHand.yaw + e.dAngle; }
+    else twoHand = null;
+  },
   panelContent: g => {
     const hint = VR_HINTS[g] || VR_HINTS.other, hintColor = GESTURE_COLORS[g] || '#9fb2c4';
     if (mode === 'focus' && focus) {
       const p = focus.p;
-      return { eyebrow: p.type[0], title: nameOf(p)[0], accent: p.color, text: p.descEn, facts: p.facts.map(f => [f[0], f[2]]), hint, hintColor };
+      return { eyebrow: p.type[0], title: nameOf(p)[0], accent: p.color, text: p.descEn, facts: p.facts.map(f => [f[0], f[2]]), hint: g === 'none' || g === 'other' ? 'Press ⟵ Back or hold a fist to return' : hint, hintColor };
     }
     const views = { overview: 'The Solar System', lineup: 'True sizes, side by side', trajectory: 'Trajectories' };
     return { eyebrow: 'CosmoVerse', title: views[mode] || 'CosmoVerse', accent: '#ffffff',
-      text: 'The universe in the palm of your hand. Point at any planet and hold to fly there; pinch and move up or down to zoom; hold a fist to come back.', facts: [], hint, hintColor };
+      text: 'The universe in the palm of your hand. Use these gestures:', facts: VR_GUIDE, hint, hintColor };
   },
 });
 {

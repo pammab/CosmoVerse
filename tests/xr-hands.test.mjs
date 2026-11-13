@@ -83,3 +83,27 @@ test('cursor anchors: fingertip for point/pinch, palm for open/fist', () => {
   assert.deepEqual(anchorJoints('pinch'), ['index-finger-tip']);
   assert.ok(anchorJoints('open').includes('wrist') && anchorJoints('fist').length === 5);
 });
+
+// ── Two-hand zoom and turn ──
+import { PinchDetector, TwoHandGesture } from '../xr-hands.js';
+
+test('pinch detector uses hysteresis', () => {
+  const p = new PinchDetector(), t = { x: 0, y: 0, z: 0 }, at = d => ({ x: d, y: 0, z: 0 });
+  assert.equal(p.push(t, at(0.05)), false);
+  assert.equal(p.push(t, at(0.02)), true);    // closes under 2.5 cm
+  assert.equal(p.push(t, at(0.035)), true);   // stays closed until 4 cm
+  assert.equal(p.push(t, at(0.045)), false);
+  assert.equal(p.push(null, at(0.01)), false);
+});
+
+test('two hands: pulling apart zooms, turning rotates, letting go ends', () => {
+  const g = new TwoHandGesture();
+  assert.equal(g.push(null, { x: 0.2, y: 0, z: 0 }), null);
+  assert.equal(g.push({ x: -0.1, y: 0, z: 0 }, { x: 0.1, y: 0, z: 0 }).phase, 'start');
+  const zoom = g.push({ x: -0.2, y: 0, z: 0 }, { x: 0.2, y: 0, z: 0 });
+  assert.equal(zoom.phase, 'move'); assert.ok(Math.abs(zoom.ratio - 2) < 1e-9); assert.ok(Math.abs(zoom.dAngle) < 1e-9);
+  const turn = g.push({ x: 0, y: 0, z: 0.1 }, { x: 0, y: 0, z: -0.1 });   // pair turned a quarter
+  assert.ok(Math.abs(Math.abs(turn.dAngle) - Math.PI / 2) < 1e-9);
+  assert.equal(g.push(null, null).phase, 'end');
+  assert.equal(g.push(null, null), null);
+});
