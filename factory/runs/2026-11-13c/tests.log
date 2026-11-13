@@ -2,159 +2,165 @@ TAP version 13
 # Subtest: levels go from the universe down to the Solar System
 ok 1 - levels go from the universe down to the Solar System
   ---
-  duration_ms: 2.14396
+  duration_ms: 1.607057
   type: 'test'
   ...
 # Subtest: zooming out past the minimum moves up only after enough push
 ok 2 - zooming out past the minimum moves up only after enough push
   ---
-  duration_ms: 0.291781
+  duration_ms: 0.322404
   type: 'test'
   ...
 # Subtest: zooming in past the maximum moves down; turning back clears the push
 ok 3 - zooming in past the maximum moves down; turning back clears the push
   ---
-  duration_ms: 0.159937
+  duration_ms: 0.385102
   type: 'test'
   ...
 # Subtest: zooming inside the limits never changes level
 ok 4 - zooming inside the limits never changes level
   ---
-  duration_ms: 1.137589
+  duration_ms: 0.287073
   type: 'test'
   ...
 # Subtest: the push fades if you stop
 ok 5 - the push fades if you stop
   ---
-  duration_ms: 0.201135
+  duration_ms: 0.135661
   type: 'test'
   ...
 # Subtest: three starter pieces cover the outer levels
 ok 6 - three starter pieces cover the outer levels
   ---
-  duration_ms: 0.141693
+  duration_ms: 0.131185
   type: 'test'
   ...
 # Subtest: every piece matches the schema (4 languages, 5–6 sourced facts)
 ok 7 - every piece matches the schema (4 languages, 5–6 sourced facts)
   ---
-  duration_ms: 0.845251
+  duration_ms: 1.051738
   type: 'test'
   ...
 # Subtest: validatePiece catches a missing translation and an unsourced fact
 ok 8 - validatePiece catches a missing translation and an unsourced fact
   ---
-  duration_ms: 0.267584
+  duration_ms: 0.38497
   type: 'test'
   ...
 # Subtest: optional tilt and frame are checked; Andromeda sits on the Local Group's M31 spot
 ok 9 - optional tilt and frame are checked; Andromeda sits on the Local Group's M31 spot
   ---
-  duration_ms: 0.396603
+  duration_ms: 0.391742
   type: 'test'
   ...
 # Subtest: shapes are deterministic and finite for every kind
 ok 10 - shapes are deterministic and finite for every kind
   ---
-  duration_ms: 60.668831
+  duration_ms: 62.577445
   type: 'test'
   ...
 # Subtest: piece shapes fit their counts
 ok 11 - piece shapes fit their counts
   ---
-  duration_ms: 144.731613
+  duration_ms: 159.766762
   type: 'test'
   ...
 # Subtest: quad writes all four languages and escapes text
 ok 12 - quad writes all four languages and escapes text
   ---
-  duration_ms: 0.488924
+  duration_ms: 0.439905
   type: 'test'
   ...
 # Subtest: Laniakea: the Local Group marker sits on a filament at the level origin, and the piece does not spin
 ok 13 - Laniakea: the Local Group marker sits on a filament at the level origin, and the piece does not spin
   ---
-  duration_ms: 28.384216
+  duration_ms: 19.134355
+  type: 'test'
+  ...
+# Subtest: Sagittarius A* sits at the Milky Way centre with its label moved aside; labelAt is checked
+ok 14 - Sagittarius A* sits at the Milky Way centre with its label moved aside; labelAt is checked
+  ---
+  duration_ms: 0.322136
   type: 'test'
   ...
 # Subtest: maps all 21 MediaPipe landmarks from WebXR joint names
-ok 14 - maps all 21 MediaPipe landmarks from WebXR joint names
+ok 15 - maps all 21 MediaPipe landmarks from WebXR joint names
   ---
-  duration_ms: 2.31326
+  duration_ms: 1.467812
   type: 'test'
   ...
 # Subtest: returns null when any joint is not tracked
-ok 15 - returns null when any joint is not tracked
+ok 16 - returns null when any joint is not tracked
   ---
-  duration_ms: 0.35284
+  duration_ms: 0.236941
   type: 'test'
   ...
 # Subtest: recognises open after the stabilising vote
-ok 16 - recognises open after the stabilising vote
+ok 17 - recognises open after the stabilising vote
   ---
-  duration_ms: 1.305947
+  duration_ms: 0.752836
   type: 'test'
   ...
 # Subtest: recognises point after the stabilising vote
-ok 17 - recognises point after the stabilising vote
+ok 18 - recognises point after the stabilising vote
   ---
-  duration_ms: 1.539712
+  duration_ms: 1.065797
   type: 'test'
   ...
 # Subtest: recognises victory after the stabilising vote
-ok 18 - recognises victory after the stabilising vote
+ok 19 - recognises victory after the stabilising vote
   ---
-  duration_ms: 0.355991
+  duration_ms: 0.210676
   type: 'test'
   ...
 # Subtest: recognises fist after the stabilising vote
-ok 19 - recognises fist after the stabilising vote
+ok 20 - recognises fist after the stabilising vote
   ---
-  duration_ms: 0.280636
+  duration_ms: 0.170674
   type: 'test'
   ...
 # Subtest: recognises pinch after the stabilising vote
-ok 20 - recognises pinch after the stabilising vote
+ok 21 - recognises pinch after the stabilising vote
   ---
-  duration_ms: 0.42087
+  duration_ms: 0.225633
   type: 'test'
   ...
 # Subtest: one stray frame does not flip a stable gesture
-ok 21 - one stray frame does not flip a stable gesture
+ok 22 - one stray frame does not flip a stable gesture
   ---
-  duration_ms: 0.427382
+  duration_ms: 0.314713
   type: 'test'
   ...
 # Subtest: losing the hand resets the gesture
-ok 22 - losing the hand resets the gesture
+ok 23 - losing the hand resets the gesture
   ---
-  duration_ms: 1.229438
+  duration_ms: 0.732652
   type: 'test'
   ...
 # Subtest: cursor anchors: fingertip for point/pinch, palm for open/fist
-ok 23 - cursor anchors: fingertip for point/pinch, palm for open/fist
+ok 24 - cursor anchors: fingertip for point/pinch, palm for open/fist
   ---
-  duration_ms: 0.547543
+  duration_ms: 0.462183
   type: 'test'
   ...
 # Subtest: pinch detector uses hysteresis
-ok 24 - pinch detector uses hysteresis
+ok 25 - pinch detector uses hysteresis
   ---
-  duration_ms: 0.37582
+  duration_ms: 0.198741
   type: 'test'
   ...
 # Subtest: two hands: pulling apart zooms, turning rotates, letting go ends
-ok 25 - two hands: pulling apart zooms, turning rotates, letting go ends
+ok 26 - two hands: pulling apart zooms, turning rotates, letting go ends
   ---
-  duration_ms: 0.279121
+  duration_ms: 0.210983
   type: 'test'
   ...
-1..25
-# tests 25
+1..26
+# tests 26
 # suites 0
-# pass 25
+# pass 26
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 400.20377
+# duration_ms 379.947295

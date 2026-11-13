@@ -13,7 +13,7 @@
 - [ ] piece observable-universe: the observable universe
 - [ ] piece pillars-of-creation: Pillars of Creation (in M16, Eagle Nebula)
 - [x] piece betelgeuse: Betelgeuse (red supergiant) (663a8d8, judge 8.5/10; done early: neighbourhood level, cosmic-web overlaps the existing observable-universe web)
-- [ ] piece black-hole: Sagittarius A* (the Milky Way's central black hole)
+- [x] piece black-hole: Sagittarius A* (the Milky Way's central black hole) (a2631fb, judge 8.5/10)
 - [ ] piece elliptical-galaxy: M87 (giant elliptical)
 - [x] piece alpha-centauri: Alpha Centauri / Proxima (nearest stars) (ad197df, judge 7→8/10; done early: same level, research ready)
 

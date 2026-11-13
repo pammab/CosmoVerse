@@ -1,0 +1,21 @@
+vr button: true
+wheel out → {"level":"galaxy","piece":null}
+visible labels: ["MILKY WAY","YOU ARE HERE · THE SUN","SAGITTARIUS A*"]
+Sgr A* tag at {"x":700.597,"y":518.799}
+click → {"level":"galaxy","piece":"sgr-a-star"} title: Sagittarius A* · facts: 6 links
+zh title: 人马座A* · 超大质量黑洞
+⟵ 返回
+人马座A*
+
+在我们星系的中心、人马座的方向上，有一个质量约为太阳 400 万倍的黑洞。2022 年，事件视界望远镜把遍布全球的射电天文台连成一台“地球大小”的虚拟望远镜，拍到了它被明亮光环包围的黑色阴影。
+
+位置
+银河系的中心
+ESO ↗
+质量
+约 400 万个太阳
+ESO ↗
+距离
+约 2.
+webcam point-and-hold → {"level":"galaxy","piece":"sgr-a-star"}
+errors: http 404 http://localhost:8765/api/voice?kind=sfx&name=whoosh-out

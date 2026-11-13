@@ -44,3 +44,8 @@
 - Playwright: select the language with `page.selectOption('#language', …)` (several <select>s on the page; there is no 'pt' option yet).
 - Two NASA pages disagree on Betelgeuse's distance (≈548 ly in a 2024 blog, ≈700 ly on the Hubble page): use one page's number
   and cite that page.
+- Nested pieces (Sgr A* in the Milky Way's core): `labelAt` moves only the label, not the pick target, so pointing at the parent's
+  label at the same centre opens the small piece (judge note, open). `isolate: true` fades the other pieces to 0.04 while it is
+  open, otherwise the parent's world-sized core points swamp the close-up.
+- Swiftshader smoke runs take ~3 min each; for look tweaks, a quick script that calls `SolarAtlas.journey.open(id)` and takes one
+  screenshot (~40 s) is enough, then run the full smoke once at the end.
