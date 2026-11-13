@@ -581,7 +581,7 @@ function animate(now) {
       const arr = pts.geometry.attributes.position.array, base = pts.userData.base, seed = pts.userData.seed;
       for (let i = 0, j = 0; i < arr.length; i += 3, j++) { const s = 1 + expansion * (0.25 + 0.65 * seed[j]); arr[i] = base[i] * s; arr[i + 1] = base[i + 1] * s; arr[i + 2] = base[i + 2] * s; }
       pts.geometry.attributes.position.needsUpdate = true;
-      pts.material.size = (pts === focus.particles ? 0.011 : 0.01) * focus.r * (1 + expansion * 1.2);
+      pts.material.size = (pts === focus.particles ? 0.011 : 0.01) * focus.r * (1 + expansion * 1.2) / xr.sizeScale();   // VR-aware · VR 尺寸修正
       pts.material.opacity = Math.min(1, focus.glow + expansion * 0.6) * (pts === focus.ringParticles ? 1.6 : 1);
     }
   }

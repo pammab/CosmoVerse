@@ -176,7 +176,10 @@ export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panel
     tex.needsUpdate = true;
   }
 
-  return { dolly, active, enter, supported, placeRig, update };
+  // Divide world-unit particle sizes by this in VR (1 outside VR) · VR 中粒子尺寸除以此值
+  const sizeScale = () => active() ? pointScale : 1;
+
+  return { dolly, active, enter, supported, placeRig, update, sizeScale };
 }
 
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
