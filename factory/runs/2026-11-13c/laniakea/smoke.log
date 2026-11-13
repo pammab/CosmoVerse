@@ -1,0 +1,9 @@
+vr button: true
+wheel out → {"level":"supercluster","piece":null}
+visible labels: ["jtag piece: LANIAKEA SUPERCLUSTER","jtag here: YOU ARE HERE · LOCAL GROUP","jtag sub: VIRGO CLUSTER"]
+Laniakea tag at {"x":661.257,"y":313.314}
+click → {"level":"supercluster","piece":"laniakea"} title: Laniakea Supercluster · facts: 6 links
+back → {"level":"supercluster","piece":null}
+webcam point-and-hold → {"level":"supercluster","piece":"laniakea"}
+wheel in → {"level":"local-group","piece":null}
+errors: http 404 http://localhost:8765/api/voice?kind=sfx&name=whoosh-out

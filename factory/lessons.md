@@ -35,3 +35,12 @@
 - Judges catch "the closest star of all" (the Sun is closer) and cite-the-wrong-page errors: when a value merges two claims,
   each part must be on the cited page; put the other part in the narration with a comment naming its source.
 - Additive `star` shapes with share > ~0.3 of a piece saturate to white; Alpha Cen A/B still look whitish (open nice-to-have).
+- A piece can carry its level's "You are here" (`youAreHere`) instead of the level `marker`, so the marker sits on the piece's
+  own structure; then set `spin: 0` (new optional field) or the marker drifts off it. With `tilt`, the piece position must be
+  `-(Rx·Rz·home)·size` to keep home at the level origin (see pieces/laniakea.js `turn`, tested).
+- Dense additive stars: galaxy-group members take `bright` (0–1, colour multiplier at build time); Betelgeuse uses 0.32 to stay
+  orange-red. The same would fix the whitish Alpha Cen A/B.
+- A level backdrop with as many points as the piece drowns the piece: the Supercluster web went 26000 → 15000 points.
+- Playwright: select the language with `page.selectOption('#language', …)` (several <select>s on the page; there is no 'pt' option yet).
+- Two NASA pages disagree on Betelgeuse's distance (≈548 ly in a 2024 blog, ≈700 ly on the Hubble page): use one page's number
+  and cite that page.

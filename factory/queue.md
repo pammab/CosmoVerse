@@ -8,11 +8,11 @@
 - [x] piece andromeda: Andromeda galaxy M31 (1370eb2, judge 8/10)
 - [x] piece orion-nebula: Orion Nebula M42 (ad197df, judge 7→8/10)
 - [x] piece pleiades: the Pleiades star cluster M45 (ad197df, judge 7→8/10)
-- [ ] piece laniakea: the Laniakea supercluster
+- [x] piece laniakea: the Laniakea supercluster (663a8d8, judge 8.5/10)
 - [ ] piece cosmic-web: the cosmic web (filaments and voids)
 - [ ] piece observable-universe: the observable universe
 - [ ] piece pillars-of-creation: Pillars of Creation (in M16, Eagle Nebula)
-- [ ] piece betelgeuse: Betelgeuse (red supergiant)
+- [x] piece betelgeuse: Betelgeuse (red supergiant) (663a8d8, judge 8.5/10; done early: neighbourhood level, cosmic-web overlaps the existing observable-universe web)
 - [ ] piece black-hole: Sagittarius A* (the Milky Way's central black hole)
 - [ ] piece elliptical-galaxy: M87 (giant elliptical)
 - [x] piece alpha-centauri: Alpha Centauri / Proxima (nearest stars) (ad197df, judge 7→8/10; done early: same level, research ready)
