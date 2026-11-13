@@ -12,70 +12,89 @@ import { makeNoise } from './noise.js';
 
 const DEG = Math.PI / 180, N = makeNoise(314);
 
-// [en, zh, es] for every text. Moon: name, radius km, orbit (planet radii, compressed), seconds per orbit, look, fact
+// [en, zh, es, pt] for every text (moon rows: [en, zh, es], Portuguese in MOON_PT below). Moon: name, radius km, orbit (planet radii, compressed), seconds per orbit, look, fact
 export const HIGHLIGHTS = {
   sun: {
-    feature: ['Solar prominences: loops of glowing plasma held up by magnetic fields, often larger than Earth. The solar wind streams out in every direction.', '日珥：被磁场托起的发光等离子体环，常常比地球还大。太阳风向四面八方吹出。', 'Protuberancias solares: bucles de plasma brillante sostenidos por campos magnéticos, a menudo más grandes que la Tierra. El viento solar sale en todas direcciones.'],
+    feature: ['Solar prominences: loops of glowing plasma held up by magnetic fields, often larger than Earth. The solar wind streams out in every direction.', '日珥：被磁场托起的发光等离子体环，常常比地球还大。太阳风向四面八方吹出。', 'Protuberancias solares: bucles de plasma brillante sostenidos por campos magnéticos, a menudo más grandes que la Tierra. El viento solar sale en todas direcciones.', 'Proeminências solares: arcos de plasma brilhante sustentados por campos magnéticos, muitas vezes maiores que a Terra. O vento solar sopra em todas as direções.'],
     moons: [],
-    craft: { kind: 'parker', name: ['Parker Solar Probe', '帕克太阳探测器', 'Sonda solar Parker'], text: ['On 24 December 2024 it passed about 6.1 million km from the Sun’s surface, closer than any spacecraft before.', '2024 年 12 月 24 日，它从距太阳表面约 610 万千米处掠过，比以往任何航天器都近。', 'El 24 de diciembre de 2024 pasó a unos 6,1 millones de km de la superficie del Sol, más cerca que ninguna nave antes.'] },
+    craft: { kind: 'parker', name: ['Parker Solar Probe', '帕克太阳探测器', 'Sonda solar Parker', 'Sonda Solar Parker'], text: ['On 24 December 2024 it passed about 6.1 million km from the Sun’s surface, closer than any spacecraft before.', '2024 年 12 月 24 日，它从距太阳表面约 610 万千米处掠过，比以往任何航天器都近。', 'El 24 de diciembre de 2024 pasó a unos 6,1 millones de km de la superficie del Sol, más cerca que ninguna nave antes.', 'Em 24 de dezembro de 2024, passou a cerca de 6,1 milhões de km da superfície do Sol, mais perto que qualquer nave antes dela.'] },
   },
   mercury: {
-    feature: ['A tail of sodium atoms, pushed away by sunlight, stretches millions of kilometres behind Mercury.', '水星身后拖着一条由钠原子组成的尾巴，被阳光推开，长达数百万千米。', 'Una cola de átomos de sodio, empujada por la luz del Sol, se extiende millones de kilómetros detrás de Mercurio.'],
+    feature: ['A tail of sodium atoms, pushed away by sunlight, stretches millions of kilometres behind Mercury.', '水星身后拖着一条由钠原子组成的尾巴，被阳光推开，长达数百万千米。', 'Una cola de átomos de sodio, empujada por la luz del Sol, se extiende millones de kilómetros detrás de Mercurio.', 'Uma cauda de átomos de sódio, empurrada pela luz do Sol, se estende por milhões de quilômetros atrás de Mercúrio.'],
     moons: [],
-    craft: { kind: 'messenger', name: ['MESSENGER', '信使号', 'MESSENGER'], text: ['Orbited Mercury from 2011 to 2015 and found water ice in craters that never see sunlight.', '2011 至 2015 年环绕水星运行，在永远见不到阳光的陨石坑里发现了水冰。', 'Orbitó Mercurio de 2011 a 2015 y encontró hielo de agua en cráteres que nunca ven el Sol.'] },
+    craft: { kind: 'messenger', name: ['MESSENGER', '信使号', 'MESSENGER', 'MESSENGER'], text: ['Orbited Mercury from 2011 to 2015 and found water ice in craters that never see sunlight.', '2011 至 2015 年环绕水星运行，在永远见不到阳光的陨石坑里发现了水冰。', 'Orbitó Mercurio de 2011 a 2015 y encontró hielo de agua en cráteres que nunca ven el Sol.', 'Orbitou Mercúrio de 2011 a 2015 e encontrou gelo de água em crateras que nunca recebem luz do Sol.'] },
   },
   venus: {
-    feature: ['Super-rotation: the cloud tops race around Venus in about 4 days, while the planet itself takes 243 days to turn.', '超级自转：金星云顶约 4 天绕行一圈，而行星本身转一圈要 243 天。', 'Superrotación: las nubes altas dan la vuelta a Venus en unos 4 días, mientras el planeta tarda 243 días en girar.'],
+    feature: ['Super-rotation: the cloud tops race around Venus in about 4 days, while the planet itself takes 243 days to turn.', '超级自转：金星云顶约 4 天绕行一圈，而行星本身转一圈要 243 天。', 'Superrotación: las nubes altas dan la vuelta a Venus en unos 4 días, mientras el planeta tarda 243 días en girar.', 'Super-rotação: o topo das nuvens dá a volta em Vênus em cerca de 4 dias, enquanto o próprio planeta leva 243 dias para girar.'],
     moons: [],
-    craft: { kind: 'magellan', name: ['Magellan', '麦哲伦号', 'Magallanes'], text: ['Mapped 98% of Venus’s surface with radar through the clouds, from 1990 to 1994.', '1990 至 1994 年用雷达穿透云层，测绘了金星 98% 的表面。', 'Cartografió el 98 % de la superficie de Venus con radar a través de las nubes, de 1990 a 1994.'] },
+    craft: { kind: 'magellan', name: ['Magellan', '麦哲伦号', 'Magallanes', 'Magalhães'], text: ['Mapped 98% of Venus’s surface with radar through the clouds, from 1990 to 1994.', '1990 至 1994 年用雷达穿透云层，测绘了金星 98% 的表面。', 'Cartografió el 98 % de la superficie de Venus con radar a través de las nubes, de 1990 a 1994.', 'Mapeou 98% da superfície de Vênus com radar através das nuvens, de 1990 a 1994.'] },
   },
   earth: {
-    feature: ['City lights glow on the night side, and auroras ripple around both poles when the solar wind hits our magnetic field.', '夜半球亮起城市灯光；太阳风撞击地球磁场时，两极出现飘动的极光。', 'Las luces de las ciudades brillan en el lado nocturno, y las auroras ondean en ambos polos cuando el viento solar choca con nuestro campo magnético.'],
+    feature: ['City lights glow on the night side, and auroras ripple around both poles when the solar wind hits our magnetic field.', '夜半球亮起城市灯光；太阳风撞击地球磁场时，两极出现飘动的极光。', 'Las luces de las ciudades brillan en el lado nocturno, y las auroras ondean en ambos polos cuando el viento solar choca con nuestro campo magnético.', 'As luzes das cidades brilham no lado noturno, e auroras ondulam nos dois polos quando o vento solar atinge nosso campo magnético.'],
     moons: [['Moon', '月球', 'Luna', 1737.4, 2.7, 22, 'moon', 'About a quarter of Earth’s width; it always shows us the same face.', '宽度约为地球的四分之一，始终以同一面朝向我们。', 'Mide cerca de un cuarto del ancho de la Tierra y siempre nos muestra la misma cara.']],
-    craft: { kind: 'iss', name: ['International Space Station', '国际空间站', 'Estación Espacial Internacional'], text: ['Circles Earth about every 90 minutes, roughly 400 km up, with astronauts on board.', '在约 400 千米高处载着航天员绕地球飞行，大约每 90 分钟一圈。', 'Da la vuelta a la Tierra cada unos 90 minutos, a unos 400 km de altura, con astronautas a bordo.'] },
+    craft: { kind: 'iss', name: ['International Space Station', '国际空间站', 'Estación Espacial Internacional', 'Estação Espacial Internacional'], text: ['Circles Earth about every 90 minutes, roughly 400 km up, with astronauts on board.', '在约 400 千米高处载着航天员绕地球飞行，大约每 90 分钟一圈。', 'Da la vuelta a la Tierra cada unos 90 minutos, a unos 400 km de altura, con astronautas a bordo.', 'Dá a volta na Terra a cada 90 minutos, mais ou menos, a uns 400 km de altura, com astronautas a bordo.'] },
   },
   mars: {
-    feature: ['Dust storms: some grow to cover the whole planet, as in 2018.', '沙尘暴：有些会扩散到覆盖整颗行星，例如 2018 年那一次。', 'Tormentas de polvo: algunas llegan a cubrir todo el planeta, como en 2018.'],
+    feature: ['Dust storms: some grow to cover the whole planet, as in 2018.', '沙尘暴：有些会扩散到覆盖整颗行星，例如 2018 年那一次。', 'Tormentas de polvo: algunas llegan a cubrir todo el planeta, como en 2018.', 'Tempestades de poeira: algumas crescem até cobrir o planeta inteiro, como em 2018.'],
     moons: [
       ['Phobos', '火卫一', 'Fobos', 11.3, 1.7, 7, 'phobos', 'Slowly spiralling inwards; it may break into a ring in tens of millions of years.', '正缓慢向内盘旋，几千万年后可能碎裂成环。', 'Se acerca poco a poco en espiral; podría romperse en un anillo dentro de decenas de millones de años.'],
       ['Deimos', '火卫二', 'Deimos', 6.2, 2.5, 14, 'phobos', 'Only about 12 km across: you could walk around it in a few days.', '直径只有约 12 千米，几天就能绕它走一圈。', 'Mide solo unos 12 km: podrías rodearlo a pie en pocos días.'],
     ],
-    craft: { kind: 'rover', name: ['Perseverance rover', '毅力号火星车', 'Rover Perseverance'], text: ['Landed in Jezero Crater in February 2021 to search an ancient lake bed for signs of past life.', '2021 年 2 月降落在耶泽罗陨石坑，在古老湖床中寻找过去生命的迹象。', 'Aterrizó en el cráter Jezero en febrero de 2021 para buscar señales de vida pasada en un antiguo lecho de lago.'] },
+    craft: { kind: 'rover', name: ['Perseverance rover', '毅力号火星车', 'Rover Perseverance', 'Rover Perseverance'], text: ['Landed in Jezero Crater in February 2021 to search an ancient lake bed for signs of past life.', '2021 年 2 月降落在耶泽罗陨石坑，在古老湖床中寻找过去生命的迹象。', 'Aterrizó en el cráter Jezero en febrero de 2021 para buscar señales de vida pasada en un antiguo lecho de lago.', 'Pousou na cratera Jezero em fevereiro de 2021 para procurar sinais de vida passada no leito de um antigo lago.'] },
   },
   jupiter: {
-    feature: ['Auroras larger than Earth glow at both poles, fed partly by volcanic gas from Io, which spreads into a glowing ring around Jupiter.', '两极闪耀着比地球还大的极光，部分能量来自木卫一的火山气体，这些气体在木星周围形成发光的环。', 'Auroras más grandes que la Tierra brillan en ambos polos, alimentadas en parte por el gas volcánico de Ío, que forma un anillo brillante alrededor de Júpiter.'],
+    feature: ['Auroras larger than Earth glow at both poles, fed partly by volcanic gas from Io, which spreads into a glowing ring around Jupiter.', '两极闪耀着比地球还大的极光，部分能量来自木卫一的火山气体，这些气体在木星周围形成发光的环。', 'Auroras más grandes que la Tierra brillan en ambos polos, alimentadas en parte por el gas volcánico de Ío, que forma un anillo brillante alrededor de Júpiter.', 'Auroras maiores que a Terra brilham nos dois polos, alimentadas em parte pelo gás vulcânico de Io, que se espalha num anel brilhante ao redor de Júpiter.'],
     moons: [
       ['Io', '木卫一', 'Ío', 1821.6, 1.75, 6, 'io', 'The most volcanic world in the Solar System.', '太阳系中火山活动最剧烈的天体。', 'El mundo más volcánico del sistema solar.'],
       ['Europa', '木卫二', 'Europa', 1560.8, 2.2, 10, 'europa', 'Hides a salty ocean under its icy crust.', '冰壳下隐藏着一片咸水海洋。', 'Esconde un océano salado bajo su corteza de hielo.'],
       ['Ganymede', '木卫三', 'Ganimedes', 2634.1, 2.7, 16, 'ganymede', 'The largest moon in the Solar System, bigger than Mercury.', '太阳系最大的卫星，比水星还大。', 'La luna más grande del sistema solar, mayor que Mercurio.'],
       ['Callisto', '木卫四', 'Calisto', 2410.3, 3.2, 26, 'callisto', 'One of the most heavily cratered surfaces known.', '已知陨石坑最密集的表面之一。', 'Una de las superficies con más cráteres que se conocen.'],
     ],
-    craft: { kind: 'juno', name: ['Juno', '朱诺号', 'Juno'], text: ['Arrived in 2016 and swoops low over Jupiter’s poles on long, looping orbits.', '2016 年抵达，沿着长长的环形轨道低空掠过木星两极。', 'Llegó en 2016 y pasa muy cerca de los polos de Júpiter en órbitas largas y alargadas.'] },
+    craft: { kind: 'juno', name: ['Juno', '朱诺号', 'Juno', 'Juno'], text: ['Arrived in 2016 and swoops low over Jupiter’s poles on long, looping orbits.', '2016 年抵达，沿着长长的环形轨道低空掠过木星两极。', 'Llegó en 2016 y pasa muy cerca de los polos de Júpiter en órbitas largas y alargadas.', 'Chegou em 2016 e passa rente aos polos de Júpiter em órbitas longas e alongadas.'] },
   },
   saturn: {
-    feature: ['The hexagon: a six-sided jet stream at the north pole, wider than two Earths. On the moon Enceladus, geysers spray ice into space.', '六边形风暴：北极一股六边形的急流，宽度超过两个地球。卫星恩克拉多斯上的间歇泉把冰喷向太空。', 'El hexágono: una corriente en chorro de seis lados en el polo norte, más ancha que dos Tierras. En la luna Encélado, géiseres lanzan hielo al espacio.'],
+    feature: ['The hexagon: a six-sided jet stream at the north pole, wider than two Earths. On the moon Enceladus, geysers spray ice into space.', '六边形风暴：北极一股六边形的急流，宽度超过两个地球。卫星恩克拉多斯上的间歇泉把冰喷向太空。', 'El hexágono: una corriente en chorro de seis lados en el polo norte, más ancha que dos Tierras. En la luna Encélado, géiseres lanzan hielo al espacio.', 'O hexágono: uma corrente de jato de seis lados no polo norte, mais larga que duas Terras. Na lua Encélado, gêiseres lançam gelo no espaço.'],
     moons: [
       ['Enceladus', '土卫二', 'Encélado', 252.1, 2.65, 8, 'enceladus', 'Shoots jets of water ice from cracks at its south pole.', '从南极的裂缝中喷出水冰。', 'Lanza chorros de hielo de agua desde grietas en su polo sur.'],
       ['Rhea', '土卫五', 'Rea', 763.8, 3.0, 13, 'grey', 'Saturn’s second-largest moon, an icy ball covered in craters.', '土星第二大卫星，布满陨石坑的冰球。', 'La segunda luna más grande de Saturno, una bola de hielo llena de cráteres.'],
       ['Titan', '土卫六', 'Titán', 2574.7, 3.6, 22, 'titan', 'Has a thick hazy atmosphere and lakes of liquid methane.', '拥有浓厚的雾状大气和液态甲烷湖。', 'Tiene una atmósfera densa y brumosa y lagos de metano líquido.'],
     ],
-    craft: { kind: 'cassini', name: ['Cassini', '卡西尼号', 'Cassini'], text: ['Studied Saturn for 13 years. In 2017 it made 22 dives between the planet and its rings, then plunged into Saturn.', '研究土星 13 年。2017 年它在行星与光环之间穿行 22 次，最后坠入土星。', 'Estudió Saturno durante 13 años. En 2017 pasó 22 veces entre el planeta y sus anillos y luego se lanzó a Saturno.'] },
+    craft: { kind: 'cassini', name: ['Cassini', '卡西尼号', 'Cassini', 'Cassini'], text: ['Studied Saturn for 13 years. In 2017 it made 22 dives between the planet and its rings, then plunged into Saturn.', '研究土星 13 年。2017 年它在行星与光环之间穿行 22 次，最后坠入土星。', 'Estudió Saturno durante 13 años. En 2017 pasó 22 veces entre el planeta y sus anillos y luego se lanzó a Saturno.', 'Estudou Saturno por 13 anos. Em 2017 fez 22 mergulhos entre o planeta e os anéis e depois se lançou em Saturno.'] },
   },
   uranus: {
-    feature: ['Its magnetic field is tilted about 59° from its spin axis, so its auroras glow far from the poles.', '它的磁场与自转轴相差约 59°，因此极光出现在远离两极的地方。', 'Su campo magnético está inclinado unos 59° respecto a su eje de giro, así que sus auroras brillan lejos de los polos.'],
+    feature: ['Its magnetic field is tilted about 59° from its spin axis, so its auroras glow far from the poles.', '它的磁场与自转轴相差约 59°，因此极光出现在远离两极的地方。', 'Su campo magnético está inclinado unos 59° respecto a su eje de giro, así que sus auroras brillan lejos de los polos.', 'Seu campo magnético é inclinado cerca de 59° em relação ao eixo de rotação, por isso suas auroras brilham longe dos polos.'],
     moons: [
       ['Miranda', '天卫五', 'Miranda', 235.8, 2.35, 7, 'grey', 'Has cliffs about 20 km high, among the tallest known.', '拥有约 20 千米高的悬崖，是已知最高的悬崖之一。', 'Tiene acantilados de unos 20 km de altura, de los más altos que se conocen.'],
       ['Titania', '天卫三', 'Titania', 788.9, 2.85, 14, 'grey', 'Uranus’s largest moon, crossed by huge canyons.', '天王星最大的卫星，布满巨大的峡谷。', 'La luna más grande de Urano, cruzada por enormes cañones.'],
       ['Oberon', '天卫四', 'Oberón', 761.4, 3.3, 20, 'callisto', 'The outermost of Uranus’s large moons, old and cratered.', '天王星大卫星中最外侧的一颗，古老且多陨石坑。', 'La más exterior de las grandes lunas de Urano, antigua y llena de cráteres.'],
     ],
-    craft: { kind: 'voyager', name: ['Voyager 2', '旅行者 2 号', 'Voyager 2'], text: ['The only spacecraft to visit Uranus, flying past in January 1986.', '唯一造访过天王星的航天器，于 1986 年 1 月飞掠。', 'La única nave que ha visitado Urano; pasó junto a él en enero de 1986.'] },
+    craft: { kind: 'voyager', name: ['Voyager 2', '旅行者 2 号', 'Voyager 2', 'Voyager 2'], text: ['The only spacecraft to visit Uranus, flying past in January 1986.', '唯一造访过天王星的航天器，于 1986 年 1 月飞掠。', 'La única nave que ha visitado Urano; pasó junto a él en enero de 1986.', 'A única nave a visitar Urano, passando por ele em janeiro de 1986.'] },
   },
   neptune: {
-    feature: ['The fastest winds in the Solar System: clouds race around at up to about 2,000 km/h. On its moon Triton, geysers of nitrogen gas erupt.', '太阳系最快的风：云层以最高约每小时 2,000 千米的速度飞驰。卫星海卫一上有氮气间歇泉喷发。', 'Los vientos más rápidos del sistema solar: las nubes corren a unos 2.000 km/h. En su luna Tritón hay géiseres de nitrógeno.'],
+    feature: ['The fastest winds in the Solar System: clouds race around at up to about 2,000 km/h. On its moon Triton, geysers of nitrogen gas erupt.', '太阳系最快的风：云层以最高约每小时 2,000 千米的速度飞驰。卫星海卫一上有氮气间歇泉喷发。', 'Los vientos más rápidos del sistema solar: las nubes corren a unos 2.000 km/h. En su luna Tritón hay géiseres de nitrógeno.', 'Os ventos mais rápidos do Sistema Solar: as nuvens correm a até cerca de 2.000 km/h. Na sua lua Tritão, entram em erupção gêiseres de gás nitrogênio.'],
     moons: [['Triton', '海卫一', 'Tritón', 1353.4, 2.7, 16, 'triton', 'Orbits backwards and is probably a captured object from the Kuiper Belt.', '逆向公转，很可能是被捕获的柯伊伯带天体。', 'Gira al revés y probablemente es un objeto capturado del cinturón de Kuiper.', true]],
-    craft: { kind: 'voyager', name: ['Voyager 2', '旅行者 2 号', 'Voyager 2'], text: ['The only spacecraft to visit Neptune, flying past in August 1989.', '唯一造访过海王星的航天器，于 1989 年 8 月飞掠。', 'La única nave que ha visitado Neptuno; pasó junto a él en agosto de 1989.'] },
+    craft: { kind: 'voyager', name: ['Voyager 2', '旅行者 2 号', 'Voyager 2', 'Voyager 2'], text: ['The only spacecraft to visit Neptune, flying past in August 1989.', '唯一造访过海王星的航天器，于 1989 年 8 月飞掠。', 'La única nave que ha visitado Neptuno; pasó junto a él en agosto de 1989.', 'A única nave a visitar Netuno, passando por ele em agosto de 1989.'] },
   },
 };
+
+// Portuguese moon names and facts, by English name (moon rows keep their positions) · 卫星的葡萄牙语名称与说明
+export const MOON_PT = {
+  Moon: ['Lua', 'Tem cerca de um quarto da largura da Terra e sempre nos mostra a mesma face.'],
+  Phobos: ['Fobos', 'Está se aproximando devagar em espiral; pode se partir e formar um anel em dezenas de milhões de anos.'],
+  Deimos: ['Deimos', 'Tem só uns 12 km de diâmetro: daria para dar a volta nela a pé em poucos dias.'],
+  Io: ['Io', 'O mundo mais vulcânico do Sistema Solar.'],
+  Europa: ['Europa', 'Esconde um oceano salgado sob sua crosta de gelo.'],
+  Ganymede: ['Ganimedes', 'A maior lua do Sistema Solar, maior que Mercúrio.'],
+  Callisto: ['Calisto', 'Uma das superfícies com mais crateras que se conhece.'],
+  Enceladus: ['Encélado', 'Lança jatos de gelo de água por rachaduras no polo sul.'],
+  Rhea: ['Reia', 'A segunda maior lua de Saturno, uma bola de gelo coberta de crateras.'],
+  Titan: ['Titã', 'Tem uma atmosfera densa e enevoada e lagos de metano líquido.'],
+  Miranda: ['Miranda', 'Tem penhascos de uns 20 km de altura, entre os mais altos conhecidos.'],
+  Titania: ['Titânia', 'A maior lua de Urano, cortada por cânions enormes.'],
+  Oberon: ['Oberon', 'A mais externa das grandes luas de Urano, antiga e cheia de crateras.'],
+  Triton: ['Tritão', 'Gira ao contrário e provavelmente é um objeto capturado do Cinturão de Kuiper.'],
+};
+export const moonPT = m => MOON_PT[m[0]] || [m[0], m[7]];
 
 // Plain-English summary for the AI guide.
 export function highlightsText(id) {
@@ -240,7 +259,7 @@ export function buildHighlights(body) {
     pivot.add(mesh); tiltRoot.add(pivot);
     const ring = pathLine((o, t) => o.set(Math.cos(t * Math.PI * 2) * orbit * r, 0, Math.sin(t * Math.PI * 2) * orbit * r), 160, '#ffffff', 0.08); tiltRoot.add(ring);
     updaters.push(dt => { pivot.rotation.y += dt * (Math.PI * 2 / period) * (retro ? -1 : 1); mesh.rotation.y += dt * 0.2; });
-    items.push({ obj: mesh, type: 'moon', label: [en, zh, es] });
+    items.push({ obj: mesh, type: 'moon', label: [en, zh, es, moonPT(m)[0]] });
     // Plumes on moons that have them · 卫星喷流
     if (look === 'io' || look === 'enceladus' || look === 'triton') {
       const n = 160, pl = cloud(n, look === 'io' ? '#bcd6ff' : look === 'triton' ? '#b9aea8' : '#ffffff', Math.max(size * 0.15, r * 0.006), 0.85);

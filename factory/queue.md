@@ -3,13 +3,13 @@
 
 ## A. Scale journey (Pamela chose this first, Nov 13)
 - [x] journey-core: the **scale journey** framework. See "journey-core spec" below. (0771175, judge 7→8/10)
-- [ ] piece milky-way: the Milky Way (barred spiral, ~100,000 ly; where the Sun is, in the Orion Arm) — starter shipped in 0771175 (6 sourced facts, Sun marker); refine or tick
+- [ ] piece milky-way (waiting: Pamela tests the standalone file first): the Milky Way (barred spiral, ~100,000 ly; where the Sun is, in the Orion Arm) — starter shipped in 0771175 (6 sourced facts, Sun marker); refine or tick
 - [ ] piece local-group: the Local Group (Milky Way, Andromeda, Triangulum, dwarf galaxies) — starter shipped in 0771175; refine or tick
 - [x] piece andromeda: Andromeda galaxy M31 (1370eb2, judge 8/10)
 - [x] piece orion-nebula: Orion Nebula M42 (ad197df, judge 7→8/10)
 - [x] piece pleiades: the Pleiades star cluster M45 (ad197df, judge 7→8/10)
 - [x] piece laniakea: the Laniakea supercluster (663a8d8, judge 8.5/10)
-- [ ] piece cosmic-web: the cosmic web (filaments and voids)
+- [ ] piece cosmic-web: the cosmic web (filaments and voids). Pamela chose **option B** (Nov 13): a SEPARATE piece on the universe level, a close-up of one filament full of galaxies with a void beside it, own facts; keep observable-universe as the whole-web view
 - [ ] piece observable-universe: the observable universe
 - [ ] piece pillars-of-creation: Pillars of Creation (in M16, Eagle Nebula)
 - [x] piece betelgeuse: Betelgeuse (red supergiant) (663a8d8, judge 8.5/10; done early: neighbourhood level, cosmic-web overlaps the existing observable-universe web)
@@ -69,5 +69,5 @@ export default {
 ```
 
 ## Later (not tonight unless the queue above is done)
-- Portuguese in the language menu (en/zh/es → +pt) and PT translations of the planet texts.
+- [x] Portuguese in the language menu (en/zh/es → +pt) and PT translations of the whole app (Pamela said yes, Nov 13; done in run 2026-11-13d)
 - "Find the Earth" game.

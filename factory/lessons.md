@@ -49,3 +49,9 @@
   open, otherwise the parent's world-sized core points swamp the close-up.
 - Swiftshader smoke runs take ~3 min each; for look tweaks, a quick script that calls `SolarAtlas.journey.open(id)` and takes one
   screenshot (~40 s) is enough, then run the full smoke once at the end.
+- Hand picking in the journey: a piece's own name label wins over the "smallest target" rule (journey.js `pick` checks the `.name`
+  rect first), so pointing at "MILKY WAY" opens the Milky Way even with Sgr A* at the same centre.
+- A fact may list extra sources in `also: [{ name, url }]` (validated, rendered as extra links): use it when the value merges
+  two pages (Betelgeuse distance 550–700 ly from two NASA pages).
+- App-wide PT: `PT` dictionary keyed by English in i18n.js plus `ptText()`; `bi(en, zh, es, pt)` in index.html; arrays get a 4th
+  entry. New user-visible text must be added in all four languages.

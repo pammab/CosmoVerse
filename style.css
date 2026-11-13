@@ -9,12 +9,13 @@ button { cursor: pointer; color: inherit; background: #ffffff08; border: 1px sol
 button:hover, button.active { border-color: var(--accent); background: #8bd6ff15; }
 button.primary { border-color: #8bd6ff66; background: #8bd6ff14; }
 button:disabled { opacity: .5; cursor: wait; }
-/* Languages: only the selected one shows · 只显示所选语言 · solo se ve el idioma elegido */
-.en, .zh, .es { display: block; }
-.en, .es { line-height: 1.5; }
+/* Languages: only the selected one shows · 只显示所选语言 · solo se ve el idioma elegido · só aparece o idioma escolhido */
+.en, .zh, .es, .pt { display: block; }
+.en, .es, .pt { line-height: 1.5; }
 .zh { line-height: 1.6; letter-spacing: .02em; }
-html[data-lang=en] :is(.zh, .es), html[data-lang=zh] :is(.en, .es), html[data-lang=es] :is(.en, .zh) { display: none !important; }
-html[data-lang=zh] .zh, html[data-lang=es] .es { margin-top: 0 !important; color: inherit !important; font-size: inherit !important; }
+html[data-lang=en] :is(.zh, .es, .pt), html[data-lang=zh] :is(.en, .es, .pt), html[data-lang=es] :is(.en, .zh, .pt), html[data-lang=pt] :is(.en, .zh, .es) { display: none !important; }
+html:not([data-lang=pt]) .pt { display: none !important; }   /* also before a language is set · 未设置语言时也隐藏 */
+html[data-lang=zh] .zh, html[data-lang=es] .es, html[data-lang=pt] .pt { margin-top: 0 !important; color: inherit !important; font-size: inherit !important; }
 
 /* Header */
 body > header { position: fixed; top: 24px; left: 32px; right: 32px; display: flex; justify-content: space-between; align-items: center; gap: 16px; pointer-events: none; z-index: 3; }
@@ -177,7 +178,7 @@ body.chat-open.mode-focus .chatpanel { right: 390px; }
 .mtag { position: fixed; left: 0; top: 0; z-index: 1; pointer-events: none; font-size: 10px; letter-spacing: .06em; color: #cfe0ee; text-shadow: 0 1px 4px #000, 0 0 10px #000; white-space: nowrap; padding-left: 10px; margin-top: -6px; display: none; }
 .mtag::before { content: ''; position: absolute; left: 0; top: 5px; width: 5px; height: 5px; border-radius: 50%; border: 1px solid currentColor; }
 .mtag.craft { color: #9fe3ff; }
-.mtag .zh, .mtag .es { margin: 0; }
+.mtag .zh, .mtag .es, .mtag .pt { margin: 0; }
 
 
 /* Habitability comparison lab */
@@ -411,9 +412,6 @@ body.chat-open.mode-focus .chatpanel { right: 390px; }
 @media (max-width: 800px) { .caption { bottom: 150px; font-size: 11.5px; } }
 
 /* ───────── Scale journey · 尺度之旅 ───────── */
-/* Portuguese text is written but only shows once PT is in the language menu · 葡萄牙语文本（菜单加入 PT 后显示） */
-.pt { display: block; line-height: 1.5; }
-html:not([data-lang=pt]) .pt, html[data-lang=pt] :is(.en, .zh, .es) { display: none !important; }
 .jcrumb { position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%); display: none; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 6px; max-width: min(760px, calc(100vw - 24px));
   font-size: 11px; color: #8fa3b8; letter-spacing: .06em; z-index: 3; text-shadow: 0 1px 4px #000; pointer-events: auto; }
 .jcrumb :is(.en, .zh, .es, .pt) { display: inline; }

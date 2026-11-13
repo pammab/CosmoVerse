@@ -11,14 +11,15 @@ import { buildPlanet, buildSun, buildStars, buildAsteroidBelt, orbitLine, upgrad
 import { loadMaps } from './maps.js';
 import { HandTracker, GESTURE_COLORS } from './gestures.js';
 import { initChat } from './chat.js';
-import { buildHighlights, HIGHLIGHTS } from './highlights.js';
+import { buildHighlights, HIGHLIGHTS, moonPT } from './highlights.js';
 import { initHabitability } from './habitability.js';
 import { narrate, stopNarration, sfx } from './narration.js';
 import { initXR } from './xr.js';
 import { createJourney, levelById, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, quad, tr, SCALE_NOTE, UI as JUI } from './journey.js';
 import { PIECES } from './pieces/index.js';
 const $ = s => document.querySelector(s), clamp = T.MathUtils.clamp, bi = window.bi;
-const nameOf = p => [p.en.charAt(0) + p.en.slice(1).toLowerCase(), p.zh, p.es.charAt(0) + p.es.slice(1).toLowerCase()];
+const cap = s => s.charAt(0) + s.slice(1).toLowerCase();
+const nameOf = p => [cap(p.en), p.zh, cap(p.es), cap(p.pt)];   // [en, zh, es, pt]
 const wrapPI = a => ((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
@@ -81,7 +82,7 @@ const goalDist = () => baseDist[mode]() / zooms[mode];
 /* ───────── Labels on screen · 屏幕标签 ───────── */
 bodies.forEach(b => {
   const el = document.createElement('button'); el.className = 'tag'; el.type = 'button';
-  el.innerHTML = `<span class="ring" style="--c:${b.p.color}"></span><span class="name">${bi(b.p.en, b.p.zh, b.p.es)}</span>`;
+  el.innerHTML = `<span class="ring" style="--c:${b.p.color}"></span><span class="name">${bi(b.p.en, b.p.zh, b.p.es, b.p.pt)}</span>`;
   el.onclick = () => select(b.p.id);
   el.onmouseenter = () => setHover(b.p.id); el.onmouseleave = () => setHover(null);
   document.body.append(el); b.tag = el;
@@ -169,7 +170,7 @@ const flightItems = [SUN,...PLANETS].map((p,i) => {
   const sparkCount=900, sparkGeo=new T.BufferGeometry();sparkGeo.setAttribute('position',new T.BufferAttribute(new Float32Array(sparkCount*3),3));
   const ages=new Float32Array(sparkCount);for(let j=0;j<sparkCount;j++)ages[j]=j/(sparkCount-1);sparkGeo.setAttribute('age',new T.BufferAttribute(ages,1));
   const sparks=new T.Points(sparkGeo,new T.ShaderMaterial({uniforms:{tint:{value:c},pulse:{value:0},pixelRatio:{value:Math.min(devicePixelRatio,1.75)}},vertexShader:`attribute float age; varying float vAge; uniform float pixelRatio; void main(){vAge=age;vec4 pos=modelViewMatrix*vec4(position,1.);gl_Position=projectionMatrix*pos;gl_PointSize=clamp((1.8+age*3.5)*pixelRatio*170./max(20.,-pos.z),1.,12.);}`,fragmentShader:`varying float vAge;uniform vec3 tint;uniform float pulse;void main(){float r=length(gl_PointCoord-.5)*2.;if(r>1.)discard;float glow=pow(1.-r,2.);float breathe=.72+.28*sin(vAge*34.-pulse*2.);float alpha=pow(vAge,1.7)*glow*breathe;gl_FragColor=vec4(mix(tint,vec3(1.),pow(vAge,16.)*.65),alpha*.85);}`,transparent:true,blending:T.AdditiveBlending,depthWrite:false}));sparks.frustumCulled=false;flight.add(sparks);
-  const label=document.createElement('button');label.type='button';label.className='flight-label';label.innerHTML=bi(p.en.toUpperCase(),p.zh,p.es.toUpperCase());label.setAttribute('aria-label','Explore '+p.en);label.onclick=()=>select(p.id);label.onmouseenter=()=>setHover(p.id);label.onmouseleave=()=>setHover(null);document.body.append(label);
+  const label=document.createElement('button');label.type='button';label.className='flight-label';label.innerHTML=bi(p.en.toUpperCase(),p.zh,p.es.toUpperCase(),p.pt.toUpperCase());label.setAttribute('aria-label','Explore '+p.en);label.onclick=()=>select(p.id);label.onmouseenter=()=>setHover(p.id);label.onmouseleave=()=>setHover(null);document.body.append(label);
   return {p,i,radius,size,mesh,line,label,visual,sourceNodes,copyNodes,sparks,sparkCount};
 });
 // A diagonal flight axis gives the trails a cinematic rising composition.
@@ -214,7 +215,7 @@ function updateFlight(dt) {
   flightItems.forEach(item=>item.label.style.display='none');
   if(!active)return;
   if(!paused) flightTime+=dt*.35*flightRate;
-  $('#flightTime').textContent='+'+flightTime.toFixed(2)+' '+({zh:'年',es:'años'}[document.documentElement.dataset.lang]||'yr');
+  $('#flightTime').textContent='+'+flightTime.toFixed(2)+' '+({zh:'年',es:'años',pt:'anos'}[document.documentElement.dataset.lang]||'yr');
   for(const item of flightItems){
     flightPosition(item,flightTime,item.mesh.position);
     item.visual.rotation.y=paused?item.visual.rotation.y:item.visual.rotation.y+dt*.16;
@@ -376,7 +377,7 @@ function renderPieceInfo(p) {
     <div class="jtop"><div class="eyebrow">${quad(p.type)}</div><button id="pieceBack" class="jback">${quad(JUI.back)}</button></div>
     <h2>${quad(p.names)}</h2>
     <p>${quad(p.narration)}</p>
-    <div class="facts">${p.facts.map(f => `<div><small>${quad(f.label)}</small><b>${quad(f.value)}</b><a class="src" href="${f.source.url}" target="_blank" rel="noopener" title="${host(f.source.url)}">${f.source.name} ↗</a></div>`).join('')}</div>
+    <div class="facts">${p.facts.map(f => `<div><small>${quad(f.label)}</small><b>${quad(f.value)}</b>${[f.source, ...(f.also || [])].map(s => `<a class="src" href="${s.url}" target="_blank" rel="noopener" title="${host(s.url)}">${s.name} ↗</a>`).join(' ')}</div>`).join('')}</div>
     ${p.youAreHere ? `<p class="feature">◉ ${quad(p.youAreHere)}</p>` : ''}
     <small class="jnote">${quad(SCALE_NOTE)}</small>`;
   $('#info').classList.remove('hidden'); $('#info').scrollTop = 0;
@@ -414,7 +415,7 @@ function journeyPanel(hint, hintColor, g) {
 function setIntro(m, b) {
   if (m === 'focus') {
     const idx = b.isSun ? 'STAR' : 'PLANET / ' + String(PLANETS.indexOf(b.p) + 1).padStart(2, '0'), idxZh = b.isSun ? '恒星' : '行星 / ' + String(PLANETS.indexOf(b.p) + 1).padStart(2, '0');
-    $('#headline').innerHTML = bi(...nameOf(b.p)); $('#subtitle').innerHTML = bi(idx, idxZh, idx.replace('STAR', 'ESTRELLA').replace('PLANET', 'PLANETA'));
+    $('#headline').innerHTML = bi(...nameOf(b.p)); $('#subtitle').innerHTML = bi(idx, idxZh, idx.replace('STAR', 'ESTRELLA').replace('PLANET', 'PLANETA'), idx.replace('STAR', 'ESTRELA').replace('PLANET', 'PLANETA'));
   } else if (m === 'journey') {
     const lv = levelById(journey.level || 'neighbourhood'), p = journey.piece && journey.pieceData(journey.piece);
     $('#headline').innerHTML = quad(p ? p.names : lv.names);
@@ -435,7 +436,7 @@ function highlightNav(id) { document.querySelectorAll('#nav button').forEach(b =
 function highlightsHTML(id) {
   const h = HIGHLIGHTS[id]; if (!h) return '';
   const moons = h.moons.length
-    ? h.moons.map(m => `<li><b>${bi(m[0], m[1], m[2])}</b>${bi(m[7], m[8], m[9])}</li>`).join('')
+    ? h.moons.map(m => { const [ptName, ptFact] = moonPT(m); return `<li><b>${bi(m[0], m[1], m[2], ptName)}</b>${bi(m[7], m[8], m[9], ptFact)}</li>`; }).join('')
     : `<li>${bi('No moons.', '没有卫星。', 'Sin lunas.')}</li>`;
   return `<div class="hl">
     <div class="hlh">${bi('✦ Living feature', '✦ 动态现象', '✦ Fenómeno vivo')}</div><p>${bi(...h.feature)}</p>
@@ -448,14 +449,14 @@ function renderInfo(b) {
   const p = b.p, earthX = (p.radiusKm / 6371).toFixed(p.radiusKm < 6371 ? 2 : 1);
   document.documentElement.style.setProperty('--accent', p.color);
   $('#info').innerHTML = `
-    <div class="eyebrow">${bi(p.type[0].toUpperCase(), p.type[1], window.esText(p.type[0]).toUpperCase())}</div>
+    <div class="eyebrow">${bi(p.type[0].toUpperCase(), p.type[1], window.esText(p.type[0]).toUpperCase(), window.ptText(p.type[0]).toUpperCase())}</div>
     <h2>${bi(...nameOf(p))}</h2>
-    <div class="scale">${bi(`${earthX} × Earth’s width`, `宽度为地球的 ${earthX} 倍`, `${earthX.replace('.', ',')} × el ancho de la Tierra`)}</div>
+    <div class="scale">${bi(`${earthX} × Earth’s width`, `宽度为地球的 ${earthX} 倍`, `${earthX.replace('.', ',')} × el ancho de la Tierra`, `${earthX.replace('.', ',')} × a largura da Terra`)}</div>
     <p>${bi(p.descEn, p.descZh)}</p>
     <div class="facts">${p.facts.map(f => `<div><small>${bi(f[0], f[1])}</small><b>${bi(f[2], f[3])}</b></div>`).join('')}</div>
     <p class="feature">${bi(p.featureEn, p.featureZh)}</p>
     ${highlightsHTML(p.id)}
-    <button class="ask" id="askAbout">${bi(`Ask Cosmo about ${nameOf(p)[0]}`, `问 Cosmo 关于${p.zh}的问题`, `Pregunta a Cosmo sobre ${nameOf(p)[2]}`)}</button>
+    <button class="ask" id="askAbout">${bi(`Ask Cosmo about ${nameOf(p)[0]}`, `问 Cosmo 关于${p.zh}的问题`, `Pregunta a Cosmo sobre ${nameOf(p)[2]}`, `Pergunte ao Cosmo sobre ${nameOf(p)[3]}`)}</button>
     ${b.isSun ? '' : `<div class="controls">
       <div class="control"><span>${bi('Tint · keeps surface detail', '色调 · 保留表面细节')}</span><input aria-label="Tint" id="tint" type="color" value="${b.tint}"></div>
       <div class="control"><span>${bi('Particle glow', '粒子光感')}</span><span id="glowval">${Math.round(b.glow * 100)}%</span></div>
@@ -484,7 +485,7 @@ bodies.forEach(b => {
 });
 $('#home').onclick = home; $('#lineup').onclick = lineup; $('#pause').onclick = () => setPaused(!paused);
 
-function notice(en, zh, es, ms = 4500) { const s = $('#status'); s.innerHTML = bi(en, zh, es); s.style.display = 'block'; clearTimeout(notice.t); notice.t = setTimeout(() => s.style.display = 'none', ms); }
+function notice(en, zh, es, ms = 4500, pt) { const s = $('#status'); s.innerHTML = bi(en, zh, es, pt); s.style.display = 'block'; clearTimeout(notice.t); notice.t = setTimeout(() => s.style.display = 'none', ms); }
 
 /* ───────── Mouse & touch · 鼠标与触控 ───────── */
 const canvas = renderer.domElement, pointers = new Map(); let down = null, moved = false, pinchDist = 0;
@@ -615,7 +616,7 @@ const xr = initXR({
   $('#cam').before(vrBtn);
   vrBtn.onclick = async () => {
     try { if (!(await xr.enter())) notice('VR needs a VR headset browser (e.g. Meta Quest) or the Immersive Web Emulator.', '需要 VR 头显浏览器（如 Meta Quest）或 Immersive Web Emulator。', 'La RV necesita el navegador de un visor (p. ej., Meta Quest) o el Immersive Web Emulator.', 6000); }
-    catch (e) { console.error(e); notice('Could not start VR: ' + e.message, '无法启动 VR：' + e.message, 'No se pudo iniciar la RV: ' + e.message, 6000); }
+    catch (e) { console.error(e); notice('Could not start VR: ' + e.message, '无法启动 VR：' + e.message, 'No se pudo iniciar la RV: ' + e.message, 6000, 'Não foi possível iniciar a RV: ' + e.message); }
   };
   xr.supported().then(ok => { if (!ok) vrBtn.title = 'Open on a Meta Quest browser to use VR'; });
 }
@@ -646,7 +647,7 @@ const chat = initChat({ bi, getContext: () => mode === 'focus' ? focus.p.id : 's
 $('#talk').onclick = () => chat.startVoice();
 
 /* ───────── Language · 语言 · Idioma ───────── */
-// All text is rendered in all three languages; switching only changes which one shows.
+// All text is rendered in all four languages; switching only changes which one shows.
 $('#language').onchange = e => setLanguage(e.target.value);
 onLanguage(l => { chat.setVoiceLang(voiceCode(l)); xr.refreshLabels?.(); });
 setLanguage(initialLanguage());

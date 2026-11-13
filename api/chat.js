@@ -1,7 +1,7 @@
 // Ask Cosmo AI endpoint (Vercel) + shared chat logic, also used by server.mjs locally.
 // The Anthropic API key is read from the environment on the server. It never reaches the browser.
 
-const LANGS = { en: 'English', zh: 'Chinese (Simplified)', es: 'Spanish', pt: 'Portuguese' };
+const LANGS = { en: 'English', zh: 'Chinese (Simplified)', es: 'Spanish', pt: 'Brazilian Portuguese' };
 const BODIES = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'solar'];
 const NAMES = {
   sun: 'the Sun', mercury: 'Mercury', venus: 'Venus', earth: 'Earth', mars: 'Mars',

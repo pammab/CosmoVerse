@@ -12,7 +12,7 @@ export const VOICE_LANGS = [
   { code: 'en-US', label: 'English' },
   { code: 'zh-CN', label: '中文' },
   { code: 'es-ES', label: 'Español' },
-  { code: 'pt-PT', label: 'Português' },
+  { code: 'pt-BR', label: 'Português' },
 ];
 export function defaultLang() {
   const l = (navigator.language || 'en').toLowerCase();

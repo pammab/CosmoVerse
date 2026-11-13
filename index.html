@@ -10,21 +10,21 @@
 <link rel="stylesheet" href="asteroids.css">
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
 <script>
-  // Text in three languages; only the chosen one is shown · 三种语言，只显示所选语言 · Tres idiomas
-  // bi(english, chinese, spanish?) — Spanish defaults to the dictionary in js/i18n.js.
-  window.bi = (en, zh, es) => {
+  // Text in four languages; only the chosen one is shown · 四种语言，只显示所选语言 · Cuatro idiomas · Quatro idiomas
+  // bi(english, chinese, spanish?, portuguese?) — Spanish and Portuguese default to the dictionaries in i18n.js.
+  window.bi = (en, zh, es, pt) => {
     const e = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const sp = es ?? (window.esText ? window.esText(en) : en);
-    return '<span class="en" lang="en">' + e(en) + '</span><span class="zh" lang="zh-CN">' + e(zh) + '</span><span class="es" lang="es">' + e(sp) + '</span>';
+    const sp = es ?? (window.esText ? window.esText(en) : en), po = pt ?? (window.ptText ? window.ptText(en) : en);
+    return '<span class="en" lang="en">' + e(en) + '</span><span class="zh" lang="zh-CN">' + e(zh) + '</span><span class="es" lang="es">' + e(sp) + '</span><span class="pt" lang="pt-BR">' + e(po) + '</span>';
   };
   (() => { let l = null; try { l = localStorage.getItem('orbit-lang'); } catch {} const n = (navigator.language || 'en').toLowerCase();
-    l = ['en', 'zh', 'es'].includes(l) ? l : n.startsWith('zh') ? 'zh' : n.startsWith('es') ? 'es' : 'en';
-    document.documentElement.dataset.lang = l; document.documentElement.lang = l === 'zh' ? 'zh-CN' : l; })();
+    l = ['en', 'zh', 'es', 'pt'].includes(l) ? l : n.startsWith('zh') ? 'zh' : n.startsWith('es') ? 'es' : n.startsWith('pt') ? 'pt' : 'en';
+    document.documentElement.dataset.lang = l; document.documentElement.lang = { zh: 'zh-CN', pt: 'pt-BR' }[l] || l; })();
 </script>
 </head>
 <body>
 <header>
-  <div class="logo">◎ COSMOVERSE<small><span class="en" lang="en">SOLAR SYSTEM / INTERACTIVE ATLAS</span><span class="zh" lang="zh-CN">太阳系 / 交互探索图鉴</span><span class="es" lang="es">SISTEMA SOLAR / ATLAS INTERACTIVO</span></small></div>
+  <div class="logo">◎ COSMOVERSE<small><span class="en" lang="en">SOLAR SYSTEM / INTERACTIVE ATLAS</span><span class="zh" lang="zh-CN">太阳系 / 交互探索图鉴</span><span class="es" lang="es">SISTEMA SOLAR / ATLAS INTERACTIVO</span><span class="pt" lang="pt-BR">SISTEMA SOLAR / ATLAS INTERATIVO</span></small></div>
   <div class="headbuttons">
     <div id="stellarMusic" class="stellar-music">
     <button id="musicToggle" type="button" aria-pressed="false">♪ Music Off</button>
@@ -36,58 +36,59 @@
     <input id="musicVolume" type="range" min="0" max="100" step="1" value="32">
     <p id="musicNote"></p></section></div>
     <button id="voiceToggle" class="primary" type="button" aria-pressed="true" title="Planet narration and sound effects (ElevenLabs)"></button>
-    <select id="language" aria-label="Language / 语言 / Idioma"><option value="en">English</option><option value="zh">中文</option><option value="es">Español</option></select>
-    <button id="home"><span class="en" lang="en">↖ Solar System</span><span class="zh" lang="zh-CN">↖ 太阳系总览</span><span class="es" lang="es">↖ Sistema solar</span></button>
-    <button id="habitability" class="primary"><span class="en">Habitability Lab</span><span class="zh">宜居条件实验室</span><span class="es">Laboratorio de habitabilidad</span></button>
-    <button id="asteroidOpen" class="primary"><span class="en" lang="en">☄ Asteroid Analyzer</span><span class="zh" lang="zh-CN">☄ 小行星分析</span><span class="es" lang="es">☄ Analizador de asteroides</span></button>
-    <button id="trajectory"><span class="en">◎ Motion Trails</span><span class="zh">◎ 运动轨迹</span><span class="es">◎ Trayectorias</span></button>
-    <button id="lineup"><span class="en" lang="en">Compare Sizes</span><span class="zh" lang="zh-CN">大小对比</span><span class="es" lang="es">Comparar tamaños</span></button>
-    <button id="pause"><span class="en" lang="en">Pause Orbits</span><span class="zh" lang="zh-CN">暂停公转</span><span class="es" lang="es">Pausar órbitas</span></button>
+    <select id="language" aria-label="Language / 语言 / Idioma"><option value="en">English</option><option value="zh">中文</option><option value="es">Español</option><option value="pt">Português</option></select>
+    <button id="home"><span class="en" lang="en">↖ Solar System</span><span class="zh" lang="zh-CN">↖ 太阳系总览</span><span class="es" lang="es">↖ Sistema solar</span><span class="pt" lang="pt-BR">↖ Sistema Solar</span></button>
+    <button id="habitability" class="primary"><span class="en">Habitability Lab</span><span class="zh">宜居条件实验室</span><span class="es">Laboratorio de habitabilidad</span><span class="pt">Laboratório de habitabilidade</span></button>
+    <button id="asteroidOpen" class="primary"><span class="en" lang="en">☄ Asteroid Analyzer</span><span class="zh" lang="zh-CN">☄ 小行星分析</span><span class="es" lang="es">☄ Analizador de asteroides</span><span class="pt" lang="pt-BR">☄ Analisador de asteroides</span></button>
+    <button id="trajectory"><span class="en">◎ Motion Trails</span><span class="zh">◎ 运动轨迹</span><span class="es">◎ Trayectorias</span><span class="pt">◎ Trajetórias</span></button>
+    <button id="lineup"><span class="en" lang="en">Compare Sizes</span><span class="zh" lang="zh-CN">大小对比</span><span class="es" lang="es">Comparar tamaños</span><span class="pt" lang="pt-BR">Comparar tamanhos</span></button>
+    <button id="pause"><span class="en" lang="en">Pause Orbits</span><span class="zh" lang="zh-CN">暂停公转</span><span class="es" lang="es">Pausar órbitas</span><span class="pt" lang="pt-BR">Pausar órbitas</span></button>
     <button id="resourcesOpen" class="primary" type="button">
       <span class="en">✦ Astronomy Resources</span>
       <span class="zh">✦ 天文学资源</span>
       <span class="es">✦ Recursos de astronomía</span>
+      <span class="pt">✦ Recursos de astronomia</span>
     </button>
-    <button id="cam" class="primary"><span class="en" lang="en">Enable Gestures</span><span class="zh" lang="zh-CN">启用手势</span><span class="es" lang="es">Activar gestos</span></button>
-    <button id="talk" class="primary"><span class="en" lang="en">🎙 Talk</span><span class="zh" lang="zh-CN">🎙 语音提问</span><span class="es" lang="es">🎙 Hablar</span></button>
+    <button id="cam" class="primary"><span class="en" lang="en">Enable Gestures</span><span class="zh" lang="zh-CN">启用手势</span><span class="es" lang="es">Activar gestos</span><span class="pt" lang="pt-BR">Ativar gestos</span></button>
+    <button id="talk" class="primary"><span class="en" lang="en">🎙 Talk</span><span class="zh" lang="zh-CN">🎙 语音提问</span><span class="es" lang="es">🎙 Hablar</span><span class="pt" lang="pt-BR">🎙 Falar</span></button>
   </div>
 </header>
 
-<div class="intro"><div class="eyebrow"><span class="en" lang="en">OUR COSMIC NEIGHBOURHOOD</span><span class="zh" lang="zh-CN">我们的宇宙邻里</span><span class="es" lang="es">NUESTRO VECINDARIO CÓSMICO</span></div><h1 id="headline"></h1><p id="subtitle"></p></div>
+<div class="intro"><div class="eyebrow"><span class="en" lang="en">OUR COSMIC NEIGHBOURHOOD</span><span class="zh" lang="zh-CN">我们的宇宙邻里</span><span class="es" lang="es">NUESTRO VECINDARIO CÓSMICO</span><span class="pt" lang="pt-BR">NOSSA VIZINHANÇA CÓSMICA</span></div><h1 id="headline"></h1><p id="subtitle"></p></div>
 <aside id="info" class="panel hidden"></aside>
 <nav class="nav" id="nav" aria-label="Select a body / 选择天体 / Elige un astro"></nav>
 <div class="hint">
-  <span class="en" lang="en">Drag to rotate · Scroll / pinch to zoom · ← → next · L compare sizes · Esc back · Sizes to scale, distances compressed</span><span class="zh" lang="zh-CN">拖动旋转 · 滚轮 / 双指缩放 · ← → 切换 · L 大小对比 · Esc 返回 · 大小按真实比例，距离已压缩</span><span class="es" lang="es">Arrastra para girar · Rueda / pellizco para zoom · ← → siguiente · L comparar tamaños · Esc volver · Tamaños a escala, distancias comprimidas</span>
-  <span class="credit"><span class="en" lang="en">Surface maps: Solar System Scope (CC BY 4.0) · three.js examples</span><span class="zh" lang="zh-CN">星球贴图：Solar System Scope（CC BY 4.0）· three.js 示例</span><span class="es" lang="es">Mapas de superficie: Solar System Scope (CC BY 4.0) · ejemplos de three.js</span></span>
-  <a class="classic" href="particle-garden.html"><span class="en" lang="en">✦ Particle Garden version</span><span class="zh" lang="zh-CN">✦ 粒子花园版本</span><span class="es" lang="es">✦ Versión Jardín de partículas</span></a>
+  <span class="en" lang="en">Drag to rotate · Scroll / pinch to zoom · ← → next · L compare sizes · Esc back · Sizes to scale, distances compressed</span><span class="zh" lang="zh-CN">拖动旋转 · 滚轮 / 双指缩放 · ← → 切换 · L 大小对比 · Esc 返回 · 大小按真实比例，距离已压缩</span><span class="es" lang="es">Arrastra para girar · Rueda / pellizco para zoom · ← → siguiente · L comparar tamaños · Esc volver · Tamaños a escala, distancias comprimidas</span><span class="pt" lang="pt-BR">Arraste para girar · Role / pinça para zoom · ← → próximo · L comparar tamanhos · Esc voltar · Tamanhos em escala, distâncias comprimidas</span>
+  <span class="credit"><span class="en" lang="en">Surface maps: Solar System Scope (CC BY 4.0) · three.js examples</span><span class="zh" lang="zh-CN">星球贴图：Solar System Scope（CC BY 4.0）· three.js 示例</span><span class="es" lang="es">Mapas de superficie: Solar System Scope (CC BY 4.0) · ejemplos de three.js</span><span class="pt" lang="pt-BR">Mapas de superfície: Solar System Scope (CC BY 4.0) · exemplos do three.js</span></span>
+  <a class="classic" href="particle-garden.html"><span class="en" lang="en">✦ Particle Garden version</span><span class="zh" lang="zh-CN">✦ 粒子花园版本</span><span class="es" lang="es">✦ Versión Jardín de partículas</span><span class="pt" lang="pt-BR">✦ Versão Jardim de Partículas</span></a>
 </div>
 
 <div class="camera hidden" id="camera">
   <div class="camview"><video id="video" autoplay playsinline muted></video><canvas id="handOverlay"></canvas><span class="fps" id="handFps"></span></div>
   <div class="gpill" id="gpill"></div>
-  <label class="sens"><span><span class="en">Hand sensitivity</span><span class="zh">手势灵敏度</span><span class="es">Sensibilidad de la mano</span></span><input id="sensitivity" type="range" min="1" max="5" step="1" value="3" aria-label="Hand sensitivity / 手势灵敏度 / Sensibilidad"><b id="sensVal">3</b></label>
+  <label class="sens"><span><span class="en">Hand sensitivity</span><span class="zh">手势灵敏度</span><span class="es">Sensibilidad de la mano</span><span class="pt">Sensibilidade da mão</span></span><input id="sensitivity" type="range" min="1" max="5" step="1" value="3" aria-label="Hand sensitivity / 手势灵敏度 / Sensibilidad"><b id="sensVal">3</b></label>
   <ul class="guide">
-    <li><b>☝</b><span class="en">Point · aim, hold still to open · look around</span><span class="zh">指向 · 瞄准，停留即可打开 · 旋转视角</span><span class="es">Apuntar · apunta y espera para abrir · mirar alrededor</span></li>
-    <li><b>🤏</b><span class="en">Pinch · open · pinch + up/down to zoom</span><span class="zh">捏合 · 打开 · 捏住上下移动缩放</span><span class="es">Pellizcar · abrir · pellizca y sube/baja para zoom</span></li>
-    <li><b>✋</b><span class="en">Open palm · turn / scatter particles</span><span class="zh">张手 · 旋转 / 粒子扩散</span><span class="es">Palma abierta · girar / dispersar partículas</span></li>
-    <li><b>✊</b><span class="en">Hold fist · go back</span><span class="zh">保持握拳 · 返回</span><span class="es">Mantén el puño · volver</span></li>
-    <li><b>✌</b><span class="en">Victory · talk to Cosmo</span><span class="zh">剪刀手 · 和 Cosmo 对话</span><span class="es">Victoria · hablar con Cosmo</span></li>
+    <li><b>☝</b><span class="en">Point · aim, hold still to open · look around</span><span class="zh">指向 · 瞄准，停留即可打开 · 旋转视角</span><span class="es">Apuntar · apunta y espera para abrir · mirar alrededor</span><span class="pt">Apontar · mire e espere para abrir · olhar ao redor</span></li>
+    <li><b>🤏</b><span class="en">Pinch · open · pinch + up/down to zoom</span><span class="zh">捏合 · 打开 · 捏住上下移动缩放</span><span class="es">Pellizcar · abrir · pellizca y sube/baja para zoom</span><span class="pt">Pinça · abrir · pinça + cima/baixo para zoom</span></li>
+    <li><b>✋</b><span class="en">Open palm · turn / scatter particles</span><span class="zh">张手 · 旋转 / 粒子扩散</span><span class="es">Palma abierta · girar / dispersar partículas</span><span class="pt">Mão aberta · girar / espalhar partículas</span></li>
+    <li><b>✊</b><span class="en">Hold fist · go back</span><span class="zh">保持握拳 · 返回</span><span class="es">Mantén el puño · volver</span><span class="pt">Segure o punho · voltar</span></li>
+    <li><b>✌</b><span class="en">Victory · talk to Cosmo</span><span class="zh">剪刀手 · 和 Cosmo 对话</span><span class="es">Victoria · hablar con Cosmo</span><span class="pt">Vitória · falar com o Cosmo</span></li>
   </ul>
 </div>
 <div id="handCursor" class="hand-cursor hidden"><i></i></div>
 <section id="habitPanel" class="habit-panel hidden" aria-label="Planet habitability comparison">
-  <div class="habit-head"><div><div class="habit-kicker"><span class="en">PLANET DATA EXPLORER</span><span class="zh">行星数据探索</span><span class="es">EXPLORADOR DE DATOS PLANETARIOS</span></div><h2><span class="en">How Earth-like are the planets?</span><span class="zh">行星环境有多像地球？</span><span class="es">¿Cuánto se parecen los planetas a la Tierra?</span></h2><p><span class="en">Choose planets to compare temperature, sunlight, surface pressure, and liquid-water conditions.</span><span class="zh">选择行星，比较温度、阳光、表面气压和液态水条件。</span><span class="es">Elige planetas para comparar temperatura, luz solar, presión superficial y condiciones del agua líquida.</span></p></div><button id="habitClose" aria-label="Close comparison">×</button></div>
-  <div class="habit-select-title"><span class="en">SELECT PLANETS · UP TO 4</span><span class="zh">选择行星 · 最多 4 颗</span><span class="es">ELIGE PLANETAS · HASTA 4</span></div><div id="habitChoices" class="habit-choices"></div>
+  <div class="habit-head"><div><div class="habit-kicker"><span class="en">PLANET DATA EXPLORER</span><span class="zh">行星数据探索</span><span class="es">EXPLORADOR DE DATOS PLANETARIOS</span><span class="pt">EXPLORADOR DE DADOS PLANETÁRIOS</span></div><h2><span class="en">How Earth-like are the planets?</span><span class="zh">行星环境有多像地球？</span><span class="es">¿Cuánto se parecen los planetas a la Tierra?</span><span class="pt">Quanto os planetas se parecem com a Terra?</span></h2><p><span class="en">Choose planets to compare temperature, sunlight, surface pressure, and liquid-water conditions.</span><span class="zh">选择行星，比较温度、阳光、表面气压和液态水条件。</span><span class="es">Elige planetas para comparar temperatura, luz solar, presión superficial y condiciones del agua líquida.</span><span class="pt">Escolha planetas para comparar temperatura, luz solar, pressão na superfície e condições para água líquida.</span></p></div><button id="habitClose" aria-label="Close comparison">×</button></div>
+  <div class="habit-select-title"><span class="en">SELECT PLANETS · UP TO 4</span><span class="zh">选择行星 · 最多 4 颗</span><span class="es">ELIGE PLANETAS · HASTA 4</span><span class="pt">ESCOLHA PLANETAS · ATÉ 4</span></div><div id="habitChoices" class="habit-choices"></div>
   <div id="habitSummary" class="habit-summary"></div><div id="habitCompare" class="habit-compare"></div>
-  <p class="habit-note"><span class="en">Earth similarity is a learning aid, not a scientific habitability or life prediction. Scores are weighted: temperature 35%, sunlight 20%, pressure 25%, water conditions 20%. Sunlight uses the inverse-square law. References follow NASA planetary fact sheets; gas-giant temperatures refer to a 1-bar level.</span><span class="zh">地球相似度仅供学习参考，不是科学宜居性或生命预测。各因素按温度 35%、阳光 20%、气压 25%、水环境 20% 加权。阳光按平方反比定律比较。参考数据依据 NASA 行星资料；气态巨行星温度指大气压强为 1 巴的高度。</span><span class="es">La similitud con la Tierra es una herramienta educativa, no una predicción científica de habitabilidad o vida. Ponderaciones: temperatura 35%, luz solar 20%, presión 25% y agua 20%. La luz solar usa la ley del inverso del cuadrado. Referencias: fichas planetarias de NASA; temperaturas de gigantes gaseosos al nivel de 1 bar.</span></p>
+  <p class="habit-note"><span class="en">Earth similarity is a learning aid, not a scientific habitability or life prediction. Scores are weighted: temperature 35%, sunlight 20%, pressure 25%, water conditions 20%. Sunlight uses the inverse-square law. References follow NASA planetary fact sheets; gas-giant temperatures refer to a 1-bar level.</span><span class="zh">地球相似度仅供学习参考，不是科学宜居性或生命预测。各因素按温度 35%、阳光 20%、气压 25%、水环境 20% 加权。阳光按平方反比定律比较。参考数据依据 NASA 行星资料；气态巨行星温度指大气压强为 1 巴的高度。</span><span class="es">La similitud con la Tierra es una herramienta educativa, no una predicción científica de habitabilidad o vida. Ponderaciones: temperatura 35%, luz solar 20%, presión 25% y agua 20%. La luz solar usa la ley del inverso del cuadrado. Referencias: fichas planetarias de NASA; temperaturas de gigantes gaseosos al nivel de 1 bar.</span><span class="pt">A semelhança com a Terra é um recurso didático, não uma previsão científica de habitabilidade ou de vida. Pesos: temperatura 35%, luz solar 20%, pressão 25%, condições da água 20%. A luz solar segue a lei do inverso do quadrado. Referências: fichas planetárias da NASA; as temperaturas dos gigantes gasosos são no nível de 1 bar.</span></p>
 </section>
 <section id="asteroidApp" aria-label="Sentry Impact Risk Analyzer">
   <div class="asteroid-shell">
     <div class="asteroid-top">
       <div>
         <div class="eyebrow">COSMOVERSE · SENTRY DATA ANALYSIS</div>
-        <h2><span class="en">Asteroid Impact Risk Analyzer</span><span class="zh">小行星撞击风险分析</span><span class="es">Analizador de riesgo de impacto</span></h2>
-        <p><span class="en">Explore 300 impact-monitoring records from the uploaded Sentry dataset. All results are calculated locally from the saved CSV snapshot; no live NASA API request is required.</span><span class="zh">分析上传的 Sentry 数据集中的 300 条撞击监测记录。所有结果均由本地 CSV 数据计算，无需实时请求 NASA API。</span><span class="es">Explora 300 registros del conjunto Sentry proporcionado. Los resultados se calculan localmente a partir del CSV, sin solicitudes a la API de NASA.</span></p>
+        <h2><span class="en">Asteroid Impact Risk Analyzer</span><span class="zh">小行星撞击风险分析</span><span class="es">Analizador de riesgo de impacto</span><span class="pt">Analisador de risco de impacto de asteroides</span></h2>
+        <p><span class="en">Explore 300 impact-monitoring records from the uploaded Sentry dataset. All results are calculated locally from the saved CSV snapshot; no live NASA API request is required.</span><span class="zh">分析上传的 Sentry 数据集中的 300 条撞击监测记录。所有结果均由本地 CSV 数据计算，无需实时请求 NASA API。</span><span class="es">Explora 300 registros del conjunto Sentry proporcionado. Los resultados se calculan localmente a partir del CSV, sin solicitudes a la API de NASA.</span><span class="pt">Explore 300 registros de monitoramento de impactos do conjunto de dados Sentry enviado. Tudo é calculado localmente a partir do CSV salvo, sem consultar a API da NASA ao vivo.</span></p>
       </div>
       <div class="asteroid-actions"><button id="asteroidRefresh" class="primary">↻ Recalculate</button><button id="asteroidClose">✕ Close</button></div>
     </div>
@@ -137,8 +138,8 @@
       <div class="orbit-heading">
         <div>
           <div class="eyebrow">COSMOVERSE · ASTORB CATALOG</div>
-          <h3><span class="en">Asteroid Orbit Explorer</span><span class="zh">小行星轨道探索器</span><span class="es">Explorador de órbitas de asteroides</span></h3>
-          <p class="asteroid-note"><span class="en">Explore orbital elements for near-Earth asteroid candidates from the uploaded Lowell astorb.dat catalog.</span><span class="zh">探索上传的 Lowell astorb.dat 数据库中的近地小行星候选对象及其轨道参数。</span><span class="es">Explora los elementos orbitales de los candidatos a asteroides cercanos a la Tierra del catálogo Lowell astorb.dat.</span></p>
+          <h3><span class="en">Asteroid Orbit Explorer</span><span class="zh">小行星轨道探索器</span><span class="es">Explorador de órbitas de asteroides</span><span class="pt">Explorador de órbitas de asteroides</span></h3>
+          <p class="asteroid-note"><span class="en">Explore orbital elements for near-Earth asteroid candidates from the uploaded Lowell astorb.dat catalog.</span><span class="zh">探索上传的 Lowell astorb.dat 数据库中的近地小行星候选对象及其轨道参数。</span><span class="es">Explora los elementos orbitales de los candidatos a asteroides cercanos a la Tierra del catálogo Lowell astorb.dat.</span><span class="pt">Explore os elementos orbitais de candidatos a asteroides próximos da Terra do catálogo Lowell astorb.dat enviado.</span></p>
         <p class="asteroid-note">Source: <a href="https://asteroid.lowell.edu/astorb/" target="_blank" rel="noopener" style="color:#9fd8ff">Lowell Observatory astorb database</a> · Fuente · 来源</p>
         </div>
         <div class="orbit-total"><strong id="orbitTotal">42,865</strong><span>NEO candidates</span></div>
@@ -188,67 +189,67 @@
 <section id="resourcesPanel" class="resources-panel hidden" aria-label="Astronomy learning resources">
   <div class="resources-header">
     <div>
-      <div class="eyebrow"><span class="en">COSMOVERSE · LEARNING HUB</span><span class="zh">COSMOVERSE · 学习中心</span><span class="es">COSMOVERSE · CENTRO DE APRENDIZAJE</span></div>
-      <h2><span class="en">Astronomy Resources</span><span class="zh">天文学资源</span><span class="es">Recursos de astronomía</span></h2>
-      <p><span class="en">Explore reliable websites, free textbooks, interactive simulations, and scientific data to deepen your understanding of the universe.</span><span class="zh">探索可靠的网站、免费教材、互动模拟和科学数据，加深对宇宙的理解。</span><span class="es">Explora sitios fiables, libros gratuitos, simulaciones interactivas y datos científicos para entender mejor el universo.</span></p>
+      <div class="eyebrow"><span class="en">COSMOVERSE · LEARNING HUB</span><span class="zh">COSMOVERSE · 学习中心</span><span class="es">COSMOVERSE · CENTRO DE APRENDIZAJE</span><span class="pt">COSMOVERSE · CENTRO DE APRENDIZAGEM</span></div>
+      <h2><span class="en">Astronomy Resources</span><span class="zh">天文学资源</span><span class="es">Recursos de astronomía</span><span class="pt">Recursos de astronomia</span></h2>
+      <p><span class="en">Explore reliable websites, free textbooks, interactive simulations, and scientific data to deepen your understanding of the universe.</span><span class="zh">探索可靠的网站、免费教材、互动模拟和科学数据，加深对宇宙的理解。</span><span class="es">Explora sitios fiables, libros gratuitos, simulaciones interactivas y datos científicos para entender mejor el universo.</span><span class="pt">Explore sites confiáveis, livros gratuitos, simulações interativas e dados científicos para entender melhor o universo.</span></p>
     </div>
     <button id="resourcesClose" type="button" aria-label="Close resources">✕</button>
   </div>
   <div class="resource-filters">
-    <button class="active" data-category="all"><span class="en">All</span><span class="zh">全部</span><span class="es">Todo</span></button>
-    <button data-category="learn"><span class="en">Learn Astronomy</span><span class="zh">学习天文</span><span class="es">Aprender astronomía</span></button>
-    <button data-category="explore"><span class="en">Explore</span><span class="zh">探索</span><span class="es">Explorar</span></button>
-    <button data-category="data"><span class="en">Scientific Data</span><span class="zh">科学数据</span><span class="es">Datos científicos</span></button>
-    <button data-category="news"><span class="en">News</span><span class="zh">新闻</span><span class="es">Noticias</span></button>
+    <button class="active" data-category="all"><span class="en">All</span><span class="zh">全部</span><span class="es">Todo</span><span class="pt">Todos</span></button>
+    <button data-category="learn"><span class="en">Learn Astronomy</span><span class="zh">学习天文</span><span class="es">Aprender astronomía</span><span class="pt">Aprender astronomia</span></button>
+    <button data-category="explore"><span class="en">Explore</span><span class="zh">探索</span><span class="es">Explorar</span><span class="pt">Explorar</span></button>
+    <button data-category="data"><span class="en">Scientific Data</span><span class="zh">科学数据</span><span class="es">Datos científicos</span><span class="pt">Dados científicos</span></button>
+    <button data-category="news"><span class="en">News</span><span class="zh">新闻</span><span class="es">Noticias</span><span class="pt">Notícias</span></button>
   </div>
   <div class="resource-grid" id="resourceGrid">
     <a class="resource-card" data-category="learn" href="https://openstax.org/books/astronomy-2e/pages/1-introduction" target="_blank" rel="noopener noreferrer">
-      <span class="resource-type"><span class="en">FREE TEXTBOOK</span><span class="zh">免费教科书</span><span class="es">LIBRO GRATUITO</span></span>
+      <span class="resource-type"><span class="en">FREE TEXTBOOK</span><span class="zh">免费教科书</span><span class="es">LIBRO GRATUITO</span><span class="pt">LIVRO GRATUITO</span></span>
       <h3>OpenStax Astronomy 2e</h3>
-      <p><span class="en">A free college-level astronomy textbook covering planets, stars, galaxies, and cosmology.</span><span class="zh">免费的大学天文学教材，涵盖行星、恒星、星系和宇宙学。</span><span class="es">Libro universitario gratuito de astronomía: planetas, estrellas, galaxias y cosmología.</span></p>
-      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span></span>
+      <p><span class="en">A free college-level astronomy textbook covering planets, stars, galaxies, and cosmology.</span><span class="zh">免费的大学天文学教材，涵盖行星、恒星、星系和宇宙学。</span><span class="es">Libro universitario gratuito de astronomía: planetas, estrellas, galaxias y cosmología.</span><span class="pt">Um livro universitário gratuito de astronomia sobre planetas, estrelas, galáxias e cosmologia.</span></p>
+      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span><span class="pt">Ver recurso ↗</span></span>
     </a>
     <a class="resource-card" data-category="learn" href="https://science.nasa.gov/learn/catalog/" target="_blank" rel="noopener noreferrer">
-      <span class="resource-type"><span class="en">LEARNING MATERIALS</span><span class="zh">学习资料</span><span class="es">MATERIALES DIDÁCTICOS</span></span>
-      <h3><span class="en">NASA Learning Resources</span><span class="zh">NASA 学习资源</span><span class="es">Recursos educativos de la NASA</span></h3>
-      <p><span class="en">Educational activities, illustrations, astronomy lessons, and science resources.</span><span class="zh">教育活动、插图、天文课程和科学资源。</span><span class="es">Actividades educativas, ilustraciones, lecciones de astronomía y recursos científicos.</span></p>
-      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span></span>
+      <span class="resource-type"><span class="en">LEARNING MATERIALS</span><span class="zh">学习资料</span><span class="es">MATERIALES DIDÁCTICOS</span><span class="pt">MATERIAIS DIDÁTICOS</span></span>
+      <h3><span class="en">NASA Learning Resources</span><span class="zh">NASA 学习资源</span><span class="es">Recursos educativos de la NASA</span><span class="pt">Recursos educacionais da NASA</span></h3>
+      <p><span class="en">Educational activities, illustrations, astronomy lessons, and science resources.</span><span class="zh">教育活动、插图、天文课程和科学资源。</span><span class="es">Actividades educativas, ilustraciones, lecciones de astronomía y recursos científicos.</span><span class="pt">Atividades educativas, ilustrações, aulas de astronomia e recursos de ciências.</span></p>
+      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span><span class="pt">Ver recurso ↗</span></span>
     </a>
     <a class="resource-card" data-category="explore" href="https://stellarium-web.org/" target="_blank" rel="noopener noreferrer">
-      <span class="resource-type"><span class="en">INTERACTIVE SKY MAP</span><span class="zh">互动星图</span><span class="es">MAPA DEL CIELO INTERACTIVO</span></span>
+      <span class="resource-type"><span class="en">INTERACTIVE SKY MAP</span><span class="zh">互动星图</span><span class="es">MAPA DEL CIELO INTERACTIVO</span><span class="pt">MAPA DO CÉU INTERATIVO</span></span>
       <h3>Stellarium Web</h3>
-      <p><span class="en">Explore the night sky, identify constellations, and locate planets and stars.</span><span class="zh">探索夜空，识别星座，找到行星和恒星。</span><span class="es">Explora el cielo nocturno, identifica constelaciones y localiza planetas y estrellas.</span></p>
-      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span></span>
+      <p><span class="en">Explore the night sky, identify constellations, and locate planets and stars.</span><span class="zh">探索夜空，识别星座，找到行星和恒星。</span><span class="es">Explora el cielo nocturno, identifica constelaciones y localiza planetas y estrellas.</span><span class="pt">Explore o céu noturno, identifique constelações e encontre planetas e estrelas.</span></p>
+      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span><span class="pt">Ver recurso ↗</span></span>
     </a>
     <a class="resource-card" data-category="explore" href="https://eyes.nasa.gov/" target="_blank" rel="noopener noreferrer">
-      <span class="resource-type"><span class="en">3D SIMULATION</span><span class="zh">3D 模拟</span><span class="es">SIMULACIÓN 3D</span></span>
+      <span class="resource-type"><span class="en">3D SIMULATION</span><span class="zh">3D 模拟</span><span class="es">SIMULACIÓN 3D</span><span class="pt">SIMULAÇÃO 3D</span></span>
       <h3>NASA Eyes</h3>
-      <p><span class="en">Explore the solar system and NASA spacecraft through interactive 3D visualizations.</span><span class="zh">通过交互式 3D 可视化探索太阳系和 NASA 航天器。</span><span class="es">Explora el sistema solar y las naves de la NASA con visualizaciones 3D interactivas.</span></p>
-      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span></span>
+      <p><span class="en">Explore the solar system and NASA spacecraft through interactive 3D visualizations.</span><span class="zh">通过交互式 3D 可视化探索太阳系和 NASA 航天器。</span><span class="es">Explora el sistema solar y las naves de la NASA con visualizaciones 3D interactivas.</span><span class="pt">Explore o Sistema Solar e as naves da NASA com visualizações 3D interativas.</span></p>
+      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span><span class="pt">Ver recurso ↗</span></span>
     </a>
     <a class="resource-card" data-category="data" href="https://exoplanetarchive.ipac.caltech.edu/" target="_blank" rel="noopener noreferrer">
-      <span class="resource-type"><span class="en">ASTRONOMICAL DATABASE</span><span class="zh">天文数据库</span><span class="es">BASE DE DATOS ASTRONÓMICA</span></span>
-      <h3><span class="en">NASA Exoplanet Archive</span><span class="zh">NASA 系外行星档案库</span><span class="es">Archivo de exoplanetas de la NASA</span></h3>
-      <p><span class="en">Access scientific data about planets outside our solar system and their host stars.</span><span class="zh">获取太阳系外行星及其宿主恒星的科学数据。</span><span class="es">Datos científicos sobre planetas fuera del sistema solar y sus estrellas.</span></p>
-      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span></span>
+      <span class="resource-type"><span class="en">ASTRONOMICAL DATABASE</span><span class="zh">天文数据库</span><span class="es">BASE DE DATOS ASTRONÓMICA</span><span class="pt">BANCO DE DADOS ASTRONÔMICO</span></span>
+      <h3><span class="en">NASA Exoplanet Archive</span><span class="zh">NASA 系外行星档案库</span><span class="es">Archivo de exoplanetas de la NASA</span><span class="pt">Arquivo de Exoplanetas da NASA</span></h3>
+      <p><span class="en">Access scientific data about planets outside our solar system and their host stars.</span><span class="zh">获取太阳系外行星及其宿主恒星的科学数据。</span><span class="es">Datos científicos sobre planetas fuera del sistema solar y sus estrellas.</span><span class="pt">Acesse dados científicos sobre planetas fora do Sistema Solar e suas estrelas.</span></p>
+      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span><span class="pt">Ver recurso ↗</span></span>
     </a>
     <a class="resource-card" data-category="data" href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener noreferrer">
-      <span class="resource-type"><span class="en">ORBITAL DATA</span><span class="zh">轨道数据</span><span class="es">DATOS ORBITALES</span></span>
+      <span class="resource-type"><span class="en">ORBITAL DATA</span><span class="zh">轨道数据</span><span class="es">DATOS ORBITALES</span><span class="pt">DADOS ORBITAIS</span></span>
       <h3>JPL Horizons</h3>
-      <p><span class="en">Calculate positions and trajectories of planets, moons, asteroids, and spacecraft.</span><span class="zh">计算行星、卫星、小行星和航天器的位置与轨迹。</span><span class="es">Calcula posiciones y trayectorias de planetas, lunas, asteroides y naves.</span></p>
-      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span></span>
+      <p><span class="en">Calculate positions and trajectories of planets, moons, asteroids, and spacecraft.</span><span class="zh">计算行星、卫星、小行星和航天器的位置与轨迹。</span><span class="es">Calcula posiciones y trayectorias de planetas, lunas, asteroides y naves.</span><span class="pt">Calcule posições e trajetórias de planetas, luas, asteroides e naves.</span></p>
+      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span><span class="pt">Ver recurso ↗</span></span>
     </a>
     <a class="resource-card" data-category="news" href="https://science.nasa.gov/universe/" target="_blank" rel="noopener noreferrer">
-      <span class="resource-type"><span class="en">RESEARCH &amp; DISCOVERIES</span><span class="zh">研究与发现</span><span class="es">INVESTIGACIÓN Y DESCUBRIMIENTOS</span></span>
-      <h3><span class="en">NASA Universe</span><span class="zh">NASA 宇宙</span><span class="es">NASA: el universo</span></h3>
-      <p><span class="en">Discover research on black holes, galaxies, stars, and the evolution of the universe.</span><span class="zh">了解黑洞、星系、恒星及宇宙演化的研究。</span><span class="es">Investigación sobre agujeros negros, galaxias, estrellas y la evolución del universo.</span></p>
-      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span></span>
+      <span class="resource-type"><span class="en">RESEARCH &amp; DISCOVERIES</span><span class="zh">研究与发现</span><span class="es">INVESTIGACIÓN Y DESCUBRIMIENTOS</span><span class="pt">PESQUISAS E DESCOBERTAS</span></span>
+      <h3><span class="en">NASA Universe</span><span class="zh">NASA 宇宙</span><span class="es">NASA: el universo</span><span class="pt">NASA: o universo</span></h3>
+      <p><span class="en">Discover research on black holes, galaxies, stars, and the evolution of the universe.</span><span class="zh">了解黑洞、星系、恒星及宇宙演化的研究。</span><span class="es">Investigación sobre agujeros negros, galaxias, estrellas y la evolución del universo.</span><span class="pt">Conheça pesquisas sobre buracos negros, galáxias, estrelas e a evolução do universo.</span></p>
+      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span><span class="pt">Ver recurso ↗</span></span>
     </a>
     <a class="resource-card" data-category="news" href="https://www.esa.int/Science_Exploration/Space_Science" target="_blank" rel="noopener noreferrer">
-      <span class="resource-type"><span class="en">SPACE SCIENCE</span><span class="zh">空间科学</span><span class="es">CIENCIA ESPACIAL</span></span>
-      <h3><span class="en">ESA Space Science</span><span class="zh">ESA 空间科学</span><span class="es">Ciencia espacial de la ESA</span></h3>
-      <p><span class="en">Follow European space missions and scientific discoveries across the solar system and beyond.</span><span class="zh">关注欧洲太空任务，以及太阳系内外的科学发现。</span><span class="es">Sigue las misiones europeas y los descubrimientos en el sistema solar y más allá.</span></p>
-      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span></span>
+      <span class="resource-type"><span class="en">SPACE SCIENCE</span><span class="zh">空间科学</span><span class="es">CIENCIA ESPACIAL</span><span class="pt">CIÊNCIA ESPACIAL</span></span>
+      <h3><span class="en">ESA Space Science</span><span class="zh">ESA 空间科学</span><span class="es">Ciencia espacial de la ESA</span><span class="pt">Ciência espacial da ESA</span></h3>
+      <p><span class="en">Follow European space missions and scientific discoveries across the solar system and beyond.</span><span class="zh">关注欧洲太空任务，以及太阳系内外的科学发现。</span><span class="es">Sigue las misiones europeas y los descubrimientos en el sistema solar y más allá.</span><span class="pt">Acompanhe as missões espaciais europeias e as descobertas no Sistema Solar e além.</span></p>
+      <span class="resource-link"><span class="en">Explore resource ↗</span><span class="zh">查看资源 ↗</span><span class="es">Ver recurso ↗</span><span class="pt">Ver recurso ↗</span></span>
     </a>
   </div>
 </section>
@@ -256,10 +257,10 @@
 <div class="status" id="status" role="status"></div>
 <div id="error"></div>
 
-<button class="chatbtn" id="chatBtn" aria-label="Ask Cosmo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01" stroke-linecap="round" stroke-width="2.4"/></svg><span><span class="en" lang="en">Ask Cosmo</span><span class="zh" lang="zh-CN">问问 Cosmo</span><span class="es" lang="es">Pregunta a Cosmo</span></span></button>
+<button class="chatbtn" id="chatBtn" aria-label="Ask Cosmo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01" stroke-linecap="round" stroke-width="2.4"/></svg><span><span class="en" lang="en">Ask Cosmo</span><span class="zh" lang="zh-CN">问问 Cosmo</span><span class="es" lang="es">Pregunta a Cosmo</span><span class="pt" lang="pt-BR">Pergunte ao Cosmo</span></span></button>
 <section class="chatpanel" id="chatPanel" aria-live="polite">
   <header class="chathead">
-    <div><div class="chattitle"><span class="en" lang="en">Ask Cosmo · AI space guide</span><span class="zh" lang="zh-CN">问问 Cosmo · AI 太空向导</span><span class="es" lang="es">Pregunta a Cosmo · guía espacial con IA</span></div><div class="chatctx" id="chatCtx"></div></div>
+    <div><div class="chattitle"><span class="en" lang="en">Ask Cosmo · AI space guide</span><span class="zh" lang="zh-CN">问问 Cosmo · AI 太空向导</span><span class="es" lang="es">Pregunta a Cosmo · guía espacial con IA</span><span class="pt" lang="pt-BR">Pergunte ao Cosmo · guia espacial com IA</span></div><div class="chatctx" id="chatCtx"></div></div>
     <div class="chattools"><select id="chatLang" aria-label="Voice language / 语音语言 / Idioma de voz"></select><button id="chatSpeak" class="icon" aria-pressed="false" title="Read answers aloud / 朗读回答 / Leer respuestas">🔊</button><button id="chatClose" class="icon" aria-label="Close">×</button></div>
   </header>
   <div class="chatlog" id="chatLog"></div>
@@ -279,7 +280,7 @@
     addEventListener('DOMContentLoaded', () => { const el = document.querySelector('#error'); el.style.display = 'block'; el.innerHTML = window.bi('This page was opened as a file, so the browser blocked its code. Either open orbit-standalone.html instead (double-click works), or run "npm start" in this folder and go to http://localhost:8000.', '此页面是以文件方式打开的，浏览器阻止了它的代码。请改为打开 orbit-standalone.html（可直接双击），或在本文件夹运行 "npm start" 后访问 http://localhost:8000。', 'Esta página se abrió como archivo y el navegador bloqueó su código. Abre orbit-standalone.html (funciona con doble clic) o ejecuta "npm start" en esta carpeta y ve a http://localhost:8000.'); });
   }
   setTimeout(() => { if (!window.SolarAtlas) { const el = document.querySelector('#error'); el.style.display = 'block'; el.innerHTML = window.bi('The 3D engine has not loaded. Open the page through a local server (npm start or Live Server) and check access to cdn.jsdelivr.net.', '3D 引擎尚未加载。请通过本地服务器（npm start 或 Live Server）打开，并检查能否访问 cdn.jsdelivr.net。', 'El motor 3D no se ha cargado. Abre la página con un servidor local (npm start o Live Server) y comprueba el acceso a cdn.jsdelivr.net.'); } }, 20000);
-  addEventListener('error', e => { if (!e.message || e.message.includes('Script error')) return; console.error(e.message); const el = document.querySelector('#error'); if (el && !window.SolarAtlas) { el.style.display = 'block'; el.innerHTML = window.bi('A problem occurred while starting the page: ' + e.message, '页面启动时出现问题：' + e.message, 'Hubo un problema al iniciar la página: ' + e.message); } });
+  addEventListener('error', e => { if (!e.message || e.message.includes('Script error')) return; console.error(e.message); const el = document.querySelector('#error'); if (el && !window.SolarAtlas) { el.style.display = 'block'; el.innerHTML = window.bi('A problem occurred while starting the page: ' + e.message, '页面启动时出现问题：' + e.message, 'Hubo un problema al iniciar la página: ' + e.message, 'Houve um problema ao iniciar a página: ' + e.message); } });
 </script>
 <script src="resources.js" defer></script>
 <script src="music.js" defer></script>

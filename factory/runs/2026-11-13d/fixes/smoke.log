@@ -1,0 +1,8 @@
+vr button: true
+lang: pt
+Via Láctea label at {"x":720,"y":422.25}
+hand holds on "VIA LÁCTEA" label → {"level":"galaxy","piece":"milky-way"}
+Sgr A* label at {"x":700.596923828125,"y":491.048828125}
+hand holds on "SAGITÁRIO A*" label → {"level":"galaxy","piece":"sgr-a-star"}
+betelgeuse distance: Distância | Entre cerca de 550 e 700 anos-luz · ainda incerta | NASA ↗ NASA ↗
+errors: http 404 http://localhost:8765/api/voice?kind=sfx&name=whoosh-out

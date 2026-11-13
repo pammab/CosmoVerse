@@ -93,6 +93,7 @@ export function validatePiece(p) {
   (p?.facts || []).forEach((f, i) => {
     if (!has4(f?.label) || !has4(f?.value)) at(`fact ${i} needs en/zh/es/pt label and value`);
     if (!f?.source?.name || !ALLOWED_SOURCES.test(f?.source?.url || '')) at(`fact ${i} needs a NASA/JPL/ESA/IAU/ESO/NOIRLab/STScI or journal URL`);
+    for (const a of f?.also || []) if (!a?.name || !ALLOWED_SOURCES.test(a?.url || '')) at(`fact ${i}: every extra source (also) needs a name and an allowed URL`);   // optional second sources · 可选的补充来源
   });
   if (!has4(p?.narration)) at('narration needs en/zh/es/pt');
   if (!has4(p?.clue)) at('clue needs en/zh/es/pt');
@@ -249,6 +250,12 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
   // Which piece is under the cursor? (screen px) · 拾取
   function pick(camera, x, y, minPx = 22) {
     const L = levels[state.level]; if (!L || state.t < 0.6) return null;
+    // A piece's own name label wins: pointing at "MILKY WAY" opens the Milky Way, not Sgr A* at the same centre · 指向标签就打开该天体
+    for (const t of tags) {
+      if (!t.pieceId || t.level !== state.level || t.el.style.display === 'none') continue;
+      const r = t.el.querySelector('.name')?.getBoundingClientRect(); if (!r || !r.width) continue;
+      if (x >= r.left - 4 && x <= r.right + 4 && y >= r.top - 4 && y <= r.bottom + 4) return t.pieceId;
+    }
     camera.getWorldPosition(camW);
     const tanHalf = Math.tan(camera.fov * Math.PI / 360);
     let best = null, score = Infinity;

@@ -8,7 +8,7 @@
 import { NARRATION, SFX } from '../narration-text.js';
 
 const API = process.env.ELEVENLABS_API_BASE || 'https://api.elevenlabs.io';   // override only for testing
-const LANG_INDEX = { en: 0, zh: 1, es: 2 };
+const LANG_INDEX = { en: 0, zh: 1, es: 2, pt: 3 };
 const CACHE = 'public, max-age=86400, s-maxage=31536000, immutable';
 
 const hits = new Map();

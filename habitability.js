@@ -1,7 +1,7 @@
-// Habitability Lab · 宜居条件实验室 · Laboratorio de habitabilidad (team feature)
+// Habitability Lab · 宜居条件实验室 · Laboratorio de habitabilidad · Laboratório de habitabilidade (team feature)
 import { PLANETS } from './data.js';
 const $=s=>document.querySelector(s), bi=window.bi;
-const name=p=>bi(p.en, p.zh, p.es);
+const name=p=>bi(p.en, p.zh, p.es, p.pt);
 const factorNames={temperature:['Temperature match','温度相似度','Temperatura'],sunlight:['Sunlight match','阳光相似度','Luz solar'],pressure:['Surface pressure match','表面气压相似度','Presión superficial'],water:['Liquid-water conditions','液态水条件','Agua líquida']};
 const CONDITIONS={
   mercury:{temp:167,pressure:0,water:0,atmosphere:'Trace exosphere',waterNote:'No stable surface liquid water'},

@@ -12,13 +12,13 @@ import { canListen, canSpeak, listen, stopListening, isListening, speak, stopSpe
 const $ = s => document.querySelector(s);
 const LOCAL = { // planet names for confirmations · 确认语中的名称
   es: { sun: 'el Sol', mercury: 'Mercurio', venus: 'Venus', earth: 'la Tierra', mars: 'Marte', jupiter: 'Júpiter', saturn: 'Saturno', uranus: 'Urano', neptune: 'Neptuno' },
-  pt: { sun: 'o Sol', mercury: 'Mercúrio', venus: 'Vénus', earth: 'a Terra', mars: 'Marte', jupiter: 'Júpiter', saturn: 'Saturno', uranus: 'Úrano', neptune: 'Neptuno' },
+  pt: { sun: 'o Sol', mercury: 'Mercúrio', venus: 'Vênus', earth: 'a Terra', mars: 'Marte', jupiter: 'Júpiter', saturn: 'Saturno', uranus: 'Urano', neptune: 'Netuno' },
 };
 const SAY = {
   en: { go: n => `Flying to ${n}.`, home: 'Back to the whole Solar System.', lineup: 'Here are the planets side by side, at their true sizes.', pause: 'Orbits paused.', resume: 'Orbits running again.' },
   zh: { go: n => `正在前往${n}。`, home: '返回太阳系总览。', lineup: '这是按真实比例并排的行星。', pause: '公转已暂停。', resume: '公转已恢复。' },
   es: { go: n => `Volando hacia ${n}.`, home: 'De vuelta al Sistema Solar completo.', lineup: 'Aquí están los planetas lado a lado, a su tamaño real.', pause: 'Órbitas en pausa.', resume: 'Órbitas en marcha.' },
-  pt: { go: n => `A voar para ${n}.`, home: 'De volta ao Sistema Solar inteiro.', lineup: 'Aqui estão os planetas lado a lado, no tamanho real.', pause: 'Órbitas em pausa.', resume: 'Órbitas a andar outra vez.' },
+  pt: { go: n => `Voando para ${n}.`, home: 'De volta ao Sistema Solar inteiro.', lineup: 'Aqui estão os planetas lado a lado, no tamanho real.', pause: 'Órbitas pausadas.', resume: 'As órbitas voltaram a girar.' },
 };
 const ERR = {
   rate: ['Too many questions at once. Wait a few seconds and try again.', '提问太频繁，请稍等几秒再试。'],
@@ -41,7 +41,7 @@ export function findBody(text) {
   }
   return null;
 }
-const NAV = /(go to|show( me)?|open|take me to|fly to|zoom (in )?(on|to)|visit|select|let'?s see|去|打开|看看|显示|飞到|前往|ir a|ve a|ve al|vamos a|muestra|muéstrame|enséñame|mostrar|llévame|vai para|vamos para|mostra|leva-me|abre|abrir)/i;
+const NAV = /(go to|show( me)?|open|take me to|fly to|zoom (in )?(on|to)|visit|select|let'?s see|去|打开|看看|显示|飞到|前往|ir a|ve a|ve al|vamos a|muestra|muéstrame|enséñame|mostrar|llévame|vai para|vá para|va para|ir para|vamos para|mostra|mostre|me leva|leva-me|abre|abrir)/i;
 const HOME = /^(back|go back|overview|home|(the |show (me )?the )?(whole )?solar system|总览|返回|太阳系|太阳系总览|vista general|volver|el sistema solar|sistema solar|visão geral|voltar|o sistema solar)[\s.!。！]*$/i;
 const LINEUP = /(line ?up|compare (the )?(planet )?sizes|size comparison|side by side|对比大小|大小对比|比较大小|并排|comparar (los |os )?tamaños|comparar (os )?tamanhos|lado a lado|alinea( los planetas)?)/i;
 const PAUSE = /^(pause|stop (the )?orbits|暂停|pausa|pausar)/i, RESUME = /^(resume|play|continue|继续|reanudar|continuar|retomar)/i;
@@ -70,19 +70,19 @@ export function initChat({ bi, getContext, actions }) {
 
   const nameOf = id => id === 'solar' ? null : byId[id];
   const add = (cls, html, isHtml = false) => { const el = document.createElement('div'); el.className = 'msg ' + cls; isHtml ? el.innerHTML = html : el.textContent = html; log.append(el); log.scrollTop = log.scrollHeight; return el; };
-  const error = code => add('err', bi(...(ERR[code] || ERR.busy)), true); // Spanish comes from js/i18n.js
+  const error = code => add('err', bi(...(ERR[code] || ERR.busy)), true); // Spanish and Portuguese come from i18n.js
 
   function renderContext() {
     const id = getContext(), b = nameOf(id);
-    $('#chatCtx').innerHTML = b ? bi('Talking about · ' + b.en, '当前话题 · ' + b.zh, 'Hablando de · ' + b.es) : bi('Talking about · the Solar System', '当前话题 · 太阳系');
+    $('#chatCtx').innerHTML = b ? bi('Talking about · ' + b.en, '当前话题 · ' + b.zh, 'Hablando de · ' + b.es, 'Falando sobre · ' + b.pt) : bi('Talking about · the Solar System', '当前话题 · 太阳系');
     const sugg = b ? [['Tell me a fun fact', '讲一个有趣的知识'], ['Could humans live there?', '人类能在那里生活吗？'], ['How big is it compared to Earth?', '它和地球比有多大？']]
       : [['Which planet is the hottest?', '哪颗行星最热？'], ['Why do planets orbit the Sun?', '行星为什么绕太阳转？'], ['Line up the planets', '把行星并排比较大小']];
     const box = $('#chatSugg'); box.innerHTML = '';
     // Send the suggestion in the language on screen · 以当前语言发送
-    sugg.forEach(([en, zh]) => { const b2 = document.createElement('button'); b2.type = 'button'; b2.innerHTML = bi(en, zh); b2.onclick = () => { const l = document.documentElement.dataset.lang; ask(l === 'zh' ? zh : l === 'es' ? window.esText(en) : en, false); }; box.append(b2); });
+    sugg.forEach(([en, zh]) => { const b2 = document.createElement('button'); b2.type = 'button'; b2.innerHTML = bi(en, zh); b2.onclick = () => { const l = document.documentElement.dataset.lang; ask(l === 'zh' ? zh : l === 'es' ? window.esText(en) : l === 'pt' ? window.ptText(en) : en, false); }; box.append(b2); });
     // A quiet divider when the topic changes; consecutive changes reuse the same line.
     if (lastCtx !== null && lastCtx !== id && history.length && !quiet) {
-      const html = b ? bi(b.en, b.zh, b.es) : bi('SOLAR SYSTEM', '太阳系', 'SISTEMA SOLAR'), lastEl = log.lastElementChild;
+      const html = b ? bi(b.en, b.zh, b.es, b.pt) : bi('SOLAR SYSTEM', '太阳系', 'SISTEMA SOLAR'), lastEl = log.lastElementChild;
       if (lastEl?.classList.contains('note')) lastEl.innerHTML = html; else add('note', html, true);
     }
     lastCtx = id;
@@ -144,7 +144,7 @@ export function initChat({ bi, getContext, actions }) {
   $('#chatForm').addEventListener('submit', e => { e.preventDefault(); ask(input.value, false); });
   mic.onclick = startVoice;
   spk.onclick = () => { speakReplies = !speakReplies; spk.classList.toggle('on', speakReplies); spk.setAttribute('aria-pressed', speakReplies); if (!speakReplies) stopSpeaking(); };
-  const PH = { en: 'Ask a question', zh: '输入问题', es: 'Haz una pregunta' };
+  const PH = { en: 'Ask a question', zh: '输入问题', es: 'Haz una pregunta', pt: 'Faça uma pergunta' };
   const ph = () => PH[document.documentElement.dataset.lang] || PH.en;
   input.placeholder = ph(); new MutationObserver(() => { if (!isListening()) input.placeholder = ph(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-lang'] });
   return { open, close, startVoice, refresh: renderContext, ask, setVoiceLang, isOpen: () => panel.classList.contains('show') };

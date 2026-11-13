@@ -1,8 +1,9 @@
 // Betelgeuse, the red supergiant in Orion · 参宿四 · Betelgeuse · Betelgeuse
-// Sources opened (2026-11-13c): NASA Hubble "What is Betelgeuse?", ESO eso2109 (Great Dimming dust veil).
+// Sources opened (2026-11-13c): NASA Hubble "What is Betelgeuse?", ESO eso2109 (Great Dimming dust veil), NASA Watch the Skies blog (distance ~548 ly).
 // Placed on the Orion side of the Sun (the Orion Nebula piece is further out the same way); not to scale. · 不按比例
 const HUBBLE = 'https://science.nasa.gov/missions/hubble/what-is-betelgeuse-inside-the-strange-volatile-star/';
 const ESO = 'https://www.eso.org/public/news/eso2109/';
+const BLOG = 'https://www.nasa.gov/blogs/watch-the-skies/2024/09/06/betelgeuse-betelgeuse-betelgeuse-stargazers-wont-see-ghosts-but-supergiant-star-for-spooky-season/';
 export default {
   id: 'betelgeuse', level: 'neighbourhood',
   names: { en: 'Betelgeuse', zh: '参宿四', es: 'Betelgeuse', pt: 'Betelgeuse' },
@@ -19,8 +20,9 @@ export default {
       value: { en: 'Red supergiant', zh: '红超巨星', es: 'Supergigante roja', pt: 'Supergigante vermelha' },
       source: { name: 'ESO', url: ESO } },
     { label: { en: 'Distance', zh: '距离', es: 'Distancia', pt: 'Distância' },
-      value: { en: 'About 700 light-years', zh: '约 700 光年', es: 'Unos 700 años luz', pt: 'Cerca de 700 anos-luz' },
-      source: { name: 'NASA', url: HUBBLE } },
+      // Not known exactly: NASA Hubble page says ~700 ly, NASA Watch the Skies (2024) says ~548 ly, "uncertain" · 距离尚不确定
+      value: { en: 'About 550 to 700 light-years · not known exactly', zh: '约 550 至 700 光年 · 尚无定论', es: 'Entre unos 550 y 700 años luz · aún incierta', pt: 'Entre cerca de 550 e 700 anos-luz · ainda incerta' },
+      source: { name: 'NASA', url: HUBBLE }, also: [{ name: 'NASA', url: BLOG }] },
     { label: { en: 'Size', zh: '大小', es: 'Tamaño', pt: 'Tamanho' },
       value: { en: 'About 700 times the Sun', zh: '直径约为太阳的 700 倍', es: 'Unas 700 veces el Sol', pt: 'Cerca de 700 vezes o Sol' },
       source: { name: 'NASA', url: HUBBLE } },
@@ -35,12 +37,12 @@ export default {
       source: { name: 'ESO', url: ESO } },
   ],
   // Clue "came back": ESO eso2109 / NASA Hubble (normal brightness by April 2020)
-  // Narration: Orion's shoulder, ~15 solar masses, supernova not for ~100,000 years: NASA Hubble page above · 来源同上
+  // Narration: distance range: NASA Hubble page (~700) + NASA blog (~548). Orion's shoulder, ~15 solar masses, supernova not for ~100,000 years: NASA Hubble page above · 来源同上
   narration: {
-    en: 'Betelgeuse is the red star on Orion’s shoulder, a supergiant about 15 times more massive than the Sun. It is only about 10 million years old, yet it is already near the end of its life: one day it will explode as a supernova, though probably not for about another 100,000 years.',
-    zh: '参宿四是猎户座“肩膀”上的那颗红星，一颗质量约为太阳 15 倍的超巨星。它只有大约 1000 万岁，却已接近生命的尽头：总有一天它会爆发成超新星，不过大概还要再等约 10 万年。',
-    es: 'Betelgeuse es la estrella roja del hombro de Orión, una supergigante unas 15 veces más masiva que el Sol. Solo tiene unos 10 millones de años y ya está cerca del final de su vida: algún día explotará como supernova, aunque probablemente no antes de unos 100.000 años.',
-    pt: 'Betelgeuse é a estrela vermelha no ombro de Órion, uma supergigante com cerca de 15 vezes a massa do Sol. Tem só uns 10 milhões de anos e já está perto do fim da vida: um dia vai explodir como supernova, mas provavelmente só daqui a uns 100 mil anos.',
+    en: 'Betelgeuse is the red star on Orion’s shoulder, a supergiant about 15 times more massive than the Sun. It is only about 10 million years old, yet it is already near the end of its life: one day it will explode as a supernova, though probably not for about another 100,000 years. Even its distance is hard to measure: NASA gives figures from about 550 to 700 light-years.',
+    zh: '参宿四是猎户座“肩膀”上的那颗红星，一颗质量约为太阳 15 倍的超巨星。它只有大约 1000 万岁，却已接近生命的尽头：总有一天它会爆发成超新星，不过大概还要再等约 10 万年。就连它的距离也很难测准：NASA 给出的数字在约 550 到 700 光年之间。',
+    es: 'Betelgeuse es la estrella roja del hombro de Orión, una supergigante unas 15 veces más masiva que el Sol. Solo tiene unos 10 millones de años y ya está cerca del final de su vida: algún día explotará como supernova, aunque probablemente no antes de unos 100.000 años. Hasta su distancia es difícil de medir: la NASA da cifras de entre unos 550 y 700 años luz.',
+    pt: 'Betelgeuse é a estrela vermelha no ombro de Órion, uma supergigante com cerca de 15 vezes a massa do Sol. Tem só uns 10 milhões de anos e já está perto do fim da vida: um dia vai explodir como supernova, mas provavelmente só daqui a uns 100 mil anos. Até a distância dela é difícil de medir: a NASA dá valores entre cerca de 550 e 700 anos-luz.',
   },
   clue: { en: 'A red supergiant on a hunter’s shoulder that once faded, then came back.', zh: '猎人肩上的一颗红超巨星，曾经变暗，后来又亮了回来。', es: 'Una supergigante roja en el hombro de un cazador que se oscureció y luego volvió a brillar.', pt: 'Uma supergigante vermelha no ombro de um caçador que escureceu e depois voltou.' },
   youAreHere: null,

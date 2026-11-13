@@ -110,3 +110,10 @@ test('Sagittarius A* sits at the Milky Way centre with its label moved aside; la
   assert.ok(Math.hypot(...s.labelAt) > 3, 'label offset from the shared centre');
   const bad = structuredClone(s); bad.labelAt = [1, 2]; assert.ok(validatePiece(bad).some(e => /labelAt/.test(e)));
 });
+
+test('extra sources (also) are checked; Betelgeuse distance cites both NASA pages', () => {
+  const b = PIECES.find(x => x.id === 'betelgeuse'), d = b.facts.find(f => /Distance/.test(f.label.en));
+  assert.equal(d.also?.length, 1); assert.match(d.value.en, /550 to 700/);
+  const bad = structuredClone(b); bad.facts[0].also = [{ name: 'Blog', url: 'https://example.com/x' }];
+  assert.ok(validatePiece(bad).some(e => /also/.test(e)));
+});

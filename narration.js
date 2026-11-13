@@ -7,7 +7,7 @@ import { NARRATION } from './narration-text.js';
 import { getLanguage } from './i18n.js';
 import { stopSpeaking } from './voice.js';
 
-const LANG_INDEX = { en: 0, zh: 1, es: 2 }, VOICE_LANG = { en: 'en-US', zh: 'zh-CN', es: 'es-ES' };
+const LANG_INDEX = { en: 0, zh: 1, es: 2, pt: 3 }, VOICE_LANG = { en: 'en-US', zh: 'zh-CN', es: 'es-ES', pt: 'pt-BR' };
 let enabled = true; try { enabled = localStorage.getItem('stellar-voice') !== 'off'; } catch {}
 let online = location.protocol !== 'file:';         // set false after the server says "no key"
 let ctx = null, audio = null, narrationId = 0;
