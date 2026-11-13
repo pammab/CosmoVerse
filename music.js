@@ -1,6 +1,6 @@
-// STELLAR · ambient soundtrack (team feature): one looping track per scene, cross-faded.
+// COSMOVERSE · ambient soundtrack (team feature): one looping track per scene, cross-faded.
 // 配乐 · Música. Plain script, loaded after the page.
-/* STELLAR SOUND · procedural ambient score; no external audio dependencies.
+/* COSMOVERSE SOUND · procedural ambient score; no external audio dependencies.
    Artistic sonification, not recordings of sound travelling through vacuum. */
 (() => {
 'use strict';

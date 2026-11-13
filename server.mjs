@@ -1,4 +1,4 @@
-// Local server for Stelar: serves the app and the AI chat on http://localhost:8000
+// Local server for CosmoVerse: serves the app and the AI chat on http://localhost:8000
 // Run with:  npm start   (or: node server.mjs)
 // Needs Node.js 18 or newer and a .env file containing ANTHROPIC_API_KEY=...
 import http from 'node:http';
@@ -82,6 +82,6 @@ function send(res, status, json) {
 }
 
 server.listen(PORT, () => {
-  console.log(`Stelar is running at http://localhost:${PORT}`);
+  console.log(`CosmoVerse is running at http://localhost:${PORT}`);
   if (!process.env.ANTHROPIC_API_KEY) console.log('⚠  No ANTHROPIC_API_KEY found. Create a .env file (see .env.example) to turn on the AI chat.');
 });

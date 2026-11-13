@@ -1,7 +1,7 @@
 // Asteroid Analyzer (team feature): Sentry impact-risk dashboard, ASTORB orbit explorer, and their translations.
 // 小行星分析 · Analizador de asteroides. Plain script, loaded after the page.
 
-/* STELLAR · Local analysis of the uploaded Sentry CSV snapshot */
+/* COSMOVERSE · Local analysis of the uploaded Sentry CSV snapshot */
 (() => {
   const $ = id => document.getElementById(id);
   const app = $('asteroidApp'), openBtn = $('asteroidOpen');
@@ -356,7 +356,7 @@
    The original English strings are retained so language switching is reversible. */
 (() => {
   const Z = {
-    "STELLAR · SENTRY DATA ANALYSIS":"STELLAR · 小行星风险数据分析",
+    "COSMOVERSE · SENTRY DATA ANALYSIS":"COSMOVERSE · 小行星风险数据分析",
     "Asteroid Impact Risk Analyzer":"小行星撞击风险分析器",
     "↻ Recalculate":"↻ 重新计算","✕ Close":"✕ 关闭",
     "Impact-monitoring records":"撞击监测记录","rows in uploaded dataset":"上传数据集中的记录数",
@@ -400,7 +400,7 @@
     "Impact corridor width":"撞击走廊宽度","Sigma VI":"Sigma VI（不确定性指标）","Distance (Earth radii)":"距离（地球半径）","Sigma Impact / Sigma LOV":"Sigma Impact / Sigma LOV（不确定性指标）"
   };
   const E = {
-    "STELLAR · SENTRY DATA ANALYSIS":"STELLAR · ANÁLISIS DE DATOS DE RIESGO",
+    "COSMOVERSE · SENTRY DATA ANALYSIS":"COSMOVERSE · ANÁLISIS DE DATOS DE RIESGO",
     "Asteroid Impact Risk Analyzer":"Analizador del riesgo de impacto de asteroides",
     "↻ Recalculate":"↻ Recalcular","✕ Close":"✕ Cerrar",
     "Impact-monitoring records":"Registros de vigilancia de impactos","rows in uploaded dataset":"filas en el conjunto de datos",
@@ -457,7 +457,7 @@
     "Move the slider to calculate the asteroid's approximate position before or after the catalog reference date. The animation advances simulated days, not real-time days.":"移动滑块可计算小行星在目录参考日期之前或之后的大致位置。动画推进的是模拟时间中的天数，而不是真实经过的天数。",
     "Why are these called NEO candidates?":"为什么称为近地天体候选对象？",
     "This local subset was selected using perihelion distance q < 1.3 AU. That means the orbit comes within 1.3 times Earth's average distance from the Sun at its closest point. It is a catalog filter, not proof of an Earth crossing or collision risk.":"这个本地数据子集根据近日点距离 q < 1.3 AU 筛选。这表示小行星轨道距离太阳最近时，距太阳小于地日平均距离的 1.3 倍。这只是目录筛选条件，并不代表它一定会穿越地球轨道或存在撞击风险。",
-    "STELLAR · ASTORB CATALOG":"STELLAR · ASTORB 小行星目录",
+    "COSMOVERSE · ASTORB CATALOG":"COSMOVERSE · ASTORB 小行星目录",
     "The plotted path is calculated from the catalog's osculating Keplerian elements at epoch 2026-09-17. It is a two-body approximation, not an N-body ephemeris; it does not include planetary perturbations or predict an Earth impact. The catalog's perihelion-distance filter q < 1.3 AU is used to select near-Earth-object candidates. It does not mean these objects are on a collision course.":"图中轨迹根据目录中 2026-09-17 历元的瞬时开普勒轨道参数计算。这是二体近似模型，不是多体星历；没有考虑行星摄动，也不能预测地球撞击。目录使用近日点距离 q < 1.3 AU 筛选近地天体候选对象，但这不代表这些天体正处于与地球相撞的轨道上。",
     "Data: Lowell Observatory's astorb.dat. Catalog attribution: Lowell Observatory endowment and NASA PDART grant NNX16AG52G. ":"数据来源：Lowell Observatory 的 astorb.dat。目录致谢：Lowell Observatory endowment 和 NASA PDART grant NNX16AG52G。",
     "Model limitations:":"模型局限：","About the astorb database":"关于 astorb 数据库",
@@ -490,7 +490,7 @@
     "Move the slider to calculate the asteroid's approximate position before or after the catalog reference date. The animation advances simulated days, not real-time days.":"Mueve el control deslizante para calcular la posición aproximada del asteroide antes o después de la fecha de referencia del catálogo. La animación avanza días simulados, no días en tiempo real.",
     "Why are these called NEO candidates?":"¿Por qué se llaman candidatos NEO?",
     "This local subset was selected using perihelion distance q < 1.3 AU. That means the orbit comes within 1.3 times Earth's average distance from the Sun at its closest point. It is a catalog filter, not proof of an Earth crossing or collision risk.":"Este subconjunto se filtró usando una distancia de perihelio q < 1.3 AU. Esto significa que, en su punto más cercano al Sol, la órbita queda a menos de 1.3 veces la distancia media entre la Tierra y el Sol. Es un filtro del catálogo, no una prueba de cruce con la órbita terrestre ni de riesgo de colisión.",
-    "STELLAR · ASTORB CATALOG":"STELLAR · CATÁLOGO ASTORB",
+    "COSMOVERSE · ASTORB CATALOG":"COSMOVERSE · CATÁLOGO ASTORB",
     "The plotted path is calculated from the catalog's osculating Keplerian elements at epoch 2026-09-17. It is a two-body approximation, not an N-body ephemeris; it does not include planetary perturbations or predict an Earth impact. The catalog's perihelion-distance filter q < 1.3 AU is used to select near-Earth-object candidates. It does not mean these objects are on a collision course.":"La trayectoria se calcula a partir de los elementos keplerianos osculantes del catálogo en la época 2026-09-17. Es una aproximación de dos cuerpos, no una efeméride de N cuerpos; no incluye perturbaciones planetarias ni predice impactos contra la Tierra. El filtro de distancia de perihelio q < 1.3 AU selecciona candidatos a objetos cercanos a la Tierra, pero no significa que estén en trayectoria de colisión con nuestro planeta.",
     "Data: Lowell Observatory's astorb.dat. Catalog attribution: Lowell Observatory endowment and NASA PDART grant NNX16AG52G. ":"Datos: astorb.dat del Lowell Observatory. Atribución del catálogo: Lowell Observatory endowment y la subvención NASA PDART NNX16AG52G. ",
     "Model limitations:":"Limitaciones del modelo:","About the astorb database":"Acerca de la base de datos astorb",

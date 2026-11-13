@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// STELLAR · Solar System Explorer — main scene, camera, modes and controls
+// COSMOVERSE · Solar System Explorer — main scene, camera, modes and controls
 // 太阳系交互探索 —— 场景、相机、模式与交互
 //   Modes: overview (orbits) · lineup (true sizes side by side) · focus (one body)
-//   Inputs: mouse / touch, hand gestures (camera), voice + text (Ask Stellar)
+//   Inputs: mouse / touch, hand gestures (camera), voice + text (Ask Cosmo)
 // ─────────────────────────────────────────────────────────────────────────────
 import { setLanguage, initialLanguage, onLanguage, voiceCode } from './i18n.js';
 import * as T from 'three';
@@ -14,6 +14,7 @@ import { initChat } from './chat.js';
 import { buildHighlights, HIGHLIGHTS } from './highlights.js';
 import { initHabitability } from './habitability.js';
 import { narrate, stopNarration, sfx } from './narration.js';
+import { initXR } from './xr.js';
 const $ = s => document.querySelector(s), clamp = T.MathUtils.clamp, bi = window.bi;
 const nameOf = p => [p.en.charAt(0) + p.en.slice(1).toLowerCase(), p.zh, p.es.charAt(0) + p.es.slice(1).toLowerCase()];
 const wrapPI = a => ((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
@@ -85,10 +86,12 @@ function setHover(id) {
 }
 
 /* ───────── Picking (works for tiny planets too) · 拾取 ───────── */
+// Camera position in the world (in VR the camera sits inside the dolly) · 相机世界坐标
+const camW = new T.Vector3(), camWorld = () => camera.getWorldPosition(camW);
 const v3 = new T.Vector3(), flightPickRay=new T.Raycaster(), flightPickNdc=new T.Vector2();
 function screenOf(b) {
   v3.copy(b.anchor.position).project(camera);
-  const dist = camera.position.distanceTo(b.anchor.position);
+  const dist = camWorld().distanceTo(b.anchor.position);
   return { x: (v3.x * 0.5 + 0.5) * innerWidth, y: (-v3.y * 0.5 + 0.5) * innerHeight, r: b.r / (dist * tanHalf()) * innerHeight / 2, front: v3.z < 1 };
 }
 function pickAt(x, y, minPx = 22) {
@@ -100,7 +103,7 @@ function pickAt(x, y, minPx = 22) {
     if(hits.length){let obj=hits[0].object;while(obj && obj.parent!==flight)obj=obj.parent;const item=flightItems.find(it=>it.mesh===obj);if(item)return item.p.id;}
     let best=null,score=Infinity;
     for(const item of flightItems){
-      item.mesh.getWorldPosition(v3);const dist=camera.position.distanceTo(v3);v3.project(camera);
+      item.mesh.getWorldPosition(v3);const dist=camWorld().distanceTo(v3);v3.project(camera);
       if(v3.z < -1 || v3.z>1)continue;
       const px=(v3.x+1)*innerWidth/2,py=(1-v3.y)*innerHeight/2,reach=Math.max(minPx,item.size/(dist*tanHalf())*innerHeight/2),d=Math.hypot(px-x,py-y);
       const candidate=d/reach+(item.i?0:1);
@@ -225,7 +228,7 @@ function updateFlight(dt) {
     flight.updateMatrixWorld(true);item.mesh.getWorldPosition(tv);tv.project(camera);
     if(tv.z<1 && Math.abs(tv.x)<.98 && Math.abs(tv.y)<.95){
       item.mesh.getWorldPosition(orbitPos);
-      const labelOffset=item.size/(camera.position.distanceTo(orbitPos)*tanHalf())*innerHeight/2+10;
+      const labelOffset=item.size/(camWorld().distanceTo(orbitPos)*tanHalf())*innerHeight/2+10;
       item.label.style.display='block';item.label.style.transform=`translate(${(tv.x+1)*innerWidth/2}px,${(1-tv.y)*innerHeight/2+labelOffset}px) translateX(-50%)`;
     }
   }
@@ -263,7 +266,7 @@ function select(id) {
   if (!id) return home();
   const b = bodyById[id]; if (!b) return;
   if (mode === 'focus' && focus === b) return;
-  // Whoosh in, then Stellar introduces the planet once the camera arrives · 飞入音效后语音介绍
+  // Whoosh in, then Cosmo introduces the planet once the camera arrives · 飞入音效后语音介绍
   sfx('whoosh-in'); stopNarration(); setTimeout(() => { if (mode === 'focus' && focus === b) narrate(id); }, 1400);
   mode = 'focus'; focus = b; startTransition(); zooms.focus = 1; sliderSpread = 0; handSpread = 0;
   // Start on the sunlit side, a little off-axis, so the day/night line shows · 从向阳面略偏处观察
@@ -350,7 +353,7 @@ function renderInfo(b) {
     <div class="facts">${p.facts.map(f => `<div><small>${bi(f[0], f[1])}</small><b>${bi(f[2], f[3])}</b></div>`).join('')}</div>
     <p class="feature">${bi(p.featureEn, p.featureZh)}</p>
     ${highlightsHTML(p.id)}
-    <button class="ask" id="askAbout">${bi(`Ask Stellar about ${nameOf(p)[0]}`, `问 Stellar 关于${p.zh}的问题`, `Pregunta a Stellar sobre ${nameOf(p)[2]}`)}</button>
+    <button class="ask" id="askAbout">${bi(`Ask Cosmo about ${nameOf(p)[0]}`, `问 Cosmo 关于${p.zh}的问题`, `Pregunta a Cosmo sobre ${nameOf(p)[2]}`)}</button>
     ${b.isSun ? '' : `<div class="controls">
       <div class="control"><span>${bi('Tint · keeps surface detail', '色调 · 保留表面细节')}</span><input aria-label="Tint" id="tint" type="color" value="${b.tint}"></div>
       <div class="control"><span>${bi('Particle glow', '粒子光感')}</span><span id="glowval">${Math.round(b.glow * 100)}%</span></div>
@@ -409,7 +412,7 @@ const HINTS = {
   pinch: { browse: T3('Pinch · open · pinch + move up/down to zoom', '捏合 · 打开 · 捏住上下移动缩放', 'Pellizca · abrir · pellizca y sube/baja para zoom'), focus: T3('Pinch + move up/down · zoom', '捏住上下移动 · 缩放', 'Pellizca y sube/baja · zoom') },
   open: { browse: T3('Open palm · move to turn the system', '张开手掌 · 移动旋转太阳系', 'Palma abierta · muévela para girar el sistema'), focus: T3('Open palm · spread fingers to scatter particles', '张开手掌 · 张开手指让粒子扩散', 'Palma abierta · separa los dedos para dispersar partículas') },
   fist: { browse: T3('Hold fist · back to overview', '保持握拳 · 返回总览', 'Mantén el puño · volver a la vista general'), focus: T3('Hold fist · gather, then go back', '保持握拳 · 聚合并返回', 'Mantén el puño · reunir y volver') },
-  victory: { browse: T3('Victory ✌ · hold to talk to Stellar', '剪刀手 ✌ · 保持以和 Stellar 对话', 'Victoria ✌ · mantén para hablar con Stellar'), focus: T3('Victory ✌ · hold to talk to Stellar', '剪刀手 ✌ · 保持以和 Stellar 对话', 'Victoria ✌ · mantén para hablar con Stellar') },
+  victory: { browse: T3('Victory ✌ · hold to talk to Cosmo', '剪刀手 ✌ · 保持以和 Cosmo 对话', 'Victoria ✌ · mantén para hablar con Cosmo'), focus: T3('Victory ✌ · hold to talk to Cosmo', '剪刀手 ✌ · 保持以和 Cosmo 对话', 'Victoria ✌ · mantén para hablar con Cosmo') },
   other: { browse: T3('Hand found · try ☝ 🤏 ✋ ✊ ✌', '已检测到手 · 试试 ☝ 🤏 ✋ ✊ ✌', 'Mano detectada · prueba ☝ 🤏 ✋ ✊ ✌'), focus: T3('Hand found · try ☝ 🤏 ✋ ✊ ✌', '已检测到手 · 试试 ☝ 🤏 ✋ ✊ ✌', 'Mano detectada · prueba ☝ 🤏 ✋ ✊ ✌') },
 };
 // Small, careful movements stay precise; quick sweeps travel further · 慢动作精确，快动作移动更远
@@ -461,13 +464,42 @@ function onHand(u) {
   } else hand.fistDone = false;
   if (g === 'victory') { progress = Math.min(1, held / 500); if (held > 500 && !hand.vDone) { hand.vDone = true; chat.startVoice(); } } else hand.vDone = false;
 
-  hand.prev = g;
+  hand.prev = g; hand.progress = progress;
   cursorEl.classList.remove('hidden'); cursorEl.dataset.g = g;
   cursorEl.style.transform = `translate(${x}px,${y}px)`; cursorEl.style.setProperty('--c', GESTURE_COLORS[g]);
   cursorEl.style.setProperty('--p', progress);
   const h = (HINTS[g] || HINTS.other)[browsing ? 'browse' : 'focus']; pill.innerHTML = bi(...h); pill.style.color = GESTURE_COLORS[g];
 }
 const tracker = new HandTracker({ video: $('#video'), overlay: $('#handOverlay'), onUpdate: onHand, fpsEl: $('#handFps') });
+
+/* ───────── VR (WebXR, Meta Quest) · VR 模式 ───────── */
+// In VR the headset's own hand tracking drives onHand(), exactly like the webcam.
+const VR_HINTS = { point: 'Point at a planet and hold to open it', pinch: 'Pinch + move up/down to zoom', open: 'Open palm: turn the view · spread to scatter', fist: 'Hold a fist to go back', victory: 'Victory: talk to Cosmo', other: 'Try ☝ point · 🤏 pinch · ✋ palm · ✊ fist', none: 'Raise a hand in front of you' };
+const xr = initXR({
+  renderer, scene, camera, onHand,
+  onEnter: () => { if (tracker.active) $('#cam').click(); document.body.classList.add('xr-on'); },
+  onExit: () => { lastNear = 0; document.body.classList.remove('xr-on'); },
+  panelContent: g => {
+    const hint = VR_HINTS[g] || VR_HINTS.other, hintColor = GESTURE_COLORS[g] || '#9fb2c4';
+    if (mode === 'focus' && focus) {
+      const p = focus.p;
+      return { eyebrow: p.type[0], title: nameOf(p)[0], accent: p.color, text: p.descEn, facts: p.facts.map(f => [f[0], f[2]]), hint, hintColor };
+    }
+    const views = { overview: 'The Solar System', lineup: 'True sizes, side by side', trajectory: 'Trajectories' };
+    return { eyebrow: 'CosmoVerse', title: views[mode] || 'CosmoVerse', accent: '#ffffff',
+      text: 'The universe in the palm of your hand. Point at any planet and hold to fly there; pinch and move up or down to zoom; hold a fist to come back.', facts: [], hint, hintColor };
+  },
+});
+{
+  const vrBtn = document.createElement('button'); vrBtn.id = 'vr'; vrBtn.className = 'primary';
+  vrBtn.innerHTML = bi('🥽 Enter VR', '🥽 进入 VR', '🥽 Entrar en VR');
+  $('#cam').before(vrBtn);
+  vrBtn.onclick = async () => {
+    try { if (!(await xr.enter())) notice('VR needs a VR headset browser (e.g. Meta Quest) or the Immersive Web Emulator.', '需要 VR 头显浏览器（如 Meta Quest）或 Immersive Web Emulator。', 'La RV necesita el navegador de un visor (p. ej., Meta Quest) o el Immersive Web Emulator.', 6000); }
+    catch (e) { console.error(e); notice('Could not start VR: ' + e.message, '无法启动 VR：' + e.message, 'No se pudo iniciar la RV: ' + e.message, 6000); }
+  };
+  xr.supported().then(ok => { if (!ok) vrBtn.title = 'Open on a Meta Quest browser to use VR'; });
+}
 // Hand sensitivity slider (remembered on this device) · 手势灵敏度
 function setSensitivity(v) { sensitivity = clamp(Math.round(+v) || 3, 1, 5); tracker.setSensitivity(sensitivity); $('#sensitivity').value = sensitivity; $('#sensVal').textContent = sensitivity; try { localStorage.setItem('orbit-sens', sensitivity); } catch {} }
 $('#sensitivity').oninput = e => setSensitivity(e.target.value);
@@ -490,7 +522,7 @@ $('#cam').onclick = async () => {
 };
 addEventListener('pagehide', () => tracker.stop());
 
-/* ───────── Ask Stellar (AI + voice) · AI 向导 ───────── */
+/* ───────── Ask Cosmo (AI + voice) · AI 向导 ───────── */
 const chat = initChat({ bi, getContext: () => mode === 'focus' ? focus.p.id : 'solar', actions: { select, home, lineup, pause: () => setPaused(true), resume: () => setPaused(false) } });
 $('#talk').onclick = () => chat.startVoice();
 
@@ -514,10 +546,11 @@ loadMaps().then(m => {
   .finally(() => setTimeout(pump, 400));   // procedural detail only for planets without a map
 
 /* ───────── Animation loop · 动画循环 ───────── */
+const camPos = new T.Vector3(), camUp = new T.Vector3(0, 1, 0);
 const tv = new T.Vector3(), orbitPos = new T.Vector3(), linePos = new T.Vector3();
 let lastNear = 0, viewShift = 0, focusFade = 0;
 function animate(now) {
-  requestAnimationFrame(animate);
+  const inXR = xr.active();
   const dt = Math.min((now - last) / 1000, 0.05); last = now;
   const k = 1 - Math.exp(-dt * 4.5);
   sun.surface.material.uniforms.time.value = now / 1000;
@@ -561,14 +594,15 @@ function animate(now) {
   else { rig.target.copy(tv); rig.logDist += (gl - rig.logDist) * k; }
   rig.yaw += (goal.yaw - rig.yaw) * k; rig.pitch += (goal.pitch - rig.pitch) * k;
   const d = Math.exp(rig.logDist), cp = Math.cos(rig.pitch);
-  camera.position.set(rig.target.x + d * cp * Math.sin(rig.yaw), rig.target.y + d * Math.sin(rig.pitch), rig.target.z + d * cp * Math.cos(rig.yaw));
-  if(mode==='trajectory') camera.up.set(-Math.sin(rig.yaw)*Math.sin(rig.pitch),Math.cos(rig.pitch),-Math.cos(rig.yaw)*Math.sin(rig.pitch)); else camera.up.set(0,1,0);
-  camera.lookAt(rig.target);
+  camPos.set(rig.target.x + d * cp * Math.sin(rig.yaw), rig.target.y + d * Math.sin(rig.pitch), rig.target.z + d * cp * Math.cos(rig.yaw));
+  if(mode==='trajectory') camUp.set(-Math.sin(rig.yaw)*Math.sin(rig.pitch),Math.cos(rig.pitch),-Math.cos(rig.yaw)*Math.sin(rig.pitch)); else camUp.set(0,1,0);
+  if (inXR) xr.placeRig(camPos, rig.target, camUp, d);   // VR: move the headset's dolly instead · VR：移动头显
+  else { camera.position.copy(camPos); camera.up.copy(camUp); camera.lookAt(rig.target); }
   // Keep the focused planet clear of the info panel on wide screens · 让行星避开右侧信息面板
-  viewShift += ((mode === 'focus' && innerWidth > 1100 ? 190 : 0) - viewShift) * k;
+  viewShift += ((mode === 'focus' && innerWidth > 1100 && !inXR ? 190 : 0) - viewShift) * k;
   if (Math.abs(viewShift) > 0.5) camera.setViewOffset(innerWidth, innerHeight, viewShift, 0, innerWidth, innerHeight); else if (camera.view?.enabled) camera.clearViewOffset();
   const near = clamp(d * 0.008, 0.002, 4);
-  if (Math.abs(near - lastNear) / near > 0.05) { camera.near = near; camera.far = Math.max(8000, d * 40); camera.updateProjectionMatrix(); lastNear = near; }
+  if (!inXR && Math.abs(near - lastNear) / near > 0.05) { camera.near = near; camera.far = Math.max(8000, d * 40); camera.updateProjectionMatrix(); lastNear = near; }
 
   // Screen labels · 屏幕标签
   const showTags = mode !== 'trajectory' && (mode !== 'focus' || trans < 0.25);
@@ -587,22 +621,23 @@ function animate(now) {
   for (const b of bodies) if (b.hl) for (const it of b.hl.items) {
     const on = b === focus && mode === 'focus' && trans > 0.6;
     if (!on) { it.el.style.display = 'none'; continue; }
-    it.obj.getWorldPosition(hv); const behind = hv.distanceTo(camera.position) > b.anchor.position.distanceTo(camera.position) + b.r * 0.2 && rayHitsBody(b);
+    it.obj.getWorldPosition(hv); const behind = hv.distanceTo(camWorld()) > b.anchor.position.distanceTo(camWorld()) + b.r * 0.2 && rayHitsBody(b);
     hv.project(camera);
     const show = hv.z < 1 && !behind && Math.abs(hv.x) < 1.05 && Math.abs(hv.y) < 1.05;
     it.el.style.display = show ? 'block' : 'none';
     if (show) it.el.style.transform = `translate(${(hv.x + 1) / 2 * innerWidth}px,${(1 - hv.y) / 2 * innerHeight}px)`;
   }
   updateFlight(dt);
+  if (inXR) xr.update(hand.progress || 0);
   renderer.render(scene, camera);
 }
 const hv = new T.Vector3(), hd = new T.Vector3(), hc = new T.Vector3();
 // Is the label's object hidden behind the planet? · 是否被行星挡住
 function rayHitsBody(b) {
-  hd.copy(hv).sub(camera.position).normalize(); hc.copy(b.anchor.position).sub(camera.position);
+  hd.copy(hv).sub(camWorld()).normalize(); hc.copy(b.anchor.position).sub(camWorld());
   const t = hc.dot(hd); return hc.lengthSq() - t * t < b.r * b.r;
 }
-requestAnimationFrame(animate);
+renderer.setAnimationLoop(animate);   // also drives VR frames · 同时驱动 VR 帧
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
 setIntro('overview'); document.body.classList.add('mode-overview');

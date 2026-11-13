@@ -54,7 +54,7 @@ export const ES = {
   // Chat
   'Too many questions at once. Wait a few seconds and try again.': 'Demasiadas preguntas seguidas. Espera unos segundos y vuelve a intentarlo.',
   'The AI guide is not set up yet: the server has no API key.': 'El guía de IA aún no está configurado: falta la clave de la API en el servidor.',
-  'The AI guide needs the Stellar server. Run "npm start", or open the online version.': 'El guía de IA necesita el servidor de Stellar. Ejecuta "npm start" o abre la versión en línea.',
+  'The AI guide needs the CosmoVerse server. Run "npm start", or open the online version.': 'El guía de IA necesita el servidor de CosmoVerse. Ejecuta "npm start" o abre la versión en línea.',
   'The AI is busy right now. Please try again.': 'La IA está ocupada. Inténtalo de nuevo.',
   'Something went wrong with that message. Please try again.': 'Algo falló con ese mensaje. Inténtalo de nuevo.',
   'Microphone access is blocked. Allow it in the address bar, then try again.': 'El micrófono está bloqueado. Permítelo en la barra de direcciones y vuelve a intentarlo.',
@@ -64,7 +64,7 @@ export const ES = {
   'Tell me a fun fact': 'Cuéntame un dato curioso', 'Could humans live there?': '¿Podrían vivir personas allí?', 'How big is it compared to Earth?': '¿Qué tamaño tiene comparado con la Tierra?',
   'Which planet is the hottest?': '¿Qué planeta es el más caliente?', 'Why do planets orbit the Sun?': '¿Por qué los planetas giran alrededor del Sol?', 'Line up the planets': 'Alinea los planetas',
   'Talking about · the Solar System': 'Hablando de · el sistema solar',
-  "Hi! I'm Stellar, your space guide. Ask me anything, type or press the mic and talk. Try “Go to Saturn”.": '¡Hola! Soy Stellar, tu guía espacial. Pregúntame lo que quieras: escribe o pulsa el micrófono y habla. Prueba «Ve a Saturno».',
+  "Hi! I'm Cosmo, your space guide. Ask me anything, type or press the mic and talk. Try “Go to Saturn”.": '¡Hola! Soy Cosmo, tu guía espacial. Pregúntame lo que quieras: escribe o pulsa el micrófono y habla. Prueba «Ve a Saturno».',
 };
 
 // Fallback for text not in the dictionary: translate common units, keep the rest.
@@ -82,7 +82,7 @@ export const voiceCode = (l = getLanguage()) => VOICE[l] || 'en-US';
 export function setLanguage(l) {
   if (!LANGS[l]) l = 'en';
   const root = document.documentElement; root.dataset.lang = l; root.lang = l === 'zh' ? 'zh-CN' : l;
-  document.title = { en: 'STELLAR · Solar System Explorer', zh: 'STELLAR · 太阳系交互探索', es: 'STELLAR · Explorador del sistema solar' }[l];
+  document.title = { en: 'COSMOVERSE · Solar System Explorer', zh: 'COSMOVERSE · 太阳系交互探索', es: 'COSMOVERSE · Explorador del sistema solar' }[l];
   try { localStorage.setItem('orbit-lang', l); } catch {}
   const sel = document.querySelector('#language'); if (sel) sel.value = l;
   listeners.forEach(fn => fn(l));

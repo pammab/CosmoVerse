@@ -1,5 +1,5 @@
 // Narration & transition sounds · 语音介绍与转场音效 · Narración y efectos
-//   • narrate(id): Stellar introduces each planet in 2–3 sentences (ElevenLabs voice, with captions)
+//   • narrate(id): Cosmo introduces each planet in 2–3 sentences (ElevenLabs voice, with captions)
 //   • sfx(name): whooshes and chimes for transitions (ElevenLabs Sound Effects)
 // Both fall back to the browser (built-in voice, synthesized whoosh) when ElevenLabs isn't available,
 // for example with no key or when the page is opened as a file.
@@ -135,7 +135,7 @@ export function stopNarration() {
   clearTimeout(captionTimer);
   window.__stellarSpeaking = false; showCaption('');
 }
-// When Stellar answers in the chat, stop the narration · 对话朗读时停止介绍
+// When Cosmo answers in the chat, stop the narration · 对话朗读时停止介绍
 addEventListener('stellar-speak', () => { narrationId++; clearTimeout(captionTimer); if (audio) { try { audio.pause(); } catch {} audio = null; } showCaption(''); });
 
 /* ───────── On/off button · 开关 ───────── */
@@ -172,6 +172,6 @@ window.__stellarVoiceFallback = reason => {
   if (!why) return;
   s.innerHTML = window.bi(...why); s.style.display = 'block';
   clearTimeout(s.__t); s.__t = setTimeout(() => s.style.display = 'none', 9000);
-  console.warn('[Stellar voice] ElevenLabs not used:', reason);
+  console.warn('[Cosmo voice] ElevenLabs not used:', reason);
 };
 const fallbackReason = status => status === 503 ? 'config' : status === 404 || status === 405 ? 'missing' : 'error';

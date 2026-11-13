@@ -1,4 +1,4 @@
-/* STELLAR · Solar System Explorer — styles · 样式
+/* COSMOVERSE · Solar System Explorer — styles · 样式
    Layout follows the team's original design; English first, Chinese second. */
 :root { color-scheme: dark; --accent: #8bd6ff; --panel: linear-gradient(145deg, #152332de, #08101ce8); --line: #ffffff1f; }
 * { box-sizing: border-box; }
@@ -106,7 +106,7 @@ body.cam-on .hint, body.cam-on .intro p { display: none; }
 .sens b { grid-row: 1 / span 2; grid-column: 2; font: 13px monospace; color: #edf3fa; }
 .fps { position: absolute; right: 6px; top: 5px; font: 9px monospace; color: #9fb2c4; background: #0008; padding: 1px 5px; border-radius: 6px; }
 
-/* Ask Stellar chat · AI 对话 */
+/* Ask Cosmo chat · AI 对话 */
 .chatbtn { position: fixed; right: 30px; bottom: 28px; z-index: 4; display: flex; align-items: center; gap: 9px; padding: 10px 16px; border-radius: 24px; border: 1px solid #8bd6ff66; background: linear-gradient(135deg, #3a8fc2e6, #6b56c9e6); color: #fff; font-size: 12px; font-weight: 600; box-shadow: 0 8px 30px #3a8fc255; text-align: left; }
 .chatbtn:hover { border-color: #fff; background: linear-gradient(135deg, #3a8fc2, #6b56c9); }
 .chatbtn svg { width: 17px; height: 17px; flex-shrink: 0; }

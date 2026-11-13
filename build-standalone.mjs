@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const ORDER = ['i18n', 'data', 'noise', 'textures', 'maps', 'bodies', 'highlights', 'habitability', 'gestures', 'voice', 'narration-text', 'narration', 'chat', 'main'];
+const ORDER = ['i18n', 'data', 'noise', 'textures', 'maps', 'bodies', 'highlights', 'habitability', 'gestures', 'voice', 'narration-text', 'narration', 'chat', 'xr-hands', 'xr', 'main'];
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 
 function convert(name, src) {

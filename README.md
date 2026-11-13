@@ -1,8 +1,10 @@
-# STELLAR · Solar System Explorer / 太阳系交互探索
+# COSMOVERSE · The universe in the palm of your hand
+
+*(Started from the Stellar team's Solar System Explorer, PCC Hack 1.)*
 
 An interactive 3D Solar System for **PCC Hack 1 (theme: Space)**.
 The Sun and the eight planets are shown at their **true relative sizes**, and you can explore them
-with the mouse, your **hands** (webcam) or your **voice**, and ask **Stellar**, an AI space guide
+with the mouse, your **hands** (webcam) or your **voice**, and ask **Cosmo**, an AI space guide
 powered by Claude, anything about what you're looking at. Switch the whole interface between **English, 中文 and Español** from the language menu.
 
 ## Features
@@ -32,10 +34,24 @@ powered by Claude, anything about what you're looking at. Switch the whole inter
 
 - **Hand sensitivity slider (1–5)** under the camera preview. Higher means smaller hand movements move the cursor further and react faster; lower is calmer and steadier. The setting is remembered on that device.
 - **Steadier tracking:** fingers are read from 3D joint angles, so a tilted hand still works. A gesture must win a short vote over recent frames, so it doesn't flicker. The cursor uses a One-Euro filter: steady when you hold still, quick when you move.
-- **Ask Stellar (AI + voice)**
+- **Ask Cosmo (AI + voice)**
   - Type, or press 🎙 and speak. Answers can be read aloud (🔊).
   - Voice and text navigation work without the AI: "Go to Mars", "去火星", "Compare sizes", "Back".
   - Stellar replies in the language you use. Voice input follows the chosen language (Português is also available in the chat's voice menu).
+
+## VR mode (Meta Quest) · CosmoVerse
+
+- Press **🥽 Enter VR** in the Quest browser. Everything works with **your hands only** (no controllers):
+  the headset's own hand tracking feeds the same gestures as the webcam (☝ point, 🤏 pinch, ✋ palm, ✊ fist, ✌ victory).
+- **Aim by pointing**: hold your fingertip over a planet; hold still to open it. A small glowing dot follows your fingertip
+  and grows while a gesture is "charging".
+- Each view (overview, compare sizes, close-up) works in VR: the object you're looking at appears about 1.4 m in front of you.
+- A floating panel on your right shows the planet's facts and a gesture hint (HTML panels can't appear inside a headset).
+- WebXR needs **HTTPS** (GitHub Pages or Vercel work) or `localhost`. Without a headset, test with Meta's
+  **Immersive Web Emulator** browser extension.
+
+Files: `xr.js` (VR session, dolly, hands, panel) and `xr-hands.js` (maps the Quest's 25 hand joints to the
+21 MediaPipe landmarks, so `classify()` in `gestures.js` works unchanged). Tests: `node --test tests/xr-hands.test.mjs`.
 
 ## Project structure
 
@@ -52,8 +68,10 @@ textures.js           Procedural backup surfaces, used if a map is missing
 bodies.js             3D builders: buildPlanet, buildSun, stars, asteroid belt
 gestures.js           Hand tracking (MediaPipe) and gesture recognition
 voice.js              Speech-to-text and text-to-speech
-chat.js               Ask Stellar chat panel and voice commands
+chat.js               Ask Cosmo chat panel and voice commands
 main.js               Scene, camera, views, mouse and gesture controls
+xr.js                 VR mode: WebXR session, hands, floating info panel
+xr-hands.js           Quest hand joints → the same gestures as the webcam
 api/chat.js           AI endpoint on Vercel (prompt, limits, Claude API call)
 server.mjs            Local server: the app plus the AI chat on http://localhost:8000
 *.jpg, *.png          Planet surface maps

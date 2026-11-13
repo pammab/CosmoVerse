@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// "Ask Stellar" — AI space guide with voice · AI 太空向导（支持语音）
+// "Ask Cosmo" — AI space guide with voice · AI 太空向导（支持语音）
 // The browser only talks to /api/chat on our own server; the API key stays on
 // the server (.env locally, environment variable on Vercel).
 // Simple navigation ("go to Mars", "去火星", "line up the planets") is handled
@@ -23,7 +23,7 @@ const SAY = {
 const ERR = {
   rate: ['Too many questions at once. Wait a few seconds and try again.', '提问太频繁，请稍等几秒再试。'],
   config: ['The AI guide is not set up yet: the server has no API key.', 'AI 向导尚未配置：服务器缺少 API 密钥。'],
-  offline: ['The AI guide needs the Stellar server. Run "npm start", or open the online version.', 'AI 向导需要 Stellar 服务器：请运行 "npm start" 或打开在线版本。'],
+  offline: ['The AI guide needs the CosmoVerse server. Run "npm start", or open the online version.', 'AI 向导需要 CosmoVerse 服务器：请运行 "npm start" 或打开在线版本。'],
   busy: ['The AI is busy right now. Please try again.', 'AI 暂时繁忙，请重试。'],
   bad: ['Something went wrong with that message. Please try again.', '消息出错，请重试。'],
   'not-allowed': ['Microphone access is blocked. Allow it in the address bar, then try again.', '麦克风权限被拒绝，请在地址栏允许后重试。'],
@@ -90,7 +90,7 @@ export function initChat({ bi, getContext, actions }) {
 
   function open() {
     panel.classList.add('show'); document.body.classList.add('chat-open'); renderContext();
-    if (!log.childElementCount) add('bot', bi("Hi! I'm Stellar, your space guide. Ask me anything, type or press the mic and talk. Try “Go to Saturn”.", '你好！我是太空向导 Stellar。可以打字或点麦克风说话提问，试试说“去土星”。'), true);
+    if (!log.childElementCount) add('bot', bi("Hi! I'm Cosmo, your space guide. Ask me anything, type or press the mic and talk. Try “Go to Saturn”.", '你好！我是太空向导 Cosmo。可以打字或点麦克风说话提问，试试说“去土星”。'), true);
     setTimeout(() => input.focus(), 60);
   }
   function close() { panel.classList.remove('show'); document.body.classList.remove('chat-open'); stopListening(); stopSpeaking(); setMic(false); }

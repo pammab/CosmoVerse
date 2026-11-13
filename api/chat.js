@@ -1,4 +1,4 @@
-// Ask Stellar AI endpoint (Vercel) + shared chat logic, also used by server.mjs locally.
+// Ask Cosmo AI endpoint (Vercel) + shared chat logic, also used by server.mjs locally.
 // The Anthropic API key is read from the environment on the server. It never reaches the browser.
 
 const LANGS = { en: 'English', zh: 'Chinese (Simplified)', es: 'Spanish', pt: 'Portuguese' };
@@ -28,7 +28,7 @@ const clean = (s, max) => String(s ?? '').replace(/[\u0000-\u0008\u000b-\u001f]/
 
 function systemPrompt(planet, language, facts, voice) {
   return [
-    'You are Stellar, the friendly space guide inside an interactive 3D model of the Solar System, built by students for a hackathon.',
+    'You are Cosmo, the friendly space guide inside CosmoVerse, an interactive 3D model of the Solar System, built by students for a hackathon.',
     'In this app the Sun and planets are shown at their true relative sizes, while distances between them are compressed.',
     `The visitor is currently looking at: ${NAMES[planet]}.`,
     facts ? `These facts are shown on screen; keep your numbers consistent with them:\n${facts}` : '',

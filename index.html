@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#02050b">
 <meta name="description" content="An interactive Solar System at true relative sizes, controlled with your hands and voice, with an AI space guide.">
-<title>STELLAR · Solar System Explorer</title>
+<title>COSMOVERSE · Solar System Explorer</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="asteroids.css">
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
@@ -24,7 +24,7 @@
 </head>
 <body>
 <header>
-  <div class="logo">◎ STELLAR<small><span class="en" lang="en">SOLAR SYSTEM / INTERACTIVE ATLAS</span><span class="zh" lang="zh-CN">太阳系 / 交互探索图鉴</span><span class="es" lang="es">SISTEMA SOLAR / ATLAS INTERACTIVO</span></small></div>
+  <div class="logo">◎ COSMOVERSE<small><span class="en" lang="en">SOLAR SYSTEM / INTERACTIVE ATLAS</span><span class="zh" lang="zh-CN">太阳系 / 交互探索图鉴</span><span class="es" lang="es">SISTEMA SOLAR / ATLAS INTERACTIVO</span></small></div>
   <div class="headbuttons">
     <div id="stellarMusic" class="stellar-music">
     <button id="musicToggle" type="button" aria-pressed="false">♪ Music Off</button>
@@ -71,7 +71,7 @@
     <li><b>🤏</b><span class="en">Pinch · open · pinch + up/down to zoom</span><span class="zh">捏合 · 打开 · 捏住上下移动缩放</span><span class="es">Pellizcar · abrir · pellizca y sube/baja para zoom</span></li>
     <li><b>✋</b><span class="en">Open palm · turn / scatter particles</span><span class="zh">张手 · 旋转 / 粒子扩散</span><span class="es">Palma abierta · girar / dispersar partículas</span></li>
     <li><b>✊</b><span class="en">Hold fist · go back</span><span class="zh">保持握拳 · 返回</span><span class="es">Mantén el puño · volver</span></li>
-    <li><b>✌</b><span class="en">Victory · talk to Stellar</span><span class="zh">剪刀手 · 和 Stellar 对话</span><span class="es">Victoria · hablar con Stellar</span></li>
+    <li><b>✌</b><span class="en">Victory · talk to Cosmo</span><span class="zh">剪刀手 · 和 Cosmo 对话</span><span class="es">Victoria · hablar con Cosmo</span></li>
   </ul>
 </div>
 <div id="handCursor" class="hand-cursor hidden"><i></i></div>
@@ -85,7 +85,7 @@
   <div class="asteroid-shell">
     <div class="asteroid-top">
       <div>
-        <div class="eyebrow">STELLAR · SENTRY DATA ANALYSIS</div>
+        <div class="eyebrow">COSMOVERSE · SENTRY DATA ANALYSIS</div>
         <h2><span class="en">Asteroid Impact Risk Analyzer</span><span class="zh">小行星撞击风险分析</span><span class="es">Analizador de riesgo de impacto</span></h2>
         <p><span class="en">Explore 300 impact-monitoring records from the uploaded Sentry dataset. All results are calculated locally from the saved CSV snapshot; no live NASA API request is required.</span><span class="zh">分析上传的 Sentry 数据集中的 300 条撞击监测记录。所有结果均由本地 CSV 数据计算，无需实时请求 NASA API。</span><span class="es">Explora 300 registros del conjunto Sentry proporcionado. Los resultados se calculan localmente a partir del CSV, sin solicitudes a la API de NASA.</span></p>
       </div>
@@ -136,7 +136,7 @@
     <section class="asteroid-box orbit-explorer" aria-label="Asteroid Orbit Explorer">
       <div class="orbit-heading">
         <div>
-          <div class="eyebrow">STELLAR · ASTORB CATALOG</div>
+          <div class="eyebrow">COSMOVERSE · ASTORB CATALOG</div>
           <h3><span class="en">Asteroid Orbit Explorer</span><span class="zh">小行星轨道探索器</span><span class="es">Explorador de órbitas de asteroides</span></h3>
           <p class="asteroid-note"><span class="en">Explore orbital elements for near-Earth asteroid candidates from the uploaded Lowell astorb.dat catalog.</span><span class="zh">探索上传的 Lowell astorb.dat 数据库中的近地小行星候选对象及其轨道参数。</span><span class="es">Explora los elementos orbitales de los candidatos a asteroides cercanos a la Tierra del catálogo Lowell astorb.dat.</span></p>
         <p class="asteroid-note">Source: <a href="https://asteroid.lowell.edu/astorb/" target="_blank" rel="noopener" style="color:#9fd8ff">Lowell Observatory astorb database</a> · Fuente · 来源</p>
@@ -188,7 +188,7 @@
 <section id="resourcesPanel" class="resources-panel hidden" aria-label="Astronomy learning resources">
   <div class="resources-header">
     <div>
-      <div class="eyebrow"><span class="en">STELLAR · LEARNING HUB</span><span class="zh">STELLAR · 学习中心</span><span class="es">STELLAR · CENTRO DE APRENDIZAJE</span></div>
+      <div class="eyebrow"><span class="en">COSMOVERSE · LEARNING HUB</span><span class="zh">COSMOVERSE · 学习中心</span><span class="es">COSMOVERSE · CENTRO DE APRENDIZAJE</span></div>
       <h2><span class="en">Astronomy Resources</span><span class="zh">天文学资源</span><span class="es">Recursos de astronomía</span></h2>
       <p><span class="en">Explore reliable websites, free textbooks, interactive simulations, and scientific data to deepen your understanding of the universe.</span><span class="zh">探索可靠的网站、免费教材、互动模拟和科学数据，加深对宇宙的理解。</span><span class="es">Explora sitios fiables, libros gratuitos, simulaciones interactivas y datos científicos para entender mejor el universo.</span></p>
     </div>
@@ -256,10 +256,10 @@
 <div class="status" id="status" role="status"></div>
 <div id="error"></div>
 
-<button class="chatbtn" id="chatBtn" aria-label="Ask Stellar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01" stroke-linecap="round" stroke-width="2.4"/></svg><span><span class="en" lang="en">Ask Stellar</span><span class="zh" lang="zh-CN">问问 Stellar</span><span class="es" lang="es">Pregunta a Stellar</span></span></button>
+<button class="chatbtn" id="chatBtn" aria-label="Ask Cosmo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01" stroke-linecap="round" stroke-width="2.4"/></svg><span><span class="en" lang="en">Ask Cosmo</span><span class="zh" lang="zh-CN">问问 Cosmo</span><span class="es" lang="es">Pregunta a Cosmo</span></span></button>
 <section class="chatpanel" id="chatPanel" aria-live="polite">
   <header class="chathead">
-    <div><div class="chattitle"><span class="en" lang="en">Ask Stellar · AI space guide</span><span class="zh" lang="zh-CN">问问 Stellar · AI 太空向导</span><span class="es" lang="es">Pregunta a Stellar · guía espacial con IA</span></div><div class="chatctx" id="chatCtx"></div></div>
+    <div><div class="chattitle"><span class="en" lang="en">Ask Cosmo · AI space guide</span><span class="zh" lang="zh-CN">问问 Cosmo · AI 太空向导</span><span class="es" lang="es">Pregunta a Cosmo · guía espacial con IA</span></div><div class="chatctx" id="chatCtx"></div></div>
     <div class="chattools"><select id="chatLang" aria-label="Voice language / 语音语言 / Idioma de voz"></select><button id="chatSpeak" class="icon" aria-pressed="false" title="Read answers aloud / 朗读回答 / Leer respuestas">🔊</button><button id="chatClose" class="icon" aria-label="Close">×</button></div>
   </header>
   <div class="chatlog" id="chatLog"></div>

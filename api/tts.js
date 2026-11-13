@@ -1,4 +1,4 @@
-// Stellar's voice: ElevenLabs text-to-speech (Vercel function), also used by server.mjs locally.
+// Cosmo's voice: ElevenLabs text-to-speech (Vercel function), also used by server.mjs locally.
 // 语音合成 · Voz. The ElevenLabs key is read from the environment on the server; it never reaches the browser.
 //   ELEVENLABS_API_KEY   required
 //   ELEVENLABS_VOICE_ID  optional, default Sarah (EXAVITQu4vr4xnSDxMaL)
