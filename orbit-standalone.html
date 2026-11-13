@@ -3291,6 +3291,40 @@ function web(b, n, colors, p, r) {
   }
 }
 
+/* ── Supercluster: galaxies streaming along branching filaments into a bright basin · 超星系团 ──
+   colors: [filaments, clusters (knots), core]. params.branches: how many main branches;
+   params.home + params.via: one branch runs home → via… → centre (e.g. ends at the Local Group) · 指定一条经过 home 的分支 */
+function supercluster(b, n, colors, p, r) {
+  const fil = hexRGB(colors[0] || '#9fb8ff'), knot = hexRGB(colors[1] || '#ffe2b0'), core = hexRGB(colors[2] || '#fff1d6');
+  const paths = [];
+  if (p.home) paths.push([p.home, ...(p.via || []), [0, 0, 0]]);
+  const B = p.branches ?? 9, flat = p.flat ?? 0.4;
+  for (let k = paths.length; k < B; k++) {   // tips spread round the basin, each bending on its way in · 分支弯曲汇入
+    const th = (k / B) * Math.PI * 2 + gauss(r) * 0.25, rad = 0.78 + r() * 0.22, y = gauss(r) * flat * 0.5;
+    const tip = [Math.cos(th) * rad, y, Math.sin(th) * rad], bend = (r() - 0.5) * 0.7;
+    const mid = [tip[0] * 0.5 - Math.sin(th) * bend * 0.4, y * 0.4 + gauss(r) * 0.06, tip[2] * 0.5 + Math.cos(th) * bend * 0.4];
+    paths.push([tip, mid, [0, 0, 0]]);
+    if (r() < 0.75) {                        // a side branch joining halfway · 支流
+      const t2 = th + (r() < 0.5 ? -1 : 1) * (0.35 + r() * 0.3), r2 = 0.55 + r() * 0.3;
+      paths.push([[Math.cos(t2) * r2, gauss(r) * flat * 0.4, Math.sin(t2) * r2], mid]);
+    }
+  }
+  // A point a fraction t along a polyline · 折线上的点
+  const along = (pts, t) => { const s = t * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(s)), f = s - i, a = pts[i], c = pts[i + 1]; return [a[0] + (c[0] - a[0]) * f, a[1] + (c[1] - a[1]) * f, a[2] + (c[2] - a[2]) * f]; };
+  for (let i = 0; i < n * 0.1; i++) {       // the basin's dense, warm heart · 核心
+    const s = 0.05 + 0.07 * r(); b.add(gauss(r) * s, gauss(r) * s * 0.6, gauss(r) * s, mix(core, WHITE, r() * 0.3), 0.004 + r() * 0.005, 0.45 + r() * 0.3);
+  }
+  const knots = paths.flatMap(pts => [0.3, 0.62].map(t => along(pts, t + (r() - 0.5) * 0.08)));
+  for (let i = 0; i < n * 0.16; i++) {      // galaxy clusters along the branches · 沿途的星系团
+    const a = knots[Math.floor(r() * knots.length)], s = 0.022 * Math.abs(gauss(r));
+    b.add(a[0] + gauss(r) * s, a[1] + gauss(r) * s, a[2] + gauss(r) * s, mix(knot, WHITE, r() * 0.3), 0.004 + r() * 0.005, 0.5 + r() * 0.3);
+  }
+  while (b.n < n) {                          // the streams: thin far out, brighter as they flow in · 流向核心，越近越亮
+    const pts = paths[Math.floor(r() * paths.length)], t = Math.pow(r(), 0.8), c = along(pts, t), s = 0.012 + 0.03 * (1 - t) * r();
+    b.add(c[0] + gauss(r) * s, c[1] + gauss(r) * s * 0.7, c[2] + gauss(r) * s, mix(fil, knot, t * 0.45), 0.0035 + r() * 0.0045, 0.35 + 0.45 * t);
+  }
+}
+
 /* ── Star with corona · 恒星 ── colors: [surface, corona] */
 function star(b, n, colors, p, r) {
   const s0 = hexRGB(colors[0] || '#fff3d6'), s1 = hexRGB(colors[1] || colors[0] || '#ffb860');
@@ -3310,7 +3344,7 @@ function blackHole(b, n, colors, p, r) {
 }
 
 /* ── A group of galaxies · 星系群 ──
-   params.members: [{ at:[x,y,z], kind:'barred-spiral'|'spiral-galaxy'|'elliptical'|'dwarf', r, share, tilt:[rx,rz], colors }]
+   params.members: [{ at:[x,y,z], kind:'barred-spiral'|'spiral-galaxy'|'elliptical'|'dwarf'|…, r, share, tilt:[rx,rz], colors, bright }]
    params.dwarfs: how many small anonymous dwarf galaxies to scatter · 散布的矮星系数量 */
 function galaxyGroup(b, n, colors, p, r) {
   const members = p.members || [], dwarfC = hexRGB(colors[0] || '#cdd8ff');
@@ -3320,7 +3354,7 @@ function galaxyGroup(b, n, colors, p, r) {
     for (let i = 0; i < sub.count; i++) {
       let x = sub.positions[i * 3] * m.r, y = sub.positions[i * 3 + 1] * m.r, z = sub.positions[i * 3 + 2] * m.r;
       [y, z] = [y * cx - z * sx, y * sx + z * cx]; [x, y] = [x * cz - y * sz, x * sz + y * cz];
-      b.add(m.at[0] + x, m.at[1] + y, m.at[2] + z, [sub.colors[i * 3], sub.colors[i * 3 + 1], sub.colors[i * 3 + 2]], sub.sizes[i] * Math.max(0.35, m.r * 2.2));
+      b.add(m.at[0] + x, m.at[1] + y, m.at[2] + z, [sub.colors[i * 3], sub.colors[i * 3 + 1], sub.colors[i * 3 + 2]], sub.sizes[i] * Math.max(0.35, m.r * 2.2), m.bright ?? 1);   // bright < 1 keeps dense stars from saturating to white · 防止过曝成白色
     }
   }
   const nd = p.dwarfs ?? 40;
@@ -3341,7 +3375,7 @@ function starfield(b, n, colors, p, r) {
 }
 
 const KINDS = { 'spiral-galaxy': (b, n, c, p, r) => spiral(b, n, c, p, r, false), 'barred-spiral': (b, n, c, p, r) => spiral(b, n, c, p, r, true),
-  elliptical, cluster, nebula, web, 'galaxy-group': galaxyGroup, star, 'black-hole': blackHole, starfield };
+  elliptical, cluster, nebula, web, supercluster, 'galaxy-group': galaxyGroup, star, 'black-hole': blackHole, starfield };
 const SHAPE_KINDS = Object.keys(KINDS);
 
 // makeShape('barred-spiral', 60000, ['#ffe9c4', '#8fb7ff'], { arms: 2 }, seed) → { positions, colors, sizes, count }
@@ -3448,6 +3482,116 @@ const __default = {
   },
   clue: { en: 'Our big neighbour: a giant galaxy you can spot without a telescope.', zh: '我们的大邻居：不用望远镜就能看到的遥远巨人。', es: 'Nuestra gran vecina: una gigante lejana que puedes ver sin telescopio.', pt: 'Nossa grande vizinha: uma gigante distante que dá para ver sem telescópio.' },
   youAreHere: null,
+};
+
+return { default: __default };
+})();
+
+__m['pieces/betelgeuse'] = (() => {
+// Betelgeuse, the red supergiant in Orion · 参宿四 · Betelgeuse · Betelgeuse
+// Sources opened (2026-11-13c): NASA Hubble "What is Betelgeuse?", ESO eso2109 (Great Dimming dust veil).
+// Placed on the Orion side of the Sun (the Orion Nebula piece is further out the same way); not to scale. · 不按比例
+const HUBBLE = 'https://science.nasa.gov/missions/hubble/what-is-betelgeuse-inside-the-strange-volatile-star/';
+const ESO = 'https://www.eso.org/public/news/eso2109/';
+const __default = {
+  id: 'betelgeuse', level: 'neighbourhood',
+  names: { en: 'Betelgeuse', zh: '参宿四', es: 'Betelgeuse', pt: 'Betelgeuse' },
+  type: { en: 'Red supergiant star', zh: '红超巨星', es: 'Estrella supergigante roja', pt: 'Estrela supergigante vermelha' },
+  // A huge orange-red star with a soft, dim dust cloud below it (the 2019 "Great Dimming") · 下方是 2019 年“大变暗”的尘埃云
+  // bright < 1: the dense additive star stays orange-red instead of washing out to white (lesson 2026-11-13b) · 保持橙红色
+  shape: { kind: 'galaxy-group', count: 2200, colors: ['#ffffff'], seed: 12, params: { dwarfs: 0, members: [
+    { at: [0, 0.04, 0], kind: 'star', r: 0.62, share: 0.55, colors: ['#ff5a1f', '#d8401c'], bright: 0.32, seed: 21 },
+    { at: [0.06, -0.42, 0.08], kind: 'nebula', r: 0.3, share: 0.45, colors: ['#9a5038', '#6a5a7a', '#ff9a66'], params: { blobs: 4 }, seed: 22 },
+  ] } },
+  position: [-30, -1, -12], size: 4.5, frame: 1.15,
+  facts: [
+    { label: { en: 'Type', zh: '类型', es: 'Tipo', pt: 'Tipo' },
+      value: { en: 'Red supergiant', zh: '红超巨星', es: 'Supergigante roja', pt: 'Supergigante vermelha' },
+      source: { name: 'ESO', url: ESO } },
+    { label: { en: 'Distance', zh: '距离', es: 'Distancia', pt: 'Distância' },
+      value: { en: 'About 700 light-years', zh: '约 700 光年', es: 'Unos 700 años luz', pt: 'Cerca de 700 anos-luz' },
+      source: { name: 'NASA', url: HUBBLE } },
+    { label: { en: 'Size', zh: '大小', es: 'Tamaño', pt: 'Tamanho' },
+      value: { en: 'About 700 times the Sun', zh: '直径约为太阳的 700 倍', es: 'Unas 700 veces el Sol', pt: 'Cerca de 700 vezes o Sol' },
+      source: { name: 'NASA', url: HUBBLE } },
+    { label: { en: 'In the Sun’s place', zh: '如果替代太阳', es: 'En lugar del Sol', pt: 'No lugar do Sol' },
+      value: { en: 'It would reach past Jupiter’s orbit', zh: '会延伸到木星轨道之外', es: 'Llegaría más allá de la órbita de Júpiter', pt: 'Passaria da órbita de Júpiter' },
+      source: { name: 'NASA', url: HUBBLE } },
+    { label: { en: 'Age', zh: '年龄', es: 'Edad', pt: 'Idade' },
+      value: { en: 'About 10 million years', zh: '约 1000 万年', es: 'Unos 10 millones de años', pt: 'Cerca de 10 milhões de anos' },
+      source: { name: 'NASA', url: HUBBLE } },
+    { label: { en: 'Great Dimming', zh: '大变暗', es: 'Gran Oscurecimiento', pt: 'Grande Escurecimento' },
+      value: { en: 'Late 2019–early 2020 · a dust cloud hid part of it', zh: '2019 年底至 2020 年初 · 一团尘埃遮住了它的一部分', es: 'Finales de 2019 a inicios de 2020 · una nube de polvo tapó parte de ella', pt: 'Fim de 2019 a início de 2020 · uma nuvem de poeira cobriu parte dela' },
+      source: { name: 'ESO', url: ESO } },
+  ],
+  // Clue "came back": ESO eso2109 / NASA Hubble (normal brightness by April 2020)
+  // Narration: Orion's shoulder, ~15 solar masses, supernova not for ~100,000 years: NASA Hubble page above · 来源同上
+  narration: {
+    en: 'Betelgeuse is the red star on Orion’s shoulder, a supergiant about 15 times more massive than the Sun. It is only about 10 million years old, yet it is already near the end of its life: one day it will explode as a supernova, though probably not for about another 100,000 years.',
+    zh: '参宿四是猎户座“肩膀”上的那颗红星，一颗质量约为太阳 15 倍的超巨星。它只有大约 1000 万岁，却已接近生命的尽头：总有一天它会爆发成超新星，不过大概还要再等约 10 万年。',
+    es: 'Betelgeuse es la estrella roja del hombro de Orión, una supergigante unas 15 veces más masiva que el Sol. Solo tiene unos 10 millones de años y ya está cerca del final de su vida: algún día explotará como supernova, aunque probablemente no antes de unos 100.000 años.',
+    pt: 'Betelgeuse é a estrela vermelha no ombro de Órion, uma supergigante com cerca de 15 vezes a massa do Sol. Tem só uns 10 milhões de anos e já está perto do fim da vida: um dia vai explodir como supernova, mas provavelmente só daqui a uns 100 mil anos.',
+  },
+  clue: { en: 'A red supergiant on a hunter’s shoulder that once faded, then came back.', zh: '猎人肩上的一颗红超巨星，曾经变暗，后来又亮了回来。', es: 'Una supergigante roja en el hombro de un cazador que se oscureció y luego volvió a brillar.', pt: 'Uma supergigante vermelha no ombro de um caçador que escureceu e depois voltou.' },
+  youAreHere: null,
+};
+
+return { default: __default };
+})();
+
+__m['pieces/laniakea'] = (() => {
+// The Laniakea supercluster · 拉尼亚凯亚超星系团 · Supercúmulo Laniakea · Superaglomerado Laniakea
+// Sources opened (2026-11-13c): NASA APOD 2014-09-10, Tully et al. 2014 (Nature 513, 71), NASA Science (large-scale structures).
+// Drawn as galaxies streaming along branches into a basin; one branch ends at the Local Group, near the outer edge
+// (NASA), passing the Virgo Cluster (inside Laniakea per APOD). Not to scale. · 不按比例
+const APOD = 'https://apod.nasa.gov/apod/ap140910.html';
+const NATURE = 'https://www.nature.com/articles/nature13674';
+const LSS = 'https://science.nasa.gov/universe/galaxies/large-scale-structures/';
+const S = 58;                                         // size in the level's units · 本层单位中的大小
+const HOME = [0.62, 0.05, 0.5], VIRGO = [0.48, 0.04, 0.34];   // unit coords · 单位坐标
+const at = c => c.map(v => v * S);
+// Tilt the flat basin towards the camera; three.js Euler XYZ applies Rz, then Rx · 让盆地面向镜头
+const TILT = [1.05, 0.2];
+const turn = ([x, y, z], [rx, rz] = TILT) => { [x, y] = [x * Math.cos(rz) - y * Math.sin(rz), x * Math.sin(rz) + y * Math.cos(rz)]; [y, z] = [y * Math.cos(rx) - z * Math.sin(rx), y * Math.sin(rx) + z * Math.cos(rx)]; return [x, y, z]; };
+const __default = {
+  id: 'laniakea', level: 'supercluster',
+  names: { en: 'Laniakea Supercluster', zh: '拉尼亚凯亚超星系团', es: 'Supercúmulo Laniakea', pt: 'Superaglomerado Laniakea' },
+  type: { en: 'Our home supercluster', zh: '我们的家园超星系团', es: 'Nuestro supercúmulo', pt: 'Nosso superaglomerado' },
+  shape: { kind: 'supercluster', count: 34000, colors: ['#9db8ff', '#ffe2b4', '#fff2dc'], seed: 7,
+    params: { branches: 10, home: HOME, via: [VIRGO, [0.22, 0.02, 0.2]] } },
+  // The Local Group (HOME) sits at the level's origin, where the camera looks · 本星系群位于本层原点
+  position: turn(HOME).map(v => -v * S), size: S, tilt: TILT, spin: 0, frame: 1.1,   // still, so the marker stays on its branch · 不自转，标记不偏移
+  labels: [{ at: at(VIRGO), names: { en: 'Virgo Cluster', zh: '室女座星系团', es: 'Cúmulo de Virgo', pt: 'Aglomerado de Virgem' } }],
+  facts: [
+    { label: { en: 'Type', zh: '类型', es: 'Tipo', pt: 'Tipo' },
+      value: { en: 'Supercluster of galaxies', zh: '超星系团', es: 'Supercúmulo de galaxias', pt: 'Superaglomerado de galáxias' },
+      source: { name: 'NASA', url: LSS } },
+    { label: { en: 'Size', zh: '大小', es: 'Tamaño', pt: 'Tamanho' },
+      value: { en: 'About 500 million light-years across', zh: '跨度约 5 亿光年', es: 'Unos 500 millones de años luz de diámetro', pt: 'Cerca de 500 milhões de anos-luz de diâmetro' },
+      source: { name: 'NASA', url: APOD } },
+    { label: { en: 'Galaxies', zh: '星系数量', es: 'Galaxias', pt: 'Galáxias' },
+      value: { en: 'About 100,000 large galaxies', zh: '约 10 万个大星系', es: 'Unas 100.000 galaxias grandes', pt: 'Cerca de 100 mil galáxias grandes' },
+      source: { name: 'Nature (Tully et al. 2014)', url: NATURE } },
+    { label: { en: 'Mass', zh: '质量', es: 'Masa', pt: 'Massa' },
+      value: { en: 'About 100,000 times the Milky Way', zh: '约为银河系的 10 万倍', es: 'Unas 100.000 veces la Vía Láctea', pt: 'Cerca de 100 mil vezes a Via Láctea' },
+      source: { name: 'NASA', url: APOD } },
+    { label: { en: 'Name', zh: '名字', es: 'Nombre', pt: 'Nome' },
+      value: { en: 'Hawaiian for “immense heaven”', zh: '夏威夷语，意为“无垠的天空”', es: 'En hawaiano, «cielo inmenso»', pt: 'Em havaiano, “céu imenso”' },
+      source: { name: 'NASA', url: APOD } },
+    { label: { en: 'Our place', zh: '我们的位置', es: 'Nuestro lugar', pt: 'Nosso lugar' },
+      value: { en: 'The Local Group, on its outer edge', zh: '本星系群，位于它的外缘', es: 'El Grupo Local, en su borde exterior', pt: 'O Grupo Local, na borda externa' },
+      source: { name: 'NASA', url: LSS } },
+  ],
+  // Narration sources: ~100,000 large galaxies: Nature (Tully et al. 2014); ~500 million ly, whole Virgo Cluster, galaxies beyond flowing
+  // to other concentrations: APOD; Local Group near the outer edge: NASA large-scale structures · 各句来源
+  narration: {
+    en: 'Laniakea is our home supercluster: about 100,000 large galaxies spread across about 500 million light-years, including the whole Virgo Cluster. Our Local Group sits near its outer edge. Beyond its border, galaxies flow towards other great concentrations of galaxies.',
+    zh: '拉尼亚凯亚是我们的家园超星系团：约 10 万个大星系分布在约 5 亿光年的范围内，其中包括整个室女座星系团。我们的本星系群位于它的外缘附近。在它的边界之外，星系流向其他巨大的星系聚集区。',
+    es: 'Laniakea es nuestro supercúmulo: unas 100.000 galaxias grandes repartidas en unos 500 millones de años luz, incluido todo el cúmulo de Virgo. Nuestro Grupo Local está cerca de su borde exterior. Más allá de su frontera, las galaxias fluyen hacia otras grandes concentraciones de galaxias.',
+    pt: 'Laniakea é o nosso superaglomerado: cerca de 100 mil galáxias grandes espalhadas por cerca de 500 milhões de anos-luz, incluindo todo o Aglomerado de Virgem. Nosso Grupo Local fica perto da borda externa. Além da fronteira dele, as galáxias fluem para outras grandes concentrações de galáxias.',
+  },
+  clue: { en: 'A Hawaiian name for our cosmic home among about 100,000 large galaxies.', zh: '一个夏威夷语名字，是我们在约 10 万个大星系中的宇宙家园。', es: 'Un nombre hawaiano para nuestro hogar cósmico entre unas 100.000 galaxias grandes.', pt: 'Um nome havaiano para o nosso lar cósmico entre cerca de 100 mil galáxias grandes.' },
+  youAreHere: { en: 'You are here · Local Group', zh: '你在这里 · 本星系群', es: 'Estás aquí · Grupo Local', pt: 'Você está aqui · Grupo Local', at: at(HOME) },
 };
 
 return { default: __default };
@@ -3700,7 +3844,9 @@ const andromeda = __m['pieces/andromeda'].default;
 const orionNebula = __m['pieces/orion-nebula'].default;
 const pleiades = __m['pieces/pleiades'].default;
 const alphaCentauri = __m['pieces/alpha-centauri'].default;
-const PIECES = [milkyWay, localGroup, observableUniverse, andromeda, orionNebula, pleiades, alphaCentauri];
+const laniakea = __m['pieces/laniakea'].default;
+const betelgeuse = __m['pieces/betelgeuse'].default;
+const PIECES = [milkyWay, localGroup, observableUniverse, andromeda, orionNebula, pleiades, alphaCentauri, laniakea, betelgeuse];
 
 return { PIECES };
 })();
@@ -3723,9 +3869,9 @@ const LEVELS = [
   { id: 'universe', names: L('Observable Universe', '可观测宇宙', 'Universo observable', 'Universo observável'),
     blurb: L('Galaxies strung along a cosmic web. Point at it, or zoom in to come back home.', '星系沿宇宙网排列。指向它，或放大回家。', 'Galaxias en una red cósmica. Apúntala o acerca el zoom para volver a casa.', 'Galáxias numa teia cósmica. Aponte para ela ou aproxime o zoom para voltar para casa.') },
   { id: 'supercluster', names: L('Supercluster', '超星系团', 'Supercúmulo', 'Superaglomerado'),
-    blurb: L('Groups and clusters of galaxies, joined in a vast supercluster. Our Local Group is one small knot.', '星系群和星系团连成巨大的超星系团，本星系群只是其中一个小结。', 'Grupos y cúmulos de galaxias unidos en un enorme supercúmulo. Nuestro Grupo Local es un pequeño nudo.', 'Grupos e aglomerados de galáxias unidos num enorme superaglomerado. Nosso Grupo Local é um pequeno nó.'),
-    backdrop: { kind: 'web', count: 26000, colors: ['#8fb0ff', '#ffe0ae', '#5c6c9a'], params: { nodes: 40 }, seed: 31, size: 110 },
-    marker: { names: L('You are here · Local Group', '你在这里 · 本星系群', 'Estás aquí · Grupo Local', 'Você está aqui · Grupo Local'), at: [0, 0, 0] } },
+    blurb: L('Groups and clusters of galaxies, joined in our home supercluster, Laniakea. Our Local Group is one small knot near its edge. Point at it to learn more.', '星系群和星系团连成我们的家园超星系团——拉尼亚凯亚。本星系群只是它边缘的一个小结。指向它了解更多。', 'Grupos y cúmulos de galaxias unidos en nuestro supercúmulo, Laniakea. Nuestro Grupo Local es un pequeño nudo cerca de su borde. Apúntalo para saber más.', 'Grupos e aglomerados de galáxias unidos no nosso superaglomerado, Laniakea. Nosso Grupo Local é um pequeno nó perto da borda. Aponte para ele para saber mais.'),
+    // "You are here · Local Group" belongs to the Laniakea piece (pieces/laniakea.js), on its outer edge · 标记在拉尼亚凯亚天体里
+    backdrop: { kind: 'web', count: 15000, colors: ['#8fb0ff', '#ffe0ae', '#5c6c9a'], params: { nodes: 40 }, seed: 31, size: 110 } },   // lighter, so Laniakea stands out · 背景更淡
   { id: 'local-group', names: L('Local Group', '本星系群', 'Grupo Local', 'Grupo Local'),
     blurb: L('Our galaxy’s family. Point at the group to learn about it.', '我们星系的家族。指向星系群了解更多。', 'La familia de nuestra galaxia. Apunta al grupo para saber más.', 'A família da nossa galáxia. Aponte para o grupo para saber mais.') },
   { id: 'galaxy', names: L('Galaxy', '银河系', 'Galaxia', 'Galáxia'),
@@ -3805,6 +3951,7 @@ function validatePiece(p) {
   if (!has4(p?.clue)) at('clue needs en/zh/es/pt');
   if (p?.youAreHere != null && (!has4(p.youAreHere) || !Array.isArray(p.youAreHere.at) || p.youAreHere.at.length !== 3)) at('youAreHere needs en/zh/es/pt and at:[x,y,z]');
   if (p?.frame != null && !(p.frame > 0)) at('frame must be > 0');
+  if (p?.spin != null && !Number.isFinite(p.spin)) at('spin must be a number (rad/s)');
   if (p?.tilt != null && !(Array.isArray(p.tilt) && p.tilt.length === 2 && p.tilt.every(Number.isFinite))) at('tilt must be [rx, rz]');
   for (const lb of p?.labels || []) if (!has4(lb.names) || !Array.isArray(lb.at)) at('labels need names (4 languages) and at');
   return err;
@@ -3872,7 +4019,7 @@ function createJourney({ T, scene, pieces = [], sizeScale = () => 1, viewHeight 
     if (pc.tilt) holder.rotation.set(pc.tilt[0], 0, pc.tilt[1]);   // optional [rx, rz] tilt · 可选倾角
     const spin = new T.Group(); holder.add(spin);
     const pts = points({ ...pc.shape, seed: pc.shape.seed }, pc.size); spin.add(pts);
-    const speed = /spiral/.test(pc.shape.kind) ? 0.012 : pc.shape.kind === 'web' ? 0.005 : 0.003;
+    const speed = pc.spin ?? (/spiral/.test(pc.shape.kind) ? 0.012 : pc.shape.kind === 'web' ? 0.005 : 0.003);   // optional spin (rad/s) · 可选自转速度
     L.spin.push([spin, speed]);
     const centre = new T.Object3D(); holder.add(centre);
     const entry = { p: pc, holder, spin, pts, centre, extra: [] };

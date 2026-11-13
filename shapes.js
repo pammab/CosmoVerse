@@ -118,6 +118,40 @@ function web(b, n, colors, p, r) {
   }
 }
 
+/* ── Supercluster: galaxies streaming along branching filaments into a bright basin · 超星系团 ──
+   colors: [filaments, clusters (knots), core]. params.branches: how many main branches;
+   params.home + params.via: one branch runs home → via… → centre (e.g. ends at the Local Group) · 指定一条经过 home 的分支 */
+function supercluster(b, n, colors, p, r) {
+  const fil = hexRGB(colors[0] || '#9fb8ff'), knot = hexRGB(colors[1] || '#ffe2b0'), core = hexRGB(colors[2] || '#fff1d6');
+  const paths = [];
+  if (p.home) paths.push([p.home, ...(p.via || []), [0, 0, 0]]);
+  const B = p.branches ?? 9, flat = p.flat ?? 0.4;
+  for (let k = paths.length; k < B; k++) {   // tips spread round the basin, each bending on its way in · 分支弯曲汇入
+    const th = (k / B) * Math.PI * 2 + gauss(r) * 0.25, rad = 0.78 + r() * 0.22, y = gauss(r) * flat * 0.5;
+    const tip = [Math.cos(th) * rad, y, Math.sin(th) * rad], bend = (r() - 0.5) * 0.7;
+    const mid = [tip[0] * 0.5 - Math.sin(th) * bend * 0.4, y * 0.4 + gauss(r) * 0.06, tip[2] * 0.5 + Math.cos(th) * bend * 0.4];
+    paths.push([tip, mid, [0, 0, 0]]);
+    if (r() < 0.75) {                        // a side branch joining halfway · 支流
+      const t2 = th + (r() < 0.5 ? -1 : 1) * (0.35 + r() * 0.3), r2 = 0.55 + r() * 0.3;
+      paths.push([[Math.cos(t2) * r2, gauss(r) * flat * 0.4, Math.sin(t2) * r2], mid]);
+    }
+  }
+  // A point a fraction t along a polyline · 折线上的点
+  const along = (pts, t) => { const s = t * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(s)), f = s - i, a = pts[i], c = pts[i + 1]; return [a[0] + (c[0] - a[0]) * f, a[1] + (c[1] - a[1]) * f, a[2] + (c[2] - a[2]) * f]; };
+  for (let i = 0; i < n * 0.1; i++) {       // the basin's dense, warm heart · 核心
+    const s = 0.05 + 0.07 * r(); b.add(gauss(r) * s, gauss(r) * s * 0.6, gauss(r) * s, mix(core, WHITE, r() * 0.3), 0.004 + r() * 0.005, 0.45 + r() * 0.3);
+  }
+  const knots = paths.flatMap(pts => [0.3, 0.62].map(t => along(pts, t + (r() - 0.5) * 0.08)));
+  for (let i = 0; i < n * 0.16; i++) {      // galaxy clusters along the branches · 沿途的星系团
+    const a = knots[Math.floor(r() * knots.length)], s = 0.022 * Math.abs(gauss(r));
+    b.add(a[0] + gauss(r) * s, a[1] + gauss(r) * s, a[2] + gauss(r) * s, mix(knot, WHITE, r() * 0.3), 0.004 + r() * 0.005, 0.5 + r() * 0.3);
+  }
+  while (b.n < n) {                          // the streams: thin far out, brighter as they flow in · 流向核心，越近越亮
+    const pts = paths[Math.floor(r() * paths.length)], t = Math.pow(r(), 0.8), c = along(pts, t), s = 0.012 + 0.03 * (1 - t) * r();
+    b.add(c[0] + gauss(r) * s, c[1] + gauss(r) * s * 0.7, c[2] + gauss(r) * s, mix(fil, knot, t * 0.45), 0.0035 + r() * 0.0045, 0.35 + 0.45 * t);
+  }
+}
+
 /* ── Star with corona · 恒星 ── colors: [surface, corona] */
 function star(b, n, colors, p, r) {
   const s0 = hexRGB(colors[0] || '#fff3d6'), s1 = hexRGB(colors[1] || colors[0] || '#ffb860');
@@ -137,7 +171,7 @@ function blackHole(b, n, colors, p, r) {
 }
 
 /* ── A group of galaxies · 星系群 ──
-   params.members: [{ at:[x,y,z], kind:'barred-spiral'|'spiral-galaxy'|'elliptical'|'dwarf', r, share, tilt:[rx,rz], colors }]
+   params.members: [{ at:[x,y,z], kind:'barred-spiral'|'spiral-galaxy'|'elliptical'|'dwarf'|…, r, share, tilt:[rx,rz], colors, bright }]
    params.dwarfs: how many small anonymous dwarf galaxies to scatter · 散布的矮星系数量 */
 function galaxyGroup(b, n, colors, p, r) {
   const members = p.members || [], dwarfC = hexRGB(colors[0] || '#cdd8ff');
@@ -147,7 +181,7 @@ function galaxyGroup(b, n, colors, p, r) {
     for (let i = 0; i < sub.count; i++) {
       let x = sub.positions[i * 3] * m.r, y = sub.positions[i * 3 + 1] * m.r, z = sub.positions[i * 3 + 2] * m.r;
       [y, z] = [y * cx - z * sx, y * sx + z * cx]; [x, y] = [x * cz - y * sz, x * sz + y * cz];
-      b.add(m.at[0] + x, m.at[1] + y, m.at[2] + z, [sub.colors[i * 3], sub.colors[i * 3 + 1], sub.colors[i * 3 + 2]], sub.sizes[i] * Math.max(0.35, m.r * 2.2));
+      b.add(m.at[0] + x, m.at[1] + y, m.at[2] + z, [sub.colors[i * 3], sub.colors[i * 3 + 1], sub.colors[i * 3 + 2]], sub.sizes[i] * Math.max(0.35, m.r * 2.2), m.bright ?? 1);   // bright < 1 keeps dense stars from saturating to white · 防止过曝成白色
     }
   }
   const nd = p.dwarfs ?? 40;
@@ -168,7 +202,7 @@ function starfield(b, n, colors, p, r) {
 }
 
 const KINDS = { 'spiral-galaxy': (b, n, c, p, r) => spiral(b, n, c, p, r, false), 'barred-spiral': (b, n, c, p, r) => spiral(b, n, c, p, r, true),
-  elliptical, cluster, nebula, web, 'galaxy-group': galaxyGroup, star, 'black-hole': blackHole, starfield };
+  elliptical, cluster, nebula, web, supercluster, 'galaxy-group': galaxyGroup, star, 'black-hole': blackHole, starfield };
 export const SHAPE_KINDS = Object.keys(KINDS);
 
 // makeShape('barred-spiral', 60000, ['#ffe9c4', '#8fb7ff'], { arms: 2 }, seed) → { positions, colors, sizes, count }

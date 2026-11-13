@@ -87,3 +87,18 @@ test('quad writes all four languages and escapes text', () => {
   const h = quad({ en: 'A<b', zh: '甲', es: 'B', pt: 'C' });
   assert.match(h, /class="en"[^>]*>A&lt;b</); assert.match(h, /class="pt"/); assert.match(h, /lang="zh-CN">甲/);
 });
+
+test('Laniakea: the Local Group marker sits on a filament at the level origin, and the piece does not spin', () => {
+  const p = PIECES.find(x => x.id === 'laniakea');
+  assert.ok(p, 'laniakea piece exists'); assert.equal(p.level, 'supercluster'); assert.equal(p.spin, 0);
+  // youAreHere (holder coords) + position = level origin · 标记位于本层原点
+  const [rx, rz] = p.tilt || [0, 0]; let [x, y, z] = p.youAreHere.at;   // three.js Euler XYZ: Rz, then Rx
+  [x, y] = [x * Math.cos(rz) - y * Math.sin(rz), x * Math.sin(rz) + y * Math.cos(rz)]; [y, z] = [y * Math.cos(rx) - z * Math.sin(rx), y * Math.sin(rx) + z * Math.cos(rx)];
+  [x, y, z].forEach((v, i) => assert.ok(Math.abs(v + p.position[i]) < 1e-9, 'marker at origin'));
+  const s = makeShape(p.shape.kind, p.shape.count, p.shape.colors, p.shape.params, p.shape.seed), h = p.shape.params.home;
+  let near = 0; for (let i = 0; i < s.count; i++) if (Math.hypot(s.positions[i * 3] - h[0], s.positions[i * 3 + 1] - h[1], s.positions[i * 3 + 2] - h[2]) < 0.06) near++;
+  assert.ok(near > 20, 'particles around home: ' + near);
+  // no duplicate "You are here" on the supercluster level · 本层没有重复的标记
+  assert.equal(LEVELS.find(l => l.id === 'supercluster').marker, undefined);
+  const bad = structuredClone(p); bad.spin = 'fast'; assert.ok(validatePiece(bad).some(e => /spin/.test(e)));
+});

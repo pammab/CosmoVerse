@@ -16,9 +16,9 @@ export const LEVELS = [
   { id: 'universe', names: L('Observable Universe', '可观测宇宙', 'Universo observable', 'Universo observável'),
     blurb: L('Galaxies strung along a cosmic web. Point at it, or zoom in to come back home.', '星系沿宇宙网排列。指向它，或放大回家。', 'Galaxias en una red cósmica. Apúntala o acerca el zoom para volver a casa.', 'Galáxias numa teia cósmica. Aponte para ela ou aproxime o zoom para voltar para casa.') },
   { id: 'supercluster', names: L('Supercluster', '超星系团', 'Supercúmulo', 'Superaglomerado'),
-    blurb: L('Groups and clusters of galaxies, joined in a vast supercluster. Our Local Group is one small knot.', '星系群和星系团连成巨大的超星系团，本星系群只是其中一个小结。', 'Grupos y cúmulos de galaxias unidos en un enorme supercúmulo. Nuestro Grupo Local es un pequeño nudo.', 'Grupos e aglomerados de galáxias unidos num enorme superaglomerado. Nosso Grupo Local é um pequeno nó.'),
-    backdrop: { kind: 'web', count: 26000, colors: ['#8fb0ff', '#ffe0ae', '#5c6c9a'], params: { nodes: 40 }, seed: 31, size: 110 },
-    marker: { names: L('You are here · Local Group', '你在这里 · 本星系群', 'Estás aquí · Grupo Local', 'Você está aqui · Grupo Local'), at: [0, 0, 0] } },
+    blurb: L('Groups and clusters of galaxies, joined in our home supercluster, Laniakea. Our Local Group is one small knot near its edge. Point at it to learn more.', '星系群和星系团连成我们的家园超星系团——拉尼亚凯亚。本星系群只是它边缘的一个小结。指向它了解更多。', 'Grupos y cúmulos de galaxias unidos en nuestro supercúmulo, Laniakea. Nuestro Grupo Local es un pequeño nudo cerca de su borde. Apúntalo para saber más.', 'Grupos e aglomerados de galáxias unidos no nosso superaglomerado, Laniakea. Nosso Grupo Local é um pequeno nó perto da borda. Aponte para ele para saber mais.'),
+    // "You are here · Local Group" belongs to the Laniakea piece (pieces/laniakea.js), on its outer edge · 标记在拉尼亚凯亚天体里
+    backdrop: { kind: 'web', count: 15000, colors: ['#8fb0ff', '#ffe0ae', '#5c6c9a'], params: { nodes: 40 }, seed: 31, size: 110 } },   // lighter, so Laniakea stands out · 背景更淡
   { id: 'local-group', names: L('Local Group', '本星系群', 'Grupo Local', 'Grupo Local'),
     blurb: L('Our galaxy’s family. Point at the group to learn about it.', '我们星系的家族。指向星系群了解更多。', 'La familia de nuestra galaxia. Apunta al grupo para saber más.', 'A família da nossa galáxia. Aponte para o grupo para saber mais.') },
   { id: 'galaxy', names: L('Galaxy', '银河系', 'Galaxia', 'Galáxia'),
@@ -98,6 +98,7 @@ export function validatePiece(p) {
   if (!has4(p?.clue)) at('clue needs en/zh/es/pt');
   if (p?.youAreHere != null && (!has4(p.youAreHere) || !Array.isArray(p.youAreHere.at) || p.youAreHere.at.length !== 3)) at('youAreHere needs en/zh/es/pt and at:[x,y,z]');
   if (p?.frame != null && !(p.frame > 0)) at('frame must be > 0');
+  if (p?.spin != null && !Number.isFinite(p.spin)) at('spin must be a number (rad/s)');
   if (p?.tilt != null && !(Array.isArray(p.tilt) && p.tilt.length === 2 && p.tilt.every(Number.isFinite))) at('tilt must be [rx, rz]');
   for (const lb of p?.labels || []) if (!has4(lb.names) || !Array.isArray(lb.at)) at('labels need names (4 languages) and at');
   return err;
@@ -165,7 +166,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
     if (pc.tilt) holder.rotation.set(pc.tilt[0], 0, pc.tilt[1]);   // optional [rx, rz] tilt · 可选倾角
     const spin = new T.Group(); holder.add(spin);
     const pts = points({ ...pc.shape, seed: pc.shape.seed }, pc.size); spin.add(pts);
-    const speed = /spiral/.test(pc.shape.kind) ? 0.012 : pc.shape.kind === 'web' ? 0.005 : 0.003;
+    const speed = pc.spin ?? (/spiral/.test(pc.shape.kind) ? 0.012 : pc.shape.kind === 'web' ? 0.005 : 0.003);   // optional spin (rad/s) · 可选自转速度
     L.spin.push([spin, speed]);
     const centre = new T.Object3D(); holder.add(centre);
     const entry = { p: pc, holder, spin, pts, centre, extra: [] };

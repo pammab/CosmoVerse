@@ -6,5 +6,7 @@ import andromeda from './andromeda.js';
 import orionNebula from './orion-nebula.js';
 import pleiades from './pleiades.js';
 import alphaCentauri from './alpha-centauri.js';
+import laniakea from './laniakea.js';
+import betelgeuse from './betelgeuse.js';
 
-export const PIECES = [milkyWay, localGroup, observableUniverse, andromeda, orionNebula, pleiades, alphaCentauri];
+export const PIECES = [milkyWay, localGroup, observableUniverse, andromeda, orionNebula, pleiades, alphaCentauri, laniakea, betelgeuse];
