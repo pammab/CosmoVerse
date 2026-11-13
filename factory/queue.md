@@ -5,7 +5,7 @@
 - [x] journey-core: the **scale journey** framework. See "journey-core spec" below. (0771175, judge 7→8/10)
 - [ ] piece milky-way: the Milky Way (barred spiral, ~100,000 ly; where the Sun is, in the Orion Arm) — starter shipped in 0771175 (6 sourced facts, Sun marker); refine or tick
 - [ ] piece local-group: the Local Group (Milky Way, Andromeda, Triangulum, dwarf galaxies) — starter shipped in 0771175; refine or tick
-- [ ] piece andromeda: Andromeda galaxy M31
+- [x] piece andromeda: Andromeda galaxy M31 (1370eb2, judge 8/10)
 - [ ] piece orion-nebula: Orion Nebula M42
 - [ ] piece pleiades: the Pleiades star cluster M45
 - [ ] piece laniakea: the Laniakea supercluster
