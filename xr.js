@@ -58,13 +58,25 @@ export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panel
   // small, so in VR we simply skip frustum culling, and restore it on exit.
   // 缩放后 three.js 的 VR 裁剪相机会误裁近处物体，VR 中关闭视锥裁剪。
   const unculled = new Set(); let cullTick = 0;
+  // Same unit mix-up for particles: a PointsMaterial size is in world units, but with the
+  // scaled dolly the view space is in metres, so points come out `scale` times too big.
+  // We divide their size by the dolly scale while in VR. · 粒子尺寸按缩放修正
+  const pointMats = new Map(); let pointScale = 1;
   function disableCulling() {
-    scene.traverse(o => { if (o.frustumCulled) { o.frustumCulled = false; unculled.add(o); } });
+    scene.traverse(o => {
+      if (o.frustumCulled) { o.frustumCulled = false; unculled.add(o); }
+      if (o.isPoints) for (const m of [].concat(o.material)) if (m.isPointsMaterial && m.sizeAttenuation && !pointMats.has(m)) { pointMats.set(m, m.size); m.size /= pointScale; }
+    });
+  }
+  function scalePoints(sc) {
+    if (Math.abs(sc - pointScale) / pointScale < 1e-3) return;
+    pointScale = sc; pointMats.forEach((base, m) => m.size = base / sc);
   }
 
   renderer.xr.addEventListener('sessionstart', () => { panel.visible = true; panelKey = ''; disableCulling(); onEnter?.(); });
   renderer.xr.addEventListener('sessionend', () => {
     unculled.forEach(o => o.frustumCulled = true); unculled.clear();
+    pointMats.forEach((base, m) => m.size = base); pointMats.clear(); pointScale = 1;
     dolly.position.set(0, 0, 0); dolly.quaternion.identity(); dolly.scale.setScalar(1);
     panel.visible = false; cursor.visible = false; hands.forEach(h => h.mesh.visible = false);
     filter.reset(); smooth.ok = false; if (present) { present = false; onHand({ present: false, gesture: 'none' }); }
@@ -83,7 +95,8 @@ export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panel
   function placeRig(position, target, up, distance) {
     dolly.position.copy(position);
     m4.lookAt(position, target, up); dolly.quaternion.setFromRotationMatrix(m4);
-    dolly.scale.setScalar(Math.max(1e-4, distance / VIEW_DISTANCE_M));
+    const sc = Math.max(1e-4, distance / VIEW_DISTANCE_M);
+    dolly.scale.setScalar(sc); scalePoints(sc);
     camera.near = 0.01; camera.far = 50000;   // metres, in the headset's own space
   }
 
