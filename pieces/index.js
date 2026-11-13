@@ -2,5 +2,6 @@
 import milkyWay from './milky-way.js';
 import localGroup from './local-group.js';
 import observableUniverse from './observable-universe.js';
+import andromeda from './andromeda.js';
 
-export const PIECES = [milkyWay, localGroup, observableUniverse];
+export const PIECES = [milkyWay, localGroup, observableUniverse, andromeda];

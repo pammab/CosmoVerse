@@ -3,15 +3,16 @@
 // Positions are in a unit radius (scaled by `size`): Milky Way–Andromeda and Milky Way–Triangulum gaps roughly follow
 // 2.5 and 3 million light-years; galaxies themselves are drawn far larger than true scale. · 星系画得比实际大得多
 const IMAGINE_LG = 'https://imagine.gsfc.nasa.gov/features/cosmic/local_group_info.html';
+// Keep M31 in sync with pieces/andromeda.js position (×150) · 与 andromeda.js 位置保持一致
 const MW = [-0.2, 0, 0.07], M31 = [0.3, 0.03, -0.07], M33 = [0.38, -0.08, -0.22];
-const at = (c, s = 150) => c.map(v => v * s), below = (c, d) => [c[0], c[1] - d, c[2]];   // labels sit just under each galaxy · 标签在星系下方
+const at = (c, s = 150) => c.map(v => v * s);
 export default {
   id: 'local-group', level: 'local-group',
   names: { en: 'Local Group', zh: '本星系群', es: 'Grupo Local', pt: 'Grupo Local' },
   type: { en: 'Group of galaxies', zh: '星系群', es: 'Grupo de galaxias', pt: 'Grupo de galáxias' },
   shape: { kind: 'galaxy-group', count: 42000, colors: ['#c9d6ff', '#ffe6bd', '#a9c4ff', '#ff8fb0'], seed: 11, params: { dwarfs: 46, members: [
     { at: MW, kind: 'barred-spiral', r: 0.07, share: 0.3, tilt: [0.15, 0.1], params: { arms: 4, bar: 0.22 } },
-    { at: M31, kind: 'spiral-galaxy', r: 0.095, share: 0.36, tilt: [1.05, 0.5], params: { arms: 2, pitch: 9 } },
+    // Andromeda (M31) itself is its own piece: pieces/andromeda.js · 仙女座星系是单独的天体
     { at: M33, kind: 'spiral-galaxy', r: 0.045, share: 0.12, tilt: [0.6, -0.3], params: { arms: 2, pitch: 18 }, colors: ['#ffe9c8', '#9fc0ff', '#ff7fa6'] },
     { at: [MW[0] + 0.05, MW[1] - 0.035, MW[2] + 0.04], kind: 'dwarf', r: 0.016, share: 0.02 },
     { at: [MW[0] + 0.03, MW[1] - 0.05, MW[2] + 0.07], kind: 'dwarf', r: 0.011, share: 0.012 },
@@ -19,7 +20,6 @@ export default {
   ] } },
   position: [0, 0, 0], size: 150,
   labels: [
-    { at: at(below(M31, 0.1)), names: { en: 'Andromeda (M31)', zh: '仙女座星系 (M31)', es: 'Andrómeda (M31)', pt: 'Andrômeda (M31)' } },
     { at: at([M33[0] + 0.07, M33[1] + 0.05, M33[2]]), names: { en: 'Triangulum (M33)', zh: '三角座星系 (M33)', es: 'Triángulo (M33)', pt: 'Triângulo (M33)' } },
     { at: at([MW[0] + 0.05, MW[1] - 0.06, MW[2] + 0.04]), names: { en: 'Magellanic Clouds', zh: '麦哲伦云', es: 'Nubes de Magallanes', pt: 'Nuvens de Magalhães' } },
   ],

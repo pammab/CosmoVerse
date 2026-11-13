@@ -63,7 +63,7 @@ const baseDist = {
   overview: () => Math.max(170, 112 / (tanHalf() * fitAspect())),
   lineup: () => ((lineX.end - sun.r * 0.55) / 2) / (tanHalf() * fitAspect()),
   focus: () => focus.r * (focus.isSun ? 2.6 : focus.ring ? 4.6 : 3.3) / Math.min(1, camera.aspect * 0.9),
-  journey: () => journey.viewRadius() * (journey.piece ? 1.55 : 1.6) / (tanHalf() * fitAspect()),
+  journey: () => journey.viewRadius() * (journey.piece ? 2 : 1.6) / (tanHalf() * fitAspect()),
 };
 const zoomLimits = { trajectory: () => [0.45, 4], overview: () => [0.45, baseDist.overview() / (sun.r * 1.9)], lineup: () => [0.6, 6], focus: () => [0.45, focus?.isSun ? 2 : 5], journey: () => journey.piece ? [0.5, 3] : [0.5, 2.4] };
 const clampZoom = (z, m = mode) => clamp(z, ...zoomLimits[m]());
@@ -540,7 +540,8 @@ function onHand(u) {
     const id = pickAt(x, y, 54); setHover(id);
     if (id) { hand.hoverId = id; hand.hoverAt = now; }
     // Dwell to open: keep pointing at the same planet · 停留打开
-    if (g === 'point' && id) {
+    // While a journey piece is open, keep pointing from re-opening whatever drifts under the hand · 天体打开时不再停留触发
+    if (g === 'point' && id && !(mode === 'journey' && journey.piece)) {
       if (hand.dwellId !== id) { hand.dwellId = id; hand.dwellSince = now; }
       progress = Math.min(1, (now - hand.dwellSince) / dwellMs());
       if (progress >= 1 && hand.dwellDone !== id) { hand.dwellDone = id; select(id); }
@@ -763,4 +764,4 @@ setIntro('overview'); document.body.classList.add('mode-overview');
 initHabitability();
 // Public hooks for teammates and the console · 供组员调用的接口
 // simulateHand({present:true, gesture:'point', cursor:{x:.5,y:.5}, openness:1}) lets you test gestures without a camera.
-window.SolarAtlas = { journey: { go: id => goLevel(id, 'up'), open: openPiece, back, get level() { return journey.level; }, get piece() { return journey.piece; }, get busy() { return journey.busy || trans < 1; } }, zoomBy, trajectory, PLANETS, selectPlanet: select, home, lineup, bodies: bodyById, scene, camera, simulateHand: onHand, screenOf: id => screenOf(bodyById[id]) };
+window.SolarAtlas = { journey: { go: id => goLevel(id, 'up'), open: openPiece, back, pick: (x, y, px) => pickAt(x, y, px), get level() { return journey.level; }, get piece() { return journey.piece; }, get busy() { return journey.busy || trans < 1; } }, zoomBy, trajectory, PLANETS, selectPlanet: select, home, lineup, bodies: bodyById, scene, camera, simulateHand: onHand, screenOf: id => screenOf(bodyById[id]) };

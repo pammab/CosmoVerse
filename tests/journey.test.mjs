@@ -60,6 +60,15 @@ test('validatePiece catches a missing translation and an unsourced fact', () => 
   assert.ok(err.some(e => /fact 0/.test(e)));
 });
 
+test('optional tilt and frame are checked; Andromeda sits on the Local Group\'s M31 spot', () => {
+  const a = PIECES.find(p => p.id === 'andromeda');
+  assert.ok(a, 'andromeda piece exists'); assert.equal(a.level, 'local-group');
+  assert.deepEqual(a.position.map(v => Math.round(v * 10) / 10), [45, 4.5, -10.5]);
+  const bad = structuredClone(a); bad.tilt = [1]; bad.frame = -1;
+  const err = validatePiece(bad);
+  assert.ok(err.some(e => /tilt/.test(e)) && err.some(e => /frame/.test(e)));
+});
+
 test('shapes are deterministic and finite for every kind', () => {
   for (const kind of SHAPE_KINDS) {
     const params = kind === 'galaxy-group' ? { members: [{ at: [0, 0, 0], kind: 'spiral-galaxy', r: 0.1, share: 0.5 }], dwarfs: 5 } : {};

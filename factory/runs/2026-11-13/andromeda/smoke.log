@@ -1,0 +1,5 @@
+vr button: true
+andromeda tag at {"x":855.029,"y":462.785}
+click → {"level":"local-group","piece":"andromeda"} title: Andromeda Galaxy
+webcam point-and-hold → {"level":"local-group","piece":"andromeda"}
+errors: http 404 http://localhost:8765/api/voice?kind=sfx&name=whoosh-out

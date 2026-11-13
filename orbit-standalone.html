@@ -3354,21 +3354,67 @@ function makeShape(kind, count, colors = [], params = {}, seed = seedOf(kind)) {
 return { seeded, hexRGB, SHAPE_KINDS, makeShape };
 })();
 
+__m['pieces/andromeda'] = (() => {
+// The Andromeda galaxy, M31 · 仙女座星系 · Galaxia de Andrómeda · Galáxia de Andrômeda
+// Sources opened: NASA Hubble Messier 31 page, NASA Imagine (M31), NASA Hubble halo story.
+// Position matches M31 in pieces/local-group.js (unit coords × 150) · 位置与本星系群中的 M31 一致
+const M31 = 'https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-31/';
+const IMAGINE_M31 = 'https://imagine.gsfc.nasa.gov/features/yba/M31_velocity/M31_more.html';
+const __default = {
+  id: 'andromeda', level: 'local-group',
+  names: { en: 'Andromeda Galaxy', zh: '仙女座星系', es: 'Galaxia de Andrómeda', pt: 'Galáxia de Andrômeda' },
+  type: { en: 'Spiral galaxy · M31', zh: '旋涡星系 · M31', es: 'Galaxia espiral · M31', pt: 'Galáxia espiral · M31' },
+  shape: { kind: 'spiral-galaxy', count: 26000, colors: ['#ffe6c4', '#a8c2ff', '#ff8fb0'], params: { arms: 2, pitch: 9, thickness: 0.02 }, seed: 31 },
+  position: [45, 4.5, -10.5], size: 14, tilt: [1.05, 0.5], frame: 1.7,   // seen steeply tilted, so step back a little · 倾斜较大，镜头拉远
+  facts: [
+    { label: { en: 'Type', zh: '类型', es: 'Tipo', pt: 'Tipo' },
+      value: { en: 'Spiral galaxy', zh: '旋涡星系', es: 'Galaxia espiral', pt: 'Galáxia espiral' },
+      source: { name: 'NASA', url: M31 } },
+    { label: { en: 'Distance', zh: '距离', es: 'Distancia', pt: 'Distância' },
+      value: { en: 'About 2.5 million light-years', zh: '约 250 万光年', es: 'Unos 2,5 millones de años luz', pt: 'Cerca de 2,5 milhões de anos-luz' },
+      source: { name: 'NASA', url: M31 } },
+    { label: { en: 'Stars', zh: '恒星数量', es: 'Estrellas', pt: 'Estrelas' },
+      value: { en: 'Perhaps as many as 1 trillion', zh: '可能多达 1 万亿颗', es: 'Quizá hasta un billón (10¹²)', pt: 'Talvez até 1 trilhão' },
+      source: { name: 'NASA', url: 'https://science.nasa.gov/missions/hubble/hubble-maps-giant-halo-around-andromeda-galaxy/' } },
+    { label: { en: 'Rank', zh: '地位', es: 'Rango', pt: 'Posição' },
+      value: { en: 'Largest galaxy in the Local Group', zh: '本星系群中最大的星系', es: 'La mayor galaxia del Grupo Local', pt: 'A maior galáxia do Grupo Local' },
+      source: { name: 'NASA', url: IMAGINE_M31 } },
+    { label: { en: 'Naked eye?', zh: '肉眼可见？', es: '¿A simple vista?', pt: 'A olho nu?' },
+      value: { en: 'Yes · in the constellation Andromeda', zh: '可以 · 位于仙女座', es: 'Sí · en la constelación de Andrómeda', pt: 'Sim · na constelação de Andrômeda' },
+      source: { name: 'NASA', url: M31 } },
+    { label: { en: 'Size in our sky', zh: '在天空中的大小', es: 'Tamaño en el cielo', pt: 'Tamanho no céu' },
+      value: { en: 'About 6 full Moons across', zh: '约 6 个满月宽', es: 'Unas 6 lunas llenas de ancho', pt: 'Cerca de 6 luas cheias de largura' },
+      source: { name: 'NASA', url: M31 } },
+  ],
+  narration: {
+    en: 'Andromeda is the largest galaxy in our Local Group, a spiral of perhaps as many as a trillion stars. Its light travels about 2.5 million years to reach us, yet on a dark night you can see it with your own eyes, in the constellation Andromeda.',
+    zh: '仙女座星系是本星系群中最大的星系，这个旋涡里可能有多达 1 万亿颗恒星。它的光要走大约 250 万年才能到达我们这里，但在黑暗的夜晚，你用肉眼就能在仙女座看到它。',
+    es: 'Andrómeda es la mayor galaxia de nuestro Grupo Local, una espiral de quizá hasta un billón de estrellas. Su luz viaja unos 2,5 millones de años hasta nosotros y, aun así, en una noche oscura puedes verla a simple vista en la constelación de Andrómeda.',
+    pt: 'Andrômeda é a maior galáxia do nosso Grupo Local, uma espiral de talvez até 1 trilhão de estrelas. A luz dela viaja cerca de 2,5 milhões de anos até nós e, mesmo assim, numa noite escura dá para vê-la a olho nu na constelação de Andrômeda.',
+  },
+  clue: { en: 'Our big neighbour: a giant galaxy you can spot without a telescope.', zh: '我们的大邻居：不用望远镜就能看到的遥远巨人。', es: 'Nuestra gran vecina: una gigante lejana que puedes ver sin telescopio.', pt: 'Nossa grande vizinha: uma gigante distante que dá para ver sem telescópio.' },
+  youAreHere: null,
+};
+
+return { default: __default };
+})();
+
 __m['pieces/local-group'] = (() => {
 // The Local Group of galaxies · 本星系群 · Grupo Local
 // Sources opened: NASA Imagine (Local Group), NASA Science (large-scale structures), NASA Hubble Messier pages, ESA (Hubble & Gaia 2025).
 // Positions are in a unit radius (scaled by `size`): Milky Way–Andromeda and Milky Way–Triangulum gaps roughly follow
 // 2.5 and 3 million light-years; galaxies themselves are drawn far larger than true scale. · 星系画得比实际大得多
 const IMAGINE_LG = 'https://imagine.gsfc.nasa.gov/features/cosmic/local_group_info.html';
+// Keep M31 in sync with pieces/andromeda.js position (×150) · 与 andromeda.js 位置保持一致
 const MW = [-0.2, 0, 0.07], M31 = [0.3, 0.03, -0.07], M33 = [0.38, -0.08, -0.22];
-const at = (c, s = 150) => c.map(v => v * s), below = (c, d) => [c[0], c[1] - d, c[2]];   // labels sit just under each galaxy · 标签在星系下方
+const at = (c, s = 150) => c.map(v => v * s);
 const __default = {
   id: 'local-group', level: 'local-group',
   names: { en: 'Local Group', zh: '本星系群', es: 'Grupo Local', pt: 'Grupo Local' },
   type: { en: 'Group of galaxies', zh: '星系群', es: 'Grupo de galaxias', pt: 'Grupo de galáxias' },
   shape: { kind: 'galaxy-group', count: 42000, colors: ['#c9d6ff', '#ffe6bd', '#a9c4ff', '#ff8fb0'], seed: 11, params: { dwarfs: 46, members: [
     { at: MW, kind: 'barred-spiral', r: 0.07, share: 0.3, tilt: [0.15, 0.1], params: { arms: 4, bar: 0.22 } },
-    { at: M31, kind: 'spiral-galaxy', r: 0.095, share: 0.36, tilt: [1.05, 0.5], params: { arms: 2, pitch: 9 } },
+    // Andromeda (M31) itself is its own piece: pieces/andromeda.js · 仙女座星系是单独的天体
     { at: M33, kind: 'spiral-galaxy', r: 0.045, share: 0.12, tilt: [0.6, -0.3], params: { arms: 2, pitch: 18 }, colors: ['#ffe9c8', '#9fc0ff', '#ff7fa6'] },
     { at: [MW[0] + 0.05, MW[1] - 0.035, MW[2] + 0.04], kind: 'dwarf', r: 0.016, share: 0.02 },
     { at: [MW[0] + 0.03, MW[1] - 0.05, MW[2] + 0.07], kind: 'dwarf', r: 0.011, share: 0.012 },
@@ -3376,7 +3422,6 @@ const __default = {
   ] } },
   position: [0, 0, 0], size: 150,
   labels: [
-    { at: at(below(M31, 0.1)), names: { en: 'Andromeda (M31)', zh: '仙女座星系 (M31)', es: 'Andrómeda (M31)', pt: 'Andrômeda (M31)' } },
     { at: at([M33[0] + 0.07, M33[1] + 0.05, M33[2]]), names: { en: 'Triangulum (M33)', zh: '三角座星系 (M33)', es: 'Triángulo (M33)', pt: 'Triângulo (M33)' } },
     { at: at([MW[0] + 0.05, MW[1] - 0.06, MW[2] + 0.04]), names: { en: 'Magellanic Clouds', zh: '麦哲伦云', es: 'Nubes de Magallanes', pt: 'Nuvens de Magalhães' } },
   ],
@@ -3505,7 +3550,8 @@ __m['pieces/index'] = (() => {
 const milkyWay = __m['pieces/milky-way'].default;
 const localGroup = __m['pieces/local-group'].default;
 const observableUniverse = __m['pieces/observable-universe'].default;
-const PIECES = [milkyWay, localGroup, observableUniverse];
+const andromeda = __m['pieces/andromeda'].default;
+const PIECES = [milkyWay, localGroup, observableUniverse, andromeda];
 
 return { PIECES };
 })();
@@ -3609,6 +3655,8 @@ function validatePiece(p) {
   if (!has4(p?.narration)) at('narration needs en/zh/es/pt');
   if (!has4(p?.clue)) at('clue needs en/zh/es/pt');
   if (p?.youAreHere != null && (!has4(p.youAreHere) || !Array.isArray(p.youAreHere.at) || p.youAreHere.at.length !== 3)) at('youAreHere needs en/zh/es/pt and at:[x,y,z]');
+  if (p?.frame != null && !(p.frame > 0)) at('frame must be > 0');
+  if (p?.tilt != null && !(Array.isArray(p.tilt) && p.tilt.length === 2 && p.tilt.every(Number.isFinite))) at('tilt must be [rx, rz]');
   for (const lb of p?.labels || []) if (!has4(lb.names) || !Array.isArray(lb.at)) at('labels need names (4 languages) and at');
   return err;
 }
@@ -3670,6 +3718,7 @@ function createJourney({ T, scene, pieces = [], sizeScale = () => 1, viewHeight 
   for (const pc of pieces) {
     const L = levels[pc.level]; if (!L) continue;
     const holder = new T.Group(); holder.position.fromArray(pc.position); L.group.add(holder);
+    if (pc.tilt) holder.rotation.set(pc.tilt[0], 0, pc.tilt[1]);   // optional [rx, rz] tilt · 可选倾角
     const spin = new T.Group(); holder.add(spin);
     const pts = points({ ...pc.shape, seed: pc.shape.seed }, pc.size); spin.add(pts);
     const speed = /spiral/.test(pc.shape.kind) ? 0.012 : pc.shape.kind === 'web' ? 0.005 : 0.003;
@@ -3700,7 +3749,7 @@ function createJourney({ T, scene, pieces = [], sizeScale = () => 1, viewHeight 
   const wp = new T.Vector3(), camW = new T.Vector3();
   function target(out) { const e = state.piece && pieceById[state.piece]; return e ? e.holder.getWorldPosition(out) : out.set(0, 0, 0); }
   function viewRadius() {
-    const e = state.piece && pieceById[state.piece]; if (e) return e.p.size;
+    const e = state.piece && pieceById[state.piece]; if (e) return e.p.size * (e.p.frame || 1);   // frame: optional close-up zoom-out · 可选取景系数
     const L = levels[state.level]; if (!L) return 110;
     return Math.max(L.def.backdrop?.size || 0, ...L.pieces.map(e => e.p.size + Math.hypot(...e.p.position)), 60);
   }
@@ -3758,7 +3807,8 @@ function createJourney({ T, scene, pieces = [], sizeScale = () => 1, viewHeight 
       e.holder.getWorldPosition(wp); const dist = camW.distanceTo(wp); wp.project(camera); if (wp.z > 1) continue;
       const px = (wp.x + 1) / 2 * innerWidth, py = (1 - wp.y) / 2 * innerHeight;
       const r = e.p.size * L.group.scale.x / (dist * tanHalf) * innerHeight / 2, reach = Math.max(minPx, r * 0.85), d = Math.hypot(px - x, py - y);
-      if (d <= reach && d / reach < score) { score = d / reach; best = e.p.id; }
+      // Smallest target under the cursor wins (Andromeda inside the Local Group) · 光标下最小的目标优先
+      if (d <= reach && reach + d * 0.01 < score) { score = reach + d * 0.01; best = e.p.id; }
     }
     return best;
   }
@@ -3842,7 +3892,7 @@ const baseDist = {
   overview: () => Math.max(170, 112 / (tanHalf() * fitAspect())),
   lineup: () => ((lineX.end - sun.r * 0.55) / 2) / (tanHalf() * fitAspect()),
   focus: () => focus.r * (focus.isSun ? 2.6 : focus.ring ? 4.6 : 3.3) / Math.min(1, camera.aspect * 0.9),
-  journey: () => journey.viewRadius() * (journey.piece ? 1.55 : 1.6) / (tanHalf() * fitAspect()),
+  journey: () => journey.viewRadius() * (journey.piece ? 2 : 1.6) / (tanHalf() * fitAspect()),
 };
 const zoomLimits = { trajectory: () => [0.45, 4], overview: () => [0.45, baseDist.overview() / (sun.r * 1.9)], lineup: () => [0.6, 6], focus: () => [0.45, focus?.isSun ? 2 : 5], journey: () => journey.piece ? [0.5, 3] : [0.5, 2.4] };
 const clampZoom = (z, m = mode) => clamp(z, ...zoomLimits[m]());
@@ -4319,7 +4369,8 @@ function onHand(u) {
     const id = pickAt(x, y, 54); setHover(id);
     if (id) { hand.hoverId = id; hand.hoverAt = now; }
     // Dwell to open: keep pointing at the same planet · 停留打开
-    if (g === 'point' && id) {
+    // While a journey piece is open, keep pointing from re-opening whatever drifts under the hand · 天体打开时不再停留触发
+    if (g === 'point' && id && !(mode === 'journey' && journey.piece)) {
       if (hand.dwellId !== id) { hand.dwellId = id; hand.dwellSince = now; }
       progress = Math.min(1, (now - hand.dwellSince) / dwellMs());
       if (progress >= 1 && hand.dwellDone !== id) { hand.dwellDone = id; select(id); }
@@ -4542,7 +4593,7 @@ setIntro('overview'); document.body.classList.add('mode-overview');
 initHabitability();
 // Public hooks for teammates and the console · 供组员调用的接口
 // simulateHand({present:true, gesture:'point', cursor:{x:.5,y:.5}, openness:1}) lets you test gestures without a camera.
-window.SolarAtlas = { journey: { go: id => goLevel(id, 'up'), open: openPiece, back, get level() { return journey.level; }, get piece() { return journey.piece; }, get busy() { return journey.busy || trans < 1; } }, zoomBy, trajectory, PLANETS, selectPlanet: select, home, lineup, bodies: bodyById, scene, camera, simulateHand: onHand, screenOf: id => screenOf(bodyById[id]) };
+window.SolarAtlas = { journey: { go: id => goLevel(id, 'up'), open: openPiece, back, pick: (x, y, px) => pickAt(x, y, px), get level() { return journey.level; }, get piece() { return journey.piece; }, get busy() { return journey.busy || trans < 1; } }, zoomBy, trajectory, PLANETS, selectPlanet: select, home, lineup, bodies: bodyById, scene, camera, simulateHand: onHand, screenOf: id => screenOf(bodyById[id]) };
 
 return {  };
 })();

@@ -22,3 +22,9 @@
 - In journey mode a pinch must always zoom (never open the hovered piece): the centred piece fills the screen, so
   "pinch opens what you hover" made leaving a level impossible with hands (judge round 1).
 - Every user-visible string, including VR panel rows and notices, needs EN/zh/ES/PT: put them in `journey.js` `UI`.
+- Picking in the journey: the smallest target under the cursor wins, so a piece inside a bigger piece (Andromeda in the
+  Local Group) stays reachable. While a piece is open, point-and-hold doesn't open others (the camera move slides a
+  new target under the still hand and re-opened the big background piece).
+- Pieces may set `tilt: [rx, rz]` (orientation) and `frame` (close-up distance multiplier, default 1).
+- Research agents sometimes return a claim in only one language version (e.g. the EN clue); re-read every string of a
+  piece against the dropped-facts list before judging.

@@ -97,6 +97,8 @@ export function validatePiece(p) {
   if (!has4(p?.narration)) at('narration needs en/zh/es/pt');
   if (!has4(p?.clue)) at('clue needs en/zh/es/pt');
   if (p?.youAreHere != null && (!has4(p.youAreHere) || !Array.isArray(p.youAreHere.at) || p.youAreHere.at.length !== 3)) at('youAreHere needs en/zh/es/pt and at:[x,y,z]');
+  if (p?.frame != null && !(p.frame > 0)) at('frame must be > 0');
+  if (p?.tilt != null && !(Array.isArray(p.tilt) && p.tilt.length === 2 && p.tilt.every(Number.isFinite))) at('tilt must be [rx, rz]');
   for (const lb of p?.labels || []) if (!has4(lb.names) || !Array.isArray(lb.at)) at('labels need names (4 languages) and at');
   return err;
 }
@@ -158,6 +160,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
   for (const pc of pieces) {
     const L = levels[pc.level]; if (!L) continue;
     const holder = new T.Group(); holder.position.fromArray(pc.position); L.group.add(holder);
+    if (pc.tilt) holder.rotation.set(pc.tilt[0], 0, pc.tilt[1]);   // optional [rx, rz] tilt · 可选倾角
     const spin = new T.Group(); holder.add(spin);
     const pts = points({ ...pc.shape, seed: pc.shape.seed }, pc.size); spin.add(pts);
     const speed = /spiral/.test(pc.shape.kind) ? 0.012 : pc.shape.kind === 'web' ? 0.005 : 0.003;
@@ -188,7 +191,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
   const wp = new T.Vector3(), camW = new T.Vector3();
   function target(out) { const e = state.piece && pieceById[state.piece]; return e ? e.holder.getWorldPosition(out) : out.set(0, 0, 0); }
   function viewRadius() {
-    const e = state.piece && pieceById[state.piece]; if (e) return e.p.size;
+    const e = state.piece && pieceById[state.piece]; if (e) return e.p.size * (e.p.frame || 1);   // frame: optional close-up zoom-out · 可选取景系数
     const L = levels[state.level]; if (!L) return 110;
     return Math.max(L.def.backdrop?.size || 0, ...L.pieces.map(e => e.p.size + Math.hypot(...e.p.position)), 60);
   }
@@ -246,7 +249,8 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
       e.holder.getWorldPosition(wp); const dist = camW.distanceTo(wp); wp.project(camera); if (wp.z > 1) continue;
       const px = (wp.x + 1) / 2 * innerWidth, py = (1 - wp.y) / 2 * innerHeight;
       const r = e.p.size * L.group.scale.x / (dist * tanHalf) * innerHeight / 2, reach = Math.max(minPx, r * 0.85), d = Math.hypot(px - x, py - y);
-      if (d <= reach && d / reach < score) { score = d / reach; best = e.p.id; }
+      // Smallest target under the cursor wins (Andromeda inside the Local Group) · 光标下最小的目标优先
+      if (d <= reach && reach + d * 0.01 < score) { score = reach + d * 0.01; best = e.p.id; }
     }
     return best;
   }
