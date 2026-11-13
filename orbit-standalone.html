@@ -2860,8 +2860,19 @@ function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent
 
   const active = () => renderer.xr.isPresenting;
 
-  renderer.xr.addEventListener('sessionstart', () => { panel.visible = true; panelKey = ''; onEnter?.(); });
+  // three.js builds its VR culling camera from the eye distance in WORLD units but its
+  // near plane in METRES. With the dolly scaled up, that pushes the culling near plane
+  // past everything within reach (planets, Sun, panel), so they vanish. The scene is
+  // small, so in VR we simply skip frustum culling, and restore it on exit.
+  // 缩放后 three.js 的 VR 裁剪相机会误裁近处物体，VR 中关闭视锥裁剪。
+  const unculled = new Set(); let cullTick = 0;
+  function disableCulling() {
+    scene.traverse(o => { if (o.frustumCulled) { o.frustumCulled = false; unculled.add(o); } });
+  }
+
+  renderer.xr.addEventListener('sessionstart', () => { panel.visible = true; panelKey = ''; disableCulling(); onEnter?.(); });
   renderer.xr.addEventListener('sessionend', () => {
+    unculled.forEach(o => o.frustumCulled = true); unculled.clear();
     dolly.position.set(0, 0, 0); dolly.quaternion.identity(); dolly.scale.setScalar(1);
     panel.visible = false; cursor.visible = false; hands.forEach(h => h.mesh.visible = false);
     filter.reset(); smooth.ok = false; if (present) { present = false; onHand({ present: false, gesture: 'none' }); }
@@ -2905,6 +2916,7 @@ function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent
   // Called every frame by main.js while in VR · 每帧调用
   function update(progress = 0) {
     if (!active()) return;
+    if (++cullTick % 30 === 0) disableCulling();   // objects added while in VR (e.g. trajectories)
     drawHands();
     const h = trackedHand();
     const lm = h ? toLandmarks(name => { const j = h.hand.joints[name]; return j && j.visible ? j.position : null; }) : null;
