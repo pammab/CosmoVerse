@@ -6,8 +6,8 @@
 - [ ] piece milky-way: the Milky Way (barred spiral, ~100,000 ly; where the Sun is, in the Orion Arm) — starter shipped in 0771175 (6 sourced facts, Sun marker); refine or tick
 - [ ] piece local-group: the Local Group (Milky Way, Andromeda, Triangulum, dwarf galaxies) — starter shipped in 0771175; refine or tick
 - [x] piece andromeda: Andromeda galaxy M31 (1370eb2, judge 8/10)
-- [ ] piece orion-nebula: Orion Nebula M42
-- [ ] piece pleiades: the Pleiades star cluster M45
+- [x] piece orion-nebula: Orion Nebula M42 (ad197df, judge 7→8/10)
+- [x] piece pleiades: the Pleiades star cluster M45 (ad197df, judge 7→8/10)
 - [ ] piece laniakea: the Laniakea supercluster
 - [ ] piece cosmic-web: the cosmic web (filaments and voids)
 - [ ] piece observable-universe: the observable universe
@@ -15,7 +15,7 @@
 - [ ] piece betelgeuse: Betelgeuse (red supergiant)
 - [ ] piece black-hole: Sagittarius A* (the Milky Way's central black hole)
 - [ ] piece elliptical-galaxy: M87 (giant elliptical)
-- [ ] piece alpha-centauri: Alpha Centauri / Proxima (nearest stars)
+- [x] piece alpha-centauri: Alpha Centauri / Proxima (nearest stars) (ad197df, judge 7→8/10; done early: same level, research ready)
 
 ## journey-core spec
 Goal: zoom out from the Solar System to the whole universe and back, with hands (webcam and VR) and mouse.

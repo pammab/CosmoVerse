@@ -28,3 +28,10 @@
 - Pieces may set `tilt: [rx, rz]` (orientation) and `frame` (close-up distance multiplier, default 1).
 - Research agents sometimes return a claim in only one language version (e.g. the EN clue); re-read every string of a
   piece against the dropped-facts list before judging.
+- The fact validator's allow-list lives in `journey.js` (`ALLOWED_SOURCES`); ESA's Hubble/Webb sites are `esahubble.org` /
+  `esawebb.org` (added 2026-11-13b).
+- While a piece is open, every label not owned by that piece is hidden (level markers too): the close-up camera slides other
+  labels over the title. Piece `labels` may set `r` (VR sprite offset; default 2) so a small star's label sits close to it.
+- Judges catch "the closest star of all" (the Sun is closer) and cite-the-wrong-page errors: when a value merges two claims,
+  each part must be on the cited page; put the other part in the narration with a comment naming its source.
+- Additive `star` shapes with share > ~0.3 of a piece saturate to white; Alpha Cen A/B still look whitish (open nice-to-have).
