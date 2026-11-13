@@ -1,0 +1,10 @@
+vr button: true
+wheel out → {"level":"neighbourhood","piece":null}
+Orion tag at {"x":601.574,"y":335.52}
+click Orion → {"level":"neighbourhood","piece":"orion-nebula"} title: Orion Nebula · facts: 6 links
+Pleiades tag at {"x":859.998,"y":519.61}
+click Pleiades → {"level":"neighbourhood","piece":"pleiades"} title: Pleiades · facts: 6 links
+Alpha tag at {"x":571.952,"y":452.544}
+click Alpha → {"level":"neighbourhood","piece":"alpha-centauri"} title: Alpha Centauri · facts: 6 links
+webcam point-and-hold → {"level":"neighbourhood","piece":"pleiades"}
+errors: http 404 http://localhost:8765/api/voice?kind=sfx&name=whoosh-out

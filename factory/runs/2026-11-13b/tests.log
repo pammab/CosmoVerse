@@ -1,0 +1,154 @@
+TAP version 13
+# Subtest: levels go from the universe down to the Solar System
+ok 1 - levels go from the universe down to the Solar System
+  ---
+  duration_ms: 1.739007
+  type: 'test'
+  ...
+# Subtest: zooming out past the minimum moves up only after enough push
+ok 2 - zooming out past the minimum moves up only after enough push
+  ---
+  duration_ms: 0.247656
+  type: 'test'
+  ...
+# Subtest: zooming in past the maximum moves down; turning back clears the push
+ok 3 - zooming in past the maximum moves down; turning back clears the push
+  ---
+  duration_ms: 0.140081
+  type: 'test'
+  ...
+# Subtest: zooming inside the limits never changes level
+ok 4 - zooming inside the limits never changes level
+  ---
+  duration_ms: 1.179673
+  type: 'test'
+  ...
+# Subtest: the push fades if you stop
+ok 5 - the push fades if you stop
+  ---
+  duration_ms: 0.206987
+  type: 'test'
+  ...
+# Subtest: three starter pieces cover the outer levels
+ok 6 - three starter pieces cover the outer levels
+  ---
+  duration_ms: 0.121799
+  type: 'test'
+  ...
+# Subtest: every piece matches the schema (4 languages, 5–6 sourced facts)
+ok 7 - every piece matches the schema (4 languages, 5–6 sourced facts)
+  ---
+  duration_ms: 0.857658
+  type: 'test'
+  ...
+# Subtest: validatePiece catches a missing translation and an unsourced fact
+ok 8 - validatePiece catches a missing translation and an unsourced fact
+  ---
+  duration_ms: 0.642534
+  type: 'test'
+  ...
+# Subtest: optional tilt and frame are checked; Andromeda sits on the Local Group's M31 spot
+ok 9 - optional tilt and frame are checked; Andromeda sits on the Local Group's M31 spot
+  ---
+  duration_ms: 0.399414
+  type: 'test'
+  ...
+# Subtest: shapes are deterministic and finite for every kind
+ok 10 - shapes are deterministic and finite for every kind
+  ---
+  duration_ms: 52.2752
+  type: 'test'
+  ...
+# Subtest: piece shapes fit their counts
+ok 11 - piece shapes fit their counts
+  ---
+  duration_ms: 94.427367
+  type: 'test'
+  ...
+# Subtest: quad writes all four languages and escapes text
+ok 12 - quad writes all four languages and escapes text
+  ---
+  duration_ms: 0.46336
+  type: 'test'
+  ...
+# Subtest: maps all 21 MediaPipe landmarks from WebXR joint names
+ok 13 - maps all 21 MediaPipe landmarks from WebXR joint names
+  ---
+  duration_ms: 1.40316
+  type: 'test'
+  ...
+# Subtest: returns null when any joint is not tracked
+ok 14 - returns null when any joint is not tracked
+  ---
+  duration_ms: 0.235979
+  type: 'test'
+  ...
+# Subtest: recognises open after the stabilising vote
+ok 15 - recognises open after the stabilising vote
+  ---
+  duration_ms: 0.73326
+  type: 'test'
+  ...
+# Subtest: recognises point after the stabilising vote
+ok 16 - recognises point after the stabilising vote
+  ---
+  duration_ms: 1.483954
+  type: 'test'
+  ...
+# Subtest: recognises victory after the stabilising vote
+ok 17 - recognises victory after the stabilising vote
+  ---
+  duration_ms: 0.198139
+  type: 'test'
+  ...
+# Subtest: recognises fist after the stabilising vote
+ok 18 - recognises fist after the stabilising vote
+  ---
+  duration_ms: 0.148988
+  type: 'test'
+  ...
+# Subtest: recognises pinch after the stabilising vote
+ok 19 - recognises pinch after the stabilising vote
+  ---
+  duration_ms: 0.199587
+  type: 'test'
+  ...
+# Subtest: one stray frame does not flip a stable gesture
+ok 20 - one stray frame does not flip a stable gesture
+  ---
+  duration_ms: 0.224527
+  type: 'test'
+  ...
+# Subtest: losing the hand resets the gesture
+ok 21 - losing the hand resets the gesture
+  ---
+  duration_ms: 0.781651
+  type: 'test'
+  ...
+# Subtest: cursor anchors: fingertip for point/pinch, palm for open/fist
+ok 22 - cursor anchors: fingertip for point/pinch, palm for open/fist
+  ---
+  duration_ms: 0.402942
+  type: 'test'
+  ...
+# Subtest: pinch detector uses hysteresis
+ok 23 - pinch detector uses hysteresis
+  ---
+  duration_ms: 0.168033
+  type: 'test'
+  ...
+# Subtest: two hands: pulling apart zooms, turning rotates, letting go ends
+ok 24 - two hands: pulling apart zooms, turning rotates, letting go ends
+  ---
+  duration_ms: 0.149426
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 295.197893
