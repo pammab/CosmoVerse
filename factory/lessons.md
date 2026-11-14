@@ -79,3 +79,7 @@
   (`soft` ~0.9) and use a deeper core colour (#ffd890). Judges sample pixels; give them a pixel count before/after.
 - The intro eyebrow is now per mode: main.js `setEyebrow(names|null)`; journey mode writes "SCALE JOURNEY · LEVEL".
 - In a Playwright wheel-in loop, stop when `journey.level` becomes null too, or it keeps zooming into the Sun.
+- Journey HTML labels now de-overlap every frame (journey.js `spreadLabels`, a CSS `translate` on `.name` only; picking follows it via
+  getBoundingClientRect). Probe label rects on a 390 px phone: world-unit `labelAt` offsets shrink to a few px there (2026-11-14c).
+- Text built from two names (eyebrow "LEVEL · PIECE") must be checked for every piece × language: pieces named like their level
+  (Local Group, Observable Universe, zh 银河系) repeated it; the judge caught it with a loop, so the test loops too.

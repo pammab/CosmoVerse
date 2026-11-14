@@ -1,0 +1,11 @@
+vr button: true
+wheel out → {"level":"galaxy","piece":null} · eyebrow SCALE JOURNEY · GALAXY
+click MILKY WAY label → {"level":"galaxy","piece":"milky-way"} · eyebrow GALAXY · MILKY WAY
+click SAGITTARIUS A* label → {"level":"galaxy","piece":"sgr-a-star"} · eyebrow GALAXY · SAGITTARIUS A*
+click M87 → {"level":"supercluster","piece":"m87"} · eyebrow SUPERCLUSTER · M87 · VIRGO A
+PT eyebrow SUPERAGLOMERADO · M87 · VIRGO A
+back → eyebrow SCALE JOURNEY · SUPERCLUSTER
+phone labels: MILKY WAY 382–406, SGR A* 411–435, overlap: false
+phone webcam point-and-hold on SGR A* label → {"level":"galaxy","piece":"sgr-a-star"}
+wheel in → {"level":null,"piece":null} · eyebrow OUR COSMIC NEIGHBOURHOOD
+errors: none

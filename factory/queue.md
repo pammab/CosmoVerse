@@ -21,9 +21,11 @@
 - [x] polish-1: M87 jet shorter + core less blown out (`soft`), Alpha Cen A/B warm, Pillars haze fainter, onlyOpen test (b04cba9, judge 7→8/10)
 - [x] polish-2: M87 nucleus still a pure-white point → core '#ffd890' + soft 0.88 (af45f94, judge 7→8/10)
 - [x] polish-3: top-left eyebrow shows "SCALE JOURNEY · <LEVEL>" in journey mode (af45f94, judge 8/10)
-- [ ] polish-5: eyebrow could add the open piece ("SUPERCLUSTER · M87") (judge nice-to-have)
+- [x] polish-5: eyebrow names the open piece ("SUPERCLUSTER · M87 · VIRGO A"; no repeats like "LOCAL GROUP · LOCAL GROUP") (098e606, judge 7→8/10)
 - [ ] polish-6: ES/PT "espolón (brazo) de Orión" / "esporão (braço) de Órion" so the common name stays recognisable? (ask Pamela)
-- [ ] polish-4: Sgr A* label/pick target overlap with the Milky Way core (lessons: `labelAt` moves only the label)
+- [x] polish-4: Sgr A* label/pick overlap: picking was already fixed (label wins, 0052d5c); the two labels overlapped on phones → generic label de-overlap `spreadLabels` (098e606, judge 7→8/10)
+- [ ] polish-7: on phones the top-right buttons (5 rows) cover the top-left eyebrow/title in every mode (older app-wide layout issue; ask Pamela before changing the header)
+- [ ] polish-8: label de-overlap nice-to-haves: a pushed label can sit on its own ring; ~25 px snap without hysteresis; labels only move down
 
 ## journey-core spec
 Goal: zoom out from the Solar System to the whole universe and back, with hands (webcam and VR) and mouse.

@@ -1,0 +1,20 @@
+// Eyebrow with a piece open (EN + PT) · 打开天体时的小标题
+import { chromium } from '/opt/npm-tools/node_modules/playwright/index.mjs';
+const OUT = process.argv[2] || '.';
+const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+const errors = []; page.on('pageerror', e => errors.push(e.message));
+await page.route('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js', r => r.fulfill({ path: '/tmp/three/build/three.module.js', contentType: 'text/javascript' }));
+await page.goto('http://localhost:8765/index.html');
+await page.waitForFunction(() => window.SolarAtlas?.journey, null, { timeout: 30000 });
+const settle = () => page.waitForFunction(() => !SolarAtlas.journey.busy, null, { timeout: 90000 }).then(() => page.waitForTimeout(2000));
+const eb = () => page.evaluate(() => { const el = document.querySelector('.intro .eyebrow'); return [...el.children].find(c => getComputedStyle(c).display !== 'none')?.textContent || el.textContent; });
+await page.evaluate(() => SolarAtlas.journey.open('m87')); await settle();
+console.log('m87 en:', await eb()); await page.screenshot({ path: `${OUT}/m87-en.png` });
+await page.selectOption('#language', 'pt'); await page.waitForTimeout(800);
+console.log('m87 pt:', await eb()); await page.screenshot({ path: `${OUT}/m87-pt.png` });
+await page.evaluate(() => SolarAtlas.journey.back()); await settle();
+console.log('level pt:', await eb()); await page.screenshot({ path: `${OUT}/supercluster-pt.png` });
+await page.evaluate(() => SolarAtlas.journey.open('sgr-a-star')); await settle();
+console.log('sgr pt:', await eb());
+console.log('errors:', errors.length ? errors : 'none'); await browser.close();

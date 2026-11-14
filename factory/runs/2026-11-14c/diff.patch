@@ -1,0 +1,116 @@
+diff --git a/journey.js b/journey.js
+index 4a1cc06..8e823d8 100644
+--- a/journey.js
++++ b/journey.js
+@@ -115,6 +115,26 @@ const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
+ // All four languages as spans; CSS shows the chosen one · 四种语言，CSS 只显示当前语言
+ export const quad = o => LANG4.map(k => `<span class="${k}" lang="${k === 'zh' ? 'zh-CN' : k}">${esc(o?.[k] ?? o?.en ?? '')}</span>`).join('');
+ export const tr = (o, lang) => o?.[lang] ?? o?.en ?? '';
++// Top-left eyebrow: "SCALE JOURNEY · GALAXY" on a level, "SUPERCLUSTER · M87 · VIRGO A" with a piece open · 左上角小标题
++export function eyebrowText(levelId, piece, lang) {
++  const lv = levelById(levelId); if (!lv) return '';
++  return (piece ? `${tr(lv.names, lang)} · ${tr(piece.names, lang)}` : `${tr(UI.journey, lang)} · ${tr(lv.names, lang)}`).toUpperCase();
++}
++// Labels that would overlap on screen: push the lower one down until it clears · 屏幕标签防重叠：较低的往下推
++// boxes: [{ x, y, w, h }] (top-left, px; w = 0 means hidden). Returns the extra dy for each box, in input order.
++export function spreadLabels(boxes, gap = 4) {
++  const dy = boxes.map(() => 0), placed = [];
++  const order = boxes.map((_, i) => i).filter(i => boxes[i].w > 0).sort((a, b) => boxes[a].y - boxes[b].y || a - b);
++  for (const i of order) {
++    const b = boxes[i]; let y = b.y;
++    for (let moved = true, n = 0; moved && n < 20; n++) {
++      moved = false;
++      for (const p of placed) if (b.x < p.x + p.w + gap && p.x < b.x + b.w + gap && y < p.y + p.h + gap && p.y < y + b.h + gap) { y = p.y + p.h + gap; moved = true; }
++    }
++    dy[i] = y - b.y; placed.push({ x: b.x, y, w: b.w, h: b.h });
++  }
++  return dy;
++}
+ 
+ /* ───────── The particle scenes (browser only) · 粒子场景（仅浏览器） ───────── */
+ // Soft round points sized in world units; xr.js does not touch ShaderMaterials, so we divide by the VR dolly scale here.
+@@ -233,14 +253,21 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
+     }
+     // HTML labels · 屏幕标签
+     camera.getWorldPosition(camW);
++    const shown = [];
+     for (const t of tags) {
+       const L = levels[t.level], show = !!L && t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t) && !hiddenNow(t);
+       if (!show) { t.el.style.display = 'none'; continue; }
+       t.obj.getWorldPosition(wp); wp.project(camera);
+       if (wp.z > 1 || Math.abs(wp.x) > 1.05 || Math.abs(wp.y) > 1.05) { t.el.style.display = 'none'; continue; }
+-      t.el.style.display = 'block'; t.el.style.transform = `translate(${(wp.x + 1) / 2 * innerWidth}px,${(1 - wp.y) / 2 * innerHeight}px)`;
++      t.sx = (wp.x + 1) / 2 * innerWidth; t.sy = (1 - wp.y) / 2 * innerHeight;
++      t.el.style.display = 'block'; t.el.style.transform = `translate(${t.sx}px,${t.sy}px)`;
+       t.el.classList.toggle('hover', !!t.pieceId && state.hover === t.pieceId);
++      shown.push(t);
+     }
++    // Keep labels from stacking on top of each other (Milky Way and Sgr A* on a phone); only the name moves, the ring stays · 防止标签重叠
++    const names = shown.map(t => t.nameEl ||= t.el.querySelector('.name'));
++    const dy = spreadLabels(shown.map((t, i) => { const n = names[i], w = n.offsetWidth; return { x: t.sx - w / 2, y: t.sy + n.offsetTop, w, h: n.offsetHeight }; }));
++    shown.forEach((t, i) => { if (t.dy !== dy[i]) { t.dy = dy[i]; names[i].style.translate = dy[i] ? `0 ${dy[i]}px` : ''; } });
+   }
+   // Tag each piece's Points with its id (for dimming) and find a Points' level · 记录归属
+   for (const id in pieceById) pieceById[id].pts.userData.pieceId = id;
+diff --git a/main.js b/main.js
+index bee0cb4..808d9e1 100644
+--- a/main.js
++++ b/main.js
+@@ -15,7 +15,7 @@ import { buildHighlights, HIGHLIGHTS, moonPT } from './highlights.js';
+ import { initHabitability } from './habitability.js';
+ import { narrate, stopNarration, sfx } from './narration.js';
+ import { initXR } from './xr.js';
+-import { createJourney, levelById, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, quad, tr, SCALE_NOTE, UI as JUI } from './journey.js';
++import { createJourney, levelById, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, quad, tr, eyebrowText, SCALE_NOTE, UI as JUI } from './journey.js';
+ import { PIECES } from './pieces/index.js';
+ const $ = s => document.querySelector(s), clamp = T.MathUtils.clamp, bi = window.bi;
+ const cap = s => s.charAt(0) + s.slice(1).toLowerCase();
+@@ -428,7 +428,7 @@ function setIntro(m, b) {
+     const lv = levelById(journey.level || 'neighbourhood'), p = journey.piece && journey.pieceData(journey.piece);
+     $('#headline').innerHTML = quad(p ? p.names : lv.names);
+     $('#subtitle').innerHTML = quad(p ? p.type : lv.blurb);
+-    setEyebrow(Object.fromEntries(['en', 'zh', 'es', 'pt'].map(k => [k, `${tr(JUI.journey, k)} · ${tr(lv.names, k)}`.toUpperCase()])));
++    setEyebrow(Object.fromEntries(['en', 'zh', 'es', 'pt'].map(k => [k, eyebrowText(lv.id, p, k)])));   // names the open piece too · 也显示打开的天体
+   } else if (m === 'trajectory') {
+     $('#headline').innerHTML = bi('Worlds in motion.', '群星，向前。', 'Mundos en movimiento.');
+     $('#subtitle').innerHTML = bi('Our star moves. Eight worlds travel with it. Explore their luminous paths through a moving reference frame.', '太阳向前，八颗行星与它同行。旋转视角，探索运动参考系下交织的发光轨迹。', 'Nuestra estrella se mueve. Ocho mundos viajan con ella. Explora sus trayectorias luminosas.');
+diff --git a/tests/journey.test.mjs b/tests/journey.test.mjs
+index 083de9d..0e9c8a6 100644
+--- a/tests/journey.test.mjs
++++ b/tests/journey.test.mjs
+@@ -1,7 +1,7 @@
+ // Scale journey: level order, zoom-edge transitions, piece data · 尺度之旅测试
+ import { test } from 'node:test';
+ import assert from 'node:assert/strict';
+-import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden, UI } from '../journey.js';
++import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden, UI, eyebrowText, spreadLabels } from '../journey.js';
+ import { makeShape, SHAPE_KINDS } from '../shapes.js';
+ import { PIECES } from '../pieces/index.js';
+ 
+@@ -172,3 +172,26 @@ test('every journey UI string exists in EN, zh, ES and PT', () => {
+   walk(UI, 'UI');
+   assert.ok(UI.journey.pt);
+ });
++
++test('eyebrow names the level, and the open piece too, in all four languages', () => {
++  const m87 = PIECES.find(x => x.id === 'm87');
++  assert.equal(eyebrowText('galaxy', null, 'en'), 'SCALE JOURNEY · GALAXY');
++  assert.equal(eyebrowText('supercluster', m87, 'en'), ('Supercluster · ' + m87.names.en).toUpperCase());
++  for (const k of ['en', 'zh', 'es', 'pt']) {
++    assert.ok(eyebrowText('supercluster', m87, k).includes(m87.names[k].toUpperCase()), k);
++    assert.ok(!eyebrowText('supercluster', m87, k).includes(UI.journey[k].toUpperCase()), k + ': no journey prefix with a piece open');
++  }
++  assert.equal(eyebrowText('nope', null, 'en'), '');
++});
++
++test('spreadLabels pushes an overlapping lower label below the upper one and leaves others alone', () => {
++  // Phone probe 2026-11-14c: MILKY WAY 147–243 × 382–407, SAGITTARIUS A* 126–254 × 401–425 · 手机上两个标签重叠
++  const dy = spreadLabels([{ x: 126, y: 401, w: 128, h: 24 }, { x: 147, y: 382, w: 96, h: 25 }, { x: 600, y: 401, w: 80, h: 20 }, { x: 140, y: 390, w: 0, h: 20 }]);
++  assert.equal(dy[1], 0, 'upper label stays');
++  assert.equal(401 + dy[0], 382 + 25 + 4, 'lower label clears the upper one with a 4 px gap');
++  assert.equal(dy[2], 0, 'a label elsewhere does not move');
++  assert.equal(dy[3], 0, 'hidden (w = 0) labels are ignored');
++  // Three in a stack end up in a column · 三个叠在一起的标签排成一列
++  const d3 = spreadLabels([{ x: 0, y: 0, w: 50, h: 10 }, { x: 0, y: 2, w: 50, h: 10 }, { x: 0, y: 4, w: 50, h: 10 }], 2);
++  assert.deepEqual(d3.map((d, i) => [0, 2, 4][i] + d), [0, 12, 24]);
++});
