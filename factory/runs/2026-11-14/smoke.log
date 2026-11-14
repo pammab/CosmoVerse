@@ -1,0 +1,15 @@
+vr button: true
+wheel out → {"level":"neighbourhood","piece":null}
+Pillars tag at {"x":977.049,"y":435.16}
+click → {"level":"neighbourhood","piece":"pillars-of-creation"} · Pillars of Creation · 7 links
+pt: COLUNAS DE GÁS E POEIRA · NEBULOSA DA ÁGUIA, M16 ⟵ Voltar Pilares da Criação  Os Pilares da Criação ficam dentro da Nebulosa da Águia, a cerca de 6.500 anos-luz: torres de gás e poeira frios. Ventos e
+wheel out → {"level":"supercluster","piece":null}
+labels: ["LANIAKEA SUPERCLUSTER","YOU ARE HERE · LOCAL GROUP","VIRGO CLUSTER","M87 · VIRGO A"]
+M87 tag at {"x":714.408,"y":418.688}
+click → {"level":"supercluster","piece":"m87"} · M87 · Virgo A · 6 links
+zh: 巨椭圆星系 ⟵ 返回 M87 · 室女座 A  M87 是一个巨椭圆星系，距离约 5500 万光年，位于室女座星系团的中心，拥有约 15000 个球状星团。它的中心黑洞质量约为太阳的 65 亿倍，并在 2019 年 4 月成为人类第一个拍到
+wheel out → {"level":"universe","piece":null}
+Filament tag at {"x":897.379,"y":562.109}
+webcam point-and-hold → {"level":"universe","piece":"cosmic-web"} · Cosmic Web Filament · 6 links
+es: UN HILO DE GALAXIAS JUNTO A UN VACÍO ⟵ Volver Filamento de la red cósmica  De cerca, la red cósmica son hilos de galaxia
+errors: none

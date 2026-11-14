@@ -55,3 +55,16 @@
   two pages (Betelgeuse distance 550–700 ly from two NASA pages).
 - App-wide PT: `PT` dictionary keyed by English in i18n.js plus `ptText()`; `bi(en, zh, es, pt)` in index.html; arrays get a 4th
   entry. New user-visible text must be added in all four languages.
+- Judges catch superlatives taken from a headline when the body hedges ("one of the earliest strands", not "earliest"), and
+  "where" claims read off an image caption (Webb's Pillars: newborn stars lie *outside* the pillar; the crimson glow is from jets
+  and shocks). Re-read the page body for every adjective, not just the numbers (2026-11-14).
+- `isolate: true` now also fades the level backdrop (and the neighbourhood Sun), not just other pieces: a small piece inside a
+  big backdrop (M87 in the supercluster web, Pillars among bright nearby stars) otherwise sits in a field of huge close-up points.
+- A tall piece can slide under the big top-left title: raising `frame` (Pillars 1.15 → 1.35) is enough; check EN and the longest
+  language (PT) in the screenshot.
+- Nested piece on another piece's sub-label: export its spot from the parent piece (`VIRGO_AT` in pieces/laniakea.js); the bundler
+  handles the cross-piece import.
+- Research agents in parallel (one per piece) took ~6 min for three pieces; ask them for verbatim quotes and page disagreements.
+- When a page gives a range (old galaxy count "100 to 200 billion", heic1620), quote the whole range, not one end.
+- Sub-labels may set `onlyOpen: true` (journey.js `hiddenNow`): shown only in their piece's close-up, in HTML and VR (xr.js calls
+  `visible()` every frame). The cosmic-web "Void" label uses it.

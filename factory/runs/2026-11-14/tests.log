@@ -1,0 +1,214 @@
+TAP version 13
+# Subtest: Portuguese is in the language menu list
+ok 1 - Portuguese is in the language menu list
+  ---
+  duration_ms: 1.542312
+  type: 'test'
+  ...
+# Subtest: every Spanish dictionary entry also has a Portuguese one
+ok 2 - every Spanish dictionary entry also has a Portuguese one
+  ---
+  duration_ms: 0.25495
+  type: 'test'
+  ...
+# Subtest: every planet name, type, fact, description and feature has Portuguese
+ok 3 - every planet name, type, fact, description and feature has Portuguese
+  ---
+  duration_ms: 0.788113
+  type: 'test'
+  ...
+# Subtest: every narration has en, zh, es and pt
+ok 4 - every narration has en, zh, es and pt
+  ---
+  duration_ms: 0.330312
+  type: 'test'
+  ...
+# Subtest: ptText falls back to Brazilian number format and units
+ok 5 - ptText falls back to Brazilian number format and units
+  ---
+  duration_ms: 0.550866
+  type: 'test'
+  ...
+# Subtest: levels go from the universe down to the Solar System
+ok 6 - levels go from the universe down to the Solar System
+  ---
+  duration_ms: 1.83043
+  type: 'test'
+  ...
+# Subtest: zooming out past the minimum moves up only after enough push
+ok 7 - zooming out past the minimum moves up only after enough push
+  ---
+  duration_ms: 0.349355
+  type: 'test'
+  ...
+# Subtest: zooming in past the maximum moves down; turning back clears the push
+ok 8 - zooming in past the maximum moves down; turning back clears the push
+  ---
+  duration_ms: 0.207038
+  type: 'test'
+  ...
+# Subtest: zooming inside the limits never changes level
+ok 9 - zooming inside the limits never changes level
+  ---
+  duration_ms: 0.308067
+  type: 'test'
+  ...
+# Subtest: the push fades if you stop
+ok 10 - the push fades if you stop
+  ---
+  duration_ms: 0.156065
+  type: 'test'
+  ...
+# Subtest: three starter pieces cover the outer levels
+ok 11 - three starter pieces cover the outer levels
+  ---
+  duration_ms: 0.254536
+  type: 'test'
+  ...
+# Subtest: every piece matches the schema (4 languages, 5–6 sourced facts)
+ok 12 - every piece matches the schema (4 languages, 5–6 sourced facts)
+  ---
+  duration_ms: 1.236934
+  type: 'test'
+  ...
+# Subtest: validatePiece catches a missing translation and an unsourced fact
+ok 13 - validatePiece catches a missing translation and an unsourced fact
+  ---
+  duration_ms: 0.363472
+  type: 'test'
+  ...
+# Subtest: optional tilt and frame are checked; Andromeda sits on the Local Group's M31 spot
+ok 14 - optional tilt and frame are checked; Andromeda sits on the Local Group's M31 spot
+  ---
+  duration_ms: 0.523779
+  type: 'test'
+  ...
+# Subtest: shapes are deterministic and finite for every kind
+ok 15 - shapes are deterministic and finite for every kind
+  ---
+  duration_ms: 57.627459
+  type: 'test'
+  ...
+# Subtest: piece shapes fit their counts
+ok 16 - piece shapes fit their counts
+  ---
+  duration_ms: 123.420572
+  type: 'test'
+  ...
+# Subtest: quad writes all four languages and escapes text
+ok 17 - quad writes all four languages and escapes text
+  ---
+  duration_ms: 0.418384
+  type: 'test'
+  ...
+# Subtest: Laniakea: the Local Group marker sits on a filament at the level origin, and the piece does not spin
+ok 18 - Laniakea: the Local Group marker sits on a filament at the level origin, and the piece does not spin
+  ---
+  duration_ms: 19.012743
+  type: 'test'
+  ...
+# Subtest: Sagittarius A* sits at the Milky Way centre with its label moved aside; labelAt is checked
+ok 19 - Sagittarius A* sits at the Milky Way centre with its label moved aside; labelAt is checked
+  ---
+  duration_ms: 0.290495
+  type: 'test'
+  ...
+# Subtest: extra sources (also) are checked; Betelgeuse distance cites both NASA pages
+ok 20 - extra sources (also) are checked; Betelgeuse distance cites both NASA pages
+  ---
+  duration_ms: 0.244067
+  type: 'test'
+  ...
+# Subtest: cosmic-web filament keeps its void empty; Pillars and M87 sit on their levels
+ok 21 - cosmic-web filament keeps its void empty; Pillars and M87 sit on their levels
+  ---
+  duration_ms: 13.430788
+  type: 'test'
+  ...
+# Subtest: observable-universe cites the re-checked pages; the Void label waits for the close-up
+ok 22 - observable-universe cites the re-checked pages; the Void label waits for the close-up
+  ---
+  duration_ms: 0.326842
+  type: 'test'
+  ...
+# Subtest: maps all 21 MediaPipe landmarks from WebXR joint names
+ok 23 - maps all 21 MediaPipe landmarks from WebXR joint names
+  ---
+  duration_ms: 1.386247
+  type: 'test'
+  ...
+# Subtest: returns null when any joint is not tracked
+ok 24 - returns null when any joint is not tracked
+  ---
+  duration_ms: 0.187824
+  type: 'test'
+  ...
+# Subtest: recognises open after the stabilising vote
+ok 25 - recognises open after the stabilising vote
+  ---
+  duration_ms: 0.721121
+  type: 'test'
+  ...
+# Subtest: recognises point after the stabilising vote
+ok 26 - recognises point after the stabilising vote
+  ---
+  duration_ms: 1.117334
+  type: 'test'
+  ...
+# Subtest: recognises victory after the stabilising vote
+ok 27 - recognises victory after the stabilising vote
+  ---
+  duration_ms: 0.183961
+  type: 'test'
+  ...
+# Subtest: recognises fist after the stabilising vote
+ok 28 - recognises fist after the stabilising vote
+  ---
+  duration_ms: 0.146107
+  type: 'test'
+  ...
+# Subtest: recognises pinch after the stabilising vote
+ok 29 - recognises pinch after the stabilising vote
+  ---
+  duration_ms: 0.231165
+  type: 'test'
+  ...
+# Subtest: one stray frame does not flip a stable gesture
+ok 30 - one stray frame does not flip a stable gesture
+  ---
+  duration_ms: 0.249375
+  type: 'test'
+  ...
+# Subtest: losing the hand resets the gesture
+ok 31 - losing the hand resets the gesture
+  ---
+  duration_ms: 0.821473
+  type: 'test'
+  ...
+# Subtest: cursor anchors: fingertip for point/pinch, palm for open/fist
+ok 32 - cursor anchors: fingertip for point/pinch, palm for open/fist
+  ---
+  duration_ms: 0.343261
+  type: 'test'
+  ...
+# Subtest: pinch detector uses hysteresis
+ok 33 - pinch detector uses hysteresis
+  ---
+  duration_ms: 0.168367
+  type: 'test'
+  ...
+# Subtest: two hands: pulling apart zooms, turning rotates, letting go ends
+ok 34 - two hands: pulling apart zooms, turning rotates, letting go ends
+  ---
+  duration_ms: 0.143153
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 34
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 422.541875

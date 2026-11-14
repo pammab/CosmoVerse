@@ -9,12 +9,12 @@
 - [x] piece orion-nebula: Orion Nebula M42 (ad197df, judge 7→8/10)
 - [x] piece pleiades: the Pleiades star cluster M45 (ad197df, judge 7→8/10)
 - [x] piece laniakea: the Laniakea supercluster (663a8d8, judge 8.5/10)
-- [ ] piece cosmic-web: the cosmic web (filaments and voids). Pamela chose **option B** (Nov 13): a SEPARATE piece on the universe level, a close-up of one filament full of galaxies with a void beside it, own facts; keep observable-universe as the whole-web view
-- [ ] piece observable-universe: the observable universe
-- [ ] piece pillars-of-creation: Pillars of Creation (in M16, Eagle Nebula)
+- [x] piece cosmic-web: the cosmic web (filaments and voids), option B: a close-up of one filament with a void beside it (71eab6e, judge 8→8.5/10)
+- [x] piece observable-universe: the observable universe (starter refined: facts re-sourced and re-checked, b441300, judge 7→8/10)
+- [x] piece pillars-of-creation: Pillars of Creation (in M16, Eagle Nebula) (71eab6e, judge 7→8/10; neighbourhood level, not to scale)
 - [x] piece betelgeuse: Betelgeuse (red supergiant) (663a8d8, judge 8.5/10; done early: neighbourhood level, cosmic-web overlaps the existing observable-universe web)
 - [x] piece black-hole: Sagittarius A* (the Milky Way's central black hole) (a2631fb, judge 8.5/10)
-- [ ] piece elliptical-galaxy: M87 (giant elliptical)
+- [x] piece elliptical-galaxy: M87 (giant elliptical) (71eab6e, judge 8/10; supercluster level, on the Virgo Cluster)
 - [x] piece alpha-centauri: Alpha Centauri / Proxima (nearest stars) (ad197df, judge 7→8/10; done early: same level, research ready)
 
 ## journey-core spec

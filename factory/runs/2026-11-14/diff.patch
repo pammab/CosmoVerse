@@ -1,0 +1,316 @@
+diff --git a/journey.js b/journey.js
+index ffbb111..2eacdc2 100644
+--- a/journey.js
++++ b/journey.js
+@@ -222,7 +222,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
+       if (!p.visible) continue; let o = p; let vis = true; while (o) { if (!o.visible) { vis = false; break; } o = o.parent; } if (!vis) continue;
+       p.getWorldScale(wp); const lv = levelOf(p);
+       // Other pieces dim while one is open; almost vanish if the open piece asks to be isolated (Sgr A* inside the galaxy's bright core) · 其他天体变暗
+-      const dim = state.piece && p.userData.pieceId && p.userData.pieceId !== state.piece ? (pieceById[state.piece]?.p.isolate ? 0.04 : 0.3) : 1;
++      const iso = pieceById[state.piece]?.p.isolate, dim = !state.piece || p.userData.pieceId === state.piece ? 1 : iso ? 0.04 : p.userData.pieceId ? 0.3 : 1;   // isolate also fades the level backdrop (M87 inside the supercluster web) · 隔离时背景也淡出
+       p.material.uniforms.uSize.value = p.userData.jp.base * wp.x / ss * (p.userData.jp.beacon ? 1 + 0.35 * Math.sin(now * 3) : 1);
+       p.material.uniforms.uOpacity.value = p === warp ? p.userData.jp.fade : (lv?.op ?? 0) * (p.userData.jp.beacon ? 1 : dim);
+       p.material.uniforms.uViewH.value = vh;
+diff --git a/pieces/cosmic-web.js b/pieces/cosmic-web.js
+new file mode 100644
+index 0000000..57af176
+--- /dev/null
++++ b/pieces/cosmic-web.js
+@@ -0,0 +1,48 @@
++// A filament of the cosmic web, with a void beside it · 宇宙网纤维 · Filamento de la red cósmica · Filamento da teia cósmica
++// Pamela chose option B (2026-11-13): a close-up of one filament, separate from the whole-web "Observable Universe" piece.
++// Sources opened (2026-11-14): NASA "Mapping the Cosmic Web", NASA "Lonely galaxy lost in space" (Local Void),
++// ESA XMM-Newton "missing matter" (2025), ESO potw2504a (MUSE filament), NASA "Webb identifies the earliest strands".
++// Drawn as one thread of small galaxies feeding a cluster, with an empty bubble beside it; not to scale. · 不按比例
++const MAP = 'https://science.nasa.gov/mission/hubble/science/science-highlights/mapping-the-cosmic-web/';
++const VOID = 'https://science.nasa.gov/missions/hubble/lonely-galaxy-lost-in-space/';
++const XMM = 'https://www.esa.int/Science_Exploration/Space_Science/XMM-Newton/The_models_were_right_astronomers_find_missing_matter';
++const MUSE = 'https://www.eso.org/public/images/potw2504a/';
++const WEBB = 'https://science.nasa.gov/missions/webb/nasas-webb-identifies-the-earliest-strands-of-the-cosmic-web/';
++export default {
++  id: 'cosmic-web', level: 'universe',
++  names: { en: 'Cosmic Web Filament', zh: '宇宙网纤维', es: 'Filamento de la red cósmica', pt: 'Filamento da teia cósmica' },
++  type: { en: 'A thread of galaxies beside a void', zh: '空洞旁的一条星系之丝', es: 'Un hilo de galaxias junto a un vacío', pt: 'Um fio de galáxias ao lado de um vazio' },
++  shape: { kind: 'filament', count: 26000, colors: ['#b4c8ff', '#ffe2b0', '#6f7fc4', '#8fa0d0'], params: { void: [0.15, 0.58, -0.1, 0.5] }, seed: 61 },
++  // Inside the big web, off to one side; the whole web fades while it is open · 位于大宇宙网一侧，打开时其余部分淡出
++  position: [60, 12, 34], size: 24, frame: 1.25, spin: 0.002, isolate: true,
++  facts: [
++    { label: { en: 'Made of', zh: '组成', es: 'Hecho de', pt: 'Feito de' },
++      value: { en: 'Filaments and sheets, mostly dark matter', zh: '纤维和片状结构，主要是暗物质', es: 'Filamentos y láminas, sobre todo materia oscura', pt: 'Filamentos e lâminas, principalmente matéria escura' },
++      source: { name: 'NASA', url: MAP } },
++    { label: { en: 'Feeding a cluster', zh: '注入星系团', es: 'Alimenta un cúmulo', pt: 'Alimentando um aglomerado' },
++      value: { en: 'One filament about 13 million light-years long streams into a galaxy cluster', zh: '一条长约 1300 万光年的纤维正涌入一个星系团', es: 'Un filamento de unos 13 millones de años luz fluye hacia un cúmulo de galaxias', pt: 'Um filamento de cerca de 13 milhões de anos-luz flui para um aglomerado de galáxias' },
++      source: { name: 'NASA', url: MAP } },
++    { label: { en: 'A void', zh: '空洞', es: 'Un vacío', pt: 'Um vazio' },
++      value: { en: 'The Local Void: at least 150 million light-years across, mostly empty of galaxies', zh: '本地空洞：直径至少 1.5 亿光年，几乎没有星系', es: 'El Vacío Local: al menos 150 millones de años luz, casi sin galaxias', pt: 'O Vazio Local: pelo menos 150 milhões de anos-luz, quase sem galáxias' },
++      source: { name: 'NASA', url: VOID } },
++    { label: { en: 'Hot “missing” matter', zh: '炽热的“失踪”物质', es: 'Materia “perdida” caliente', pt: 'Matéria “desaparecida” quente' },
++      value: { en: 'One filament of gas: over 10 million degrees, about 23 million light-years long', zh: '一条气体纤维：超过 1000 万度，长约 2300 万光年', es: 'Un filamento de gas: más de 10 millones de grados, unos 23 millones de años luz', pt: 'Um filamento de gás: mais de 10 milhões de graus, cerca de 23 milhões de anos-luz' },
++      source: { name: 'ESA', url: XMM } },
++    { label: { en: 'Photographed', zh: '拍摄到', es: 'Fotografiado', pt: 'Fotografado' },
++      value: { en: 'A 3-million-light-year filament, after about 150 hours with ESO’s VLT', zh: '一条 300 万光年长的纤维，用 ESO 甚大望远镜观测约 150 小时', es: 'Un filamento de 3 millones de años luz, tras unas 150 horas con el VLT de ESO', pt: 'Um filamento de 3 milhões de anos-luz, após cerca de 150 horas com o VLT do ESO' },
++      source: { name: 'ESO', url: MUSE } },
++    { label: { en: 'One of the earliest strands', zh: '最早的丝之一', es: 'Uno de los hilos más antiguos', pt: 'Um dos fios mais antigos' },
++      value: { en: '10 galaxies in a line, 830 million years after the Big Bang', zh: '10 个星系排成一线，在大爆炸后 8.3 亿年', es: '10 galaxias en fila, 830 millones de años después del Big Bang', pt: '10 galáxias em fila, 830 milhões de anos após o Big Bang' },
++      source: { name: 'NASA', url: WEBB } },
++  ],
++  // Narration sources: dark matter web + 13-million-ly filament: NASA MAP; Local Void: NASA VOID; >10 million degrees gas, "missing" matter: ESA XMM · 各句来源
++  narration: {
++    en: 'Up close, the cosmic web is threads of galaxies, held together mostly by dark matter. One filament about 13 million light-years long is streaming into a galaxy cluster. Beside the threads lie voids like the Local Void, at least 150 million light-years across and almost empty, and some filaments hide hot gas above 10 million degrees, part of the ordinary matter astronomers had been missing.',
++    zh: '近看，宇宙网是一根根星系之丝，主要由暗物质维系在一起。一条长约 1300 万光年的纤维正涌入一个星系团。丝的旁边是像本地空洞这样的空洞，直径至少 1.5 亿光年，几乎空无一物；有些纤维里藏着超过 1000 万度的热气体，是天文学家一直没找到的部分普通物质。',
++    es: 'De cerca, la red cósmica son hilos de galaxias, unidos sobre todo por materia oscura. Un filamento de unos 13 millones de años luz fluye hacia un cúmulo de galaxias. Junto a los hilos hay vacíos como el Vacío Local, de al menos 150 millones de años luz y casi vacío, y algunos filamentos esconden gas a más de 10 millones de grados, parte de la materia ordinaria que los astrónomos no encontraban.',
++    pt: 'De perto, a teia cósmica é feita de fios de galáxias, unidos principalmente pela matéria escura. Um filamento de cerca de 13 milhões de anos-luz flui para um aglomerado de galáxias. Ao lado dos fios ficam vazios como o Vazio Local, com pelo menos 150 milhões de anos-luz e quase vazio, e alguns filamentos escondem gás a mais de 10 milhões de graus, parte da matéria comum que os astrônomos não encontravam.',
++  },
++  clue: { en: 'A thread of dark matter strung with galaxies, with emptiness at its side.', zh: '一根串满星系的暗物质之线，身旁是一片空旷。', es: 'Un hilo de materia oscura ensartado de galaxias, con el vacío a su lado.', pt: 'Um fio de matéria escura cheio de galáxias, com o vazio ao lado.' },
++  labels: [{ at: [0.15, 0.58, -0.1].map(v => v * 24), names: { en: 'Void', zh: '空洞', es: 'Vacío', pt: 'Vazio' } }],
++  youAreHere: null,
++};
+diff --git a/pieces/index.js b/pieces/index.js
+index 9ccc1e1..a67cca8 100644
+--- a/pieces/index.js
++++ b/pieces/index.js
+@@ -9,5 +9,8 @@ import alphaCentauri from './alpha-centauri.js';
+ import laniakea from './laniakea.js';
+ import betelgeuse from './betelgeuse.js';
+ import sgrAStar from './sgr-a-star.js';
++import cosmicWeb from './cosmic-web.js';
++import pillars from './pillars-of-creation.js';
++import m87 from './m87.js';
+ 
+-export const PIECES = [milkyWay, localGroup, observableUniverse, andromeda, orionNebula, pleiades, alphaCentauri, laniakea, betelgeuse, sgrAStar];
++export const PIECES = [milkyWay, localGroup, observableUniverse, andromeda, orionNebula, pleiades, alphaCentauri, laniakea, betelgeuse, sgrAStar, cosmicWeb, pillars, m87];
+diff --git a/pieces/laniakea.js b/pieces/laniakea.js
+index ea7ae08..1142a70 100644
+--- a/pieces/laniakea.js
++++ b/pieces/laniakea.js
+@@ -11,6 +11,8 @@ const at = c => c.map(v => v * S);
+ // Tilt the flat basin towards the camera; three.js Euler XYZ applies Rz, then Rx · 让盆地面向镜头
+ const TILT = [1.05, 0.2];
+ const turn = ([x, y, z], [rx, rz] = TILT) => { [x, y] = [x * Math.cos(rz) - y * Math.sin(rz), x * Math.sin(rz) + y * Math.cos(rz)]; [y, z] = [y * Math.cos(rx) - z * Math.sin(rx), y * Math.sin(rx) + z * Math.cos(rx)]; return [x, y, z]; };
++// Where the Virgo Cluster sits on the supercluster level (world coords), for the M87 piece · 室女座星系团在本层的位置（供 M87 使用）
++export const VIRGO_AT = turn(VIRGO.map((v, i) => v - HOME[i])).map(v => v * S);
+ export default {
+   id: 'laniakea', level: 'supercluster',
+   names: { en: 'Laniakea Supercluster', zh: '拉尼亚凯亚超星系团', es: 'Supercúmulo Laniakea', pt: 'Superaglomerado Laniakea' },
+diff --git a/pieces/m87.js b/pieces/m87.js
+new file mode 100644
+index 0000000..7787f4c
+--- /dev/null
++++ b/pieces/m87.js
+@@ -0,0 +1,48 @@
++// M87, the giant elliptical galaxy at the heart of the Virgo Cluster · 室女座 A（M87） · M87 · M87
++// Sources opened (2026-11-14): NASA JPL "Black hole image makes history" (2019), NASA "The giant galaxy around the giant black hole",
++// ESA/Hubble opo1332a (jet), NASA Hubble Messier 87, ESO eso2305.
++// Sits on the Virgo Cluster inside Laniakea (pieces/laniakea.js VIRGO_AT); drawn far larger than life. · 远比实际大
++import { VIRGO_AT } from './laniakea.js';
++const JPL = 'https://www.jpl.nasa.gov/news/black-hole-image-makes-history/';
++const GIANT = 'https://www.nasa.gov/missions/spitzer/the-giant-galaxy-around-the-giant-black-hole/';
++const JET = 'https://esahubble.org/images/opo1332a/';
++const M87 = 'https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-87/';
++export default {
++  id: 'm87', level: 'supercluster',
++  names: { en: 'M87 · Virgo A', zh: 'M87 · 室女座 A', es: 'M87 · Virgo A', pt: 'M87 · Virgo A' },
++  type: { en: 'Giant elliptical galaxy', zh: '巨椭圆星系', es: 'Galaxia elíptica gigante', pt: 'Galáxia elíptica gigante' },
++  // Warm yellow-white glow, with its blue jet · 暖黄白色的光晕和蓝色喷流
++  shape: { kind: 'elliptical', count: 14000, colors: ['#fff4d6', '#e8b36a', '#6fb8ff'], params: { axes: [1, 0.86, 0.92], jet: 0.95, jetShare: 0.12 }, seed: 87 },
++  position: VIRGO_AT, size: 3.2, frame: 0.9, tilt: [0.2, 0.35], spin: 0, isolate: true,
++  labelAt: [0, -3.6, 0],   // offset from the "Virgo Cluster" label at the same spot (on screen it sits just above it) · 与“室女座星系团”标签错开
++  facts: [
++    { label: { en: 'Type', zh: '类型', es: 'Tipo', pt: 'Tipo' },
++      value: { en: 'Giant elliptical galaxy', zh: '巨椭圆星系', es: 'Galaxia elíptica gigante', pt: 'Galáxia elíptica gigante' },
++      source: { name: 'ESA/Hubble', url: JET } },
++    { label: { en: 'Distance', zh: '距离', es: 'Distancia', pt: 'Distância' },
++      value: { en: 'About 55 million light-years', zh: '约 5500 万光年', es: 'Unos 55 millones de años luz', pt: 'Cerca de 55 milhões de anos-luz' },
++      source: { name: 'NASA', url: JPL } },
++    { label: { en: 'Where', zh: '位置', es: 'Dónde', pt: 'Onde' },
++      value: { en: 'Centre of the Virgo Cluster, about 2,000 galaxies', zh: '室女座星系团中心，约 2000 个星系', es: 'Centro del cúmulo de Virgo, unas 2000 galaxias', pt: 'Centro do Aglomerado de Virgem, cerca de 2.000 galáxias' },
++      source: { name: 'ESA/Hubble', url: JET } },
++    { label: { en: 'Central black hole', zh: '中心黑洞', es: 'Agujero negro central', pt: 'Buraco negro central' },
++      value: { en: 'About 6.5 billion times the Sun’s mass', zh: '约为太阳质量的 65 亿倍', es: 'Unas 6500 millones de veces la masa del Sol', pt: 'Cerca de 6,5 bilhões de vezes a massa do Sol' },
++      source: { name: 'NASA', url: JPL } },
++    { label: { en: 'First black hole image', zh: '首张黑洞照片', es: 'Primera imagen de un agujero negro', pt: 'Primeira imagem de um buraco negro' },
++      value: { en: 'Event Horizon Telescope, April 2019', zh: '事件视界望远镜，2019 年 4 月', es: 'Telescopio del Horizonte de Sucesos, abril de 2019', pt: 'Telescópio do Horizonte de Eventos, abril de 2019' },
++      source: { name: 'NASA', url: GIANT } },
++    { label: { en: 'Jet', zh: '喷流', es: 'Chorro', pt: 'Jato' },
++      value: { en: 'Visible part about 5,000 light-years long', zh: '可见部分长约 5000 光年', es: 'Su parte visible mide unos 5000 años luz', pt: 'A parte visível tem cerca de 5.000 anos-luz' },
++      source: { name: 'ESA/Hubble', url: JET } },
++  ],
++  // Narration sources: giant elliptical, centre of Virgo, 5,000 ly jet: JET; 55 million ly, 6.5 billion Suns, near light speed: JPL;
++  // first image April 2019: GIANT; ~15,000 globular clusters: M87 page · 各句来源
++  narration: {
++    en: 'M87 is a giant elliptical galaxy about 55 million light-years away, at the centre of the Virgo Cluster, with roughly 15,000 globular star clusters. Its central black hole has about 6.5 billion times the Sun’s mass, and in April 2019 it became the first black hole ever pictured. It shoots out a jet of particles, travelling near the speed of light, whose visible part is about 5,000 light-years long.',
++    zh: 'M87 是一个巨椭圆星系，距离约 5500 万光年，位于室女座星系团的中心，拥有约 15000 个球状星团。它的中心黑洞质量约为太阳的 65 亿倍，并在 2019 年 4 月成为人类第一个拍到照片的黑洞。它喷出一道接近光速的粒子喷流，可见部分长约 5000 光年。',
++    es: 'M87 es una galaxia elíptica gigante a unos 55 millones de años luz, en el centro del cúmulo de Virgo, con unos 15.000 cúmulos globulares. Su agujero negro central tiene unas 6500 millones de veces la masa del Sol y, en abril de 2019, fue el primer agujero negro fotografiado. Lanza un chorro de partículas casi a la velocidad de la luz, cuya parte visible mide unos 5000 años luz.',
++    pt: 'M87 é uma galáxia elíptica gigante a cerca de 55 milhões de anos-luz, no centro do Aglomerado de Virgem, com cerca de 15 mil aglomerados globulares. O buraco negro central tem cerca de 6,5 bilhões de vezes a massa do Sol e, em abril de 2019, foi o primeiro buraco negro fotografado. Ela lança um jato de partículas quase à velocidade da luz, cuja parte visível tem cerca de 5.000 anos-luz.',
++  },
++  clue: { en: 'A giant cosmic egg whose hidden heart was the first black hole ever pictured.', zh: '一枚巨大的宇宙“蛋”，它隐藏的心脏是人类拍到的第一个黑洞。', es: 'Un huevo cósmico gigante cuyo corazón oculto fue el primer agujero negro fotografiado.', pt: 'Um ovo cósmico gigante cujo coração escondido foi o primeiro buraco negro fotografado.' },
++  youAreHere: null,
++};
+diff --git a/pieces/pillars-of-creation.js b/pieces/pillars-of-creation.js
+new file mode 100644
+index 0000000..796f90e
+--- /dev/null
++++ b/pieces/pillars-of-creation.js
+@@ -0,0 +1,45 @@
++// The Pillars of Creation, in the Eagle Nebula (M16) · 创生之柱 · Pilares de la Creación · Pilares da Criação
++// Sources opened (2026-11-14): ESA/Webb weic2216, NASA Hubble+Webb Pillars visualization, NASA Hubble Messier 16, ESO eso0926.
++// About 6,500–7,000 light-years away (beyond the stars drawn here), towards Serpens; placed on the far side from Orion.
++// Not to scale. · 不按比例
++const WEBB = 'https://esawebb.org/news/weic2216/';
++const VIS = 'https://science.nasa.gov/missions/hubble/new-hubble-webb-pillars-of-creation-visualization/';
++const M16 = 'https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-16/';
++const ESO = 'https://eso.org/public/unitedkingdom/news/eso0926/?lang=';
++export default {
++  id: 'pillars-of-creation', level: 'neighbourhood',
++  names: { en: 'Pillars of Creation', zh: '创生之柱', es: 'Pilares de la Creación', pt: 'Pilares da Criação' },
++  type: { en: 'Columns of gas and dust · Eagle Nebula, M16', zh: '气体与尘埃之柱 · 鹰状星云 M16', es: 'Columnas de gas y polvo · Nebulosa del Águila, M16', pt: 'Colunas de gás e poeira · Nebulosa da Águia, M16' },
++  // Webb's colours: orange-brown dust, crimson glowing edges, light-blue gas · 韦布的颜色：橙棕色尘埃、深红色边缘、淡蓝色气体
++  shape: { kind: 'pillars', count: 22000, colors: ['#b8662f', '#e8384a', '#8ec9e8', '#fff4e0'], seed: 16 },
++  position: [46, -4, -50], size: 11, frame: 1.35, spin: 0, isolate: true,   // the bright nearby stars fade while it is open · 打开时附近亮星淡出
++  facts: [
++    { label: { en: 'Distance', zh: '距离', es: 'Distancia', pt: 'Distância' },
++      value: { en: 'About 6,500 to 7,000 light-years', zh: '约 6500 至 7000 光年', es: 'Unos 6500 a 7000 años luz', pt: 'Cerca de 6.500 a 7.000 anos-luz' },
++      source: { name: 'ESA/Webb', url: WEBB }, also: [{ name: 'NASA', url: M16 }] },
++    { label: { en: 'Constellation', zh: '星座', es: 'Constelación', pt: 'Constelação' },
++      value: { en: 'Serpens, the Snake', zh: '巨蛇座', es: 'Serpens, la Serpiente', pt: 'Serpente (Serpens)' },
++      source: { name: 'ESO', url: ESO } },
++    { label: { en: 'Made of', zh: '组成', es: 'Hechos de', pt: 'Feitos de' },
++      value: { en: 'Cool gas and dust, mostly molecular hydrogen', zh: '冷的气体和尘埃，主要是分子氢', es: 'Gas y polvo fríos, sobre todo hidrógeno molecular', pt: 'Gás e poeira frios, principalmente hidrogênio molecular' },
++      source: { name: 'NASA', url: VIS } },
++    { label: { en: 'Being eroded by', zh: '正被侵蚀', es: 'Erosionados por', pt: 'Desgastados por' },
++      value: { en: 'Winds and ultraviolet light from hot young stars', zh: '炽热年轻恒星的星风和紫外线', es: 'Vientos y luz ultravioleta de estrellas jóvenes y calientes', pt: 'Ventos e luz ultravioleta de estrelas jovens e quentes' },
++      source: { name: 'NASA', url: VIS } },
++    { label: { en: 'First Hubble picture', zh: '哈勃首次拍摄', es: 'Primera foto del Hubble', pt: 'Primeira foto do Hubble' },
++      value: { en: '1995', zh: '1995 年', es: '1995', pt: '1995' },
++      source: { name: 'ESA/Webb', url: WEBB } },
++    { label: { en: 'Webb sees', zh: '韦布看到', es: 'Webb ve', pt: 'O Webb vê' },
++      value: { en: 'Newborn stars, and a crimson glow from young stars’ jets and shocks', zh: '新生恒星，以及年轻恒星喷流和激波产生的深红色辉光', es: 'Estrellas recién nacidas y un brillo carmesí de los chorros y choques de estrellas jóvenes', pt: 'Estrelas recém-nascidas e um brilho carmesim de jatos e choques de estrelas jovens' },
++      source: { name: 'ESA/Webb', url: WEBB } },
++  ],
++  // Narration sources: Eagle Nebula + 6,500 ly + cool gas and dust: WEBB; erosion by winds and UV: VIS; Hubble 1995, Webb protostars, knots collapsing: WEBB · 各句来源
++  narration: {
++    en: 'The Pillars of Creation stand inside the Eagle Nebula, about 6,500 light-years away: towers of cool gas and dust. Winds and ultraviolet light from hot young stars are slowly wearing them away. Hubble first photographed them in 1995, and Webb’s infrared view shows newborn stars, and dense knots inside the pillars collapse to form more.',
++    zh: '创生之柱位于约 6500 光年外的鹰状星云中，是由冷的气体和尘埃构成的高塔。炽热年轻恒星的星风和紫外线正在慢慢侵蚀它们。哈勃望远镜在 1995 年首次拍下它们，而韦布望远镜的红外视野显示了新生恒星，柱内致密的气团还在坍缩，形成更多恒星。',
++    es: 'Los Pilares de la Creación están dentro de la Nebulosa del Águila, a unos 6500 años luz: torres de gas y polvo fríos. Los vientos y la luz ultravioleta de estrellas jóvenes y calientes los van desgastando poco a poco. El Hubble los fotografió por primera vez en 1995, y la visión infrarroja del Webb muestra estrellas recién nacidas, y nudos densos dentro de los pilares colapsan para formar más.',
++    pt: 'Os Pilares da Criação ficam dentro da Nebulosa da Águia, a cerca de 6.500 anos-luz: torres de gás e poeira frios. Ventos e luz ultravioleta de estrelas jovens e quentes os desgastam devagar. O Hubble os fotografou pela primeira vez em 1995, e a visão infravermelha do Webb mostra estrelas recém-nascidas, e nós densos dentro dos pilares colapsam para formar outras.',
++  },
++  clue: { en: 'In the Snake’s constellation, towers of cold dust are carved by young stars’ light.', zh: '在巨蛇座里，冷尘之塔被年轻恒星的光芒雕刻。', es: 'En la constelación de la Serpiente, torres de polvo frío talladas por la luz de estrellas jóvenes.', pt: 'Na constelação da Serpente, torres de poeira fria esculpidas pela luz de estrelas jovens.' },
++  youAreHere: null,
++};
+diff --git a/shapes.js b/shapes.js
+index b01e94a..ac32f50 100644
+--- a/shapes.js
++++ b/shapes.js
+@@ -63,13 +63,77 @@ function spiral(b, n, colors, p, r, barred) {
+   }
+ }
+ 
+-/* ── Elliptical galaxy · 椭圆星系 ── colors: [core, edge] */
++/* ── Elliptical galaxy · 椭圆星系 ── colors: [core, edge, jet]
++   params.jet (optional): length of a thin jet shooting from the centre along +x, e.g. M87's · 可选喷流（沿 +x） */
+ function elliptical(b, n, colors, p, r) {
+   const core = hexRGB(colors[0] || '#fff1d6'), edge = hexRGB(colors[1] || '#ffc98f'), ax = p.axes || [1, 0.8, 0.9];
+-  while (b.n < n) {
++  const nJet = p.jet ? Math.floor(n * (p.jetShare ?? 0.07)) : 0, jetC = hexRGB(colors[2] || '#7fbfff');
++  while (b.n < n - nJet) {
+     const rad = Math.min(1.2, Math.pow(-Math.log(1 - r() * 0.999), 2.2) * 0.07), u = r() * 2 - 1, th = r() * Math.PI * 2, s = Math.sqrt(1 - u * u);
+     b.add(Math.cos(th) * s * rad * ax[0], u * rad * ax[1], Math.sin(th) * s * rad * ax[2], mix(core, edge, Math.min(1, rad)), 0.005 + r() * 0.006, 1 - Math.min(0.7, rad * 0.6));
+   }
++  // The jet: narrow, slightly widening, with a few brighter knots · 喷流：细长、略微张开，带几个亮结
++  const knots = [0.25, 0.45, 0.62, 0.85];
++  while (b.n < n) {
++    let t = Math.pow(r(), 0.8); if (r() < 0.35) t = knots[Math.floor(r() * knots.length)] + gauss(r) * 0.015;
++    t = Math.min(1, Math.max(0.02, t));
++    const w = 0.006 + 0.028 * t, x = t * p.jet;
++    b.add(x, gauss(r) * w, gauss(r) * w, mix(jetC, WHITE, 0.2 + r() * 0.3), 0.005 + r() * 0.005, 1 - 0.35 * t);
++  }
++}
++
++/* ── Pillars: towers of cool dust carved by young stars' light (Eagle Nebula) · 创生之柱 ──
++   colors: [dust (dim orange-brown), glowing edges (crimson/gold), haze (light blue), stars]
++   params.pillars: [{ x, z, h, w, lean }] in unit coords; bases sit at y = −0.75 · 柱底在 y = −0.75 */
++function pillars(b, n, colors, p, r) {
++  const dust = hexRGB(colors[0] || '#b86a35'), rim = hexRGB(colors[1] || '#ff5a4a'), haze = hexRGB(colors[2] || '#7fc4e6'), starC = hexRGB(colors[3] || '#fff6e6');
++  const cols = p.pillars || [{ x: -0.4, z: 0, h: 1.5, w: 0.15, lean: 0.12 }, { x: 0.08, z: -0.05, h: 1.05, w: 0.12, lean: -0.05 }, { x: 0.45, z: 0.05, h: 0.75, w: 0.1, lean: 0.06 }];
++  for (let i = 0; i < n * 0.012; i++) b.add((r() * 2 - 1) * 0.95, (r() * 2 - 1) * 0.8, gauss(r) * 0.15, mix(starC, WHITE, r() * 0.5), 0.012 + r() * 0.03, 0.7 + r() * 0.3);   // young stars · 年轻恒星
++  for (let i = 0; i < n * 0.22; i++) {   // the glowing blue haze behind the towers · 背后发蓝光的电离气体
++    const x = (r() * 2 - 1) * 1.0, y = -0.2 + gauss(r) * 0.45, z = -0.25 + gauss(r) * 0.12;
++    b.add(x, y, z, mix(haze, WHITE, r() * 0.2), 0.016 + r() * 0.02, 0.2 + r() * 0.15);
++  }
++  const base = -0.75, total = cols.reduce((s, c) => s + c.h * c.w, 0);
++  while (b.n < n) {
++    let k = cols[0], pick = r() * total; for (const c of cols) { pick -= c.h * c.w; if (pick <= 0) { k = c; break; } }
++    const t = Math.pow(r(), 0.9), y = base + t * k.h;
++    // Tapering column with lumpy sides and a rounded head · 逐渐变细、边缘起伏、顶端圆
++    const lump = 1 + 0.22 * Math.sin(t * 17 + k.x * 11) + 0.12 * Math.sin(t * 41 + k.x * 5);
++    const w = k.w * (1.25 - 0.75 * t) * lump * (1 + 0.6 * Math.exp(-((t - 0.95) ** 2) / 0.002));
++    const a = r() * Math.PI * 2, d = Math.sqrt(r()), dx = Math.cos(a) * d * w, dz = Math.sin(a) * d * w * 0.7;
++    const cx = k.x + k.lean * t + Math.sin(t * 9 + k.x * 7) * 0.03, x = cx + dx, z = (k.z || 0) + dz;
++    // The skin facing the stars' light glows (crimson to gold); the dust inside stays dim · 表面被照亮，内部暗
++    const edge = d > 0.86 && r() < 0.75, cap = t > 0.9 && d > 0.5 && r() < 0.7;
++    if (edge || cap) b.add(x, y, z, mix(rim, [1, 0.8, 0.45], cap ? 0.3 + r() * 0.5 : r() * 0.35), 0.006 + r() * 0.006, 0.9 + r() * 0.1);
++    else b.add(x, y, z, mix(dust, [0.3, 0.17, 0.1], r() * 0.6), 0.008 + r() * 0.008, 0.3 + r() * 0.2);
++  }
++}
++
++/* ── One cosmic-web filament full of galaxies, with an empty void beside it · 宇宙网中的一条纤维与旁边的空洞 ──
++   colors: [galaxies along the thread, cluster at its end, hot gas haze, galaxies on the void's rim]
++   params.void: [x, y, z, radius] of the empty bubble · 空洞的位置与半径 */
++function filament(b, n, colors, p, r) {
++  const gal = hexRGB(colors[0] || '#b4c8ff'), clus = hexRGB(colors[1] || '#ffe2b0'), gas = hexRGB(colors[2] || '#6f7fc4'), rimC = hexRGB(colors[3] || '#8fa0d0');
++  const [vx, vy, vz, vr] = p.void || [0.15, 0.55, -0.1, 0.5];
++  // The thread: a gentle S-curve from (−1, −0.35) to a cluster at (0.95, 0.15) · 主丝：平缓的 S 形曲线
++  const curve = t => [-1 + 1.95 * t, -0.35 + 0.5 * t + Math.sin(t * Math.PI * 1.6) * 0.14, Math.sin(t * Math.PI) * 0.18 - 0.05];
++  const side = [[0.42, [0.2, -0.85, 0.25]], [0.7, [0.75, -0.7, -0.2]], [0.18, [-0.75, 0.25, 0.3]]];   // thinner branches · 支丝
++  const at = (t, sp) => { const c = curve(t); return [c[0] + gauss(r) * sp, c[1] + gauss(r) * sp, c[2] + gauss(r) * sp]; };
++  // A tiny galaxy: a small flattened clump of points · 小星系：一小团扁平的点
++  const galaxy = (c, col, k, s) => { const a = r() * Math.PI; for (let i = 0; i < k && b.n < n; i++) { const u = gauss(r) * s, v = gauss(r) * s * 0.35; b.add(c[0] + u * Math.cos(a), c[1] + u * Math.sin(a) + v, c[2] + gauss(r) * s * 0.5, mix(col, WHITE, r() * 0.3), 0.004 + r() * 0.004, 0.55 + r() * 0.35); } };
++  for (let i = 0; i < n * 0.1; i++) { const s = 0.04 + 0.06 * r(), c = curve(1); b.add(c[0] + gauss(r) * s, c[1] + gauss(r) * s, c[2] + gauss(r) * s, mix(clus, WHITE, r() * 0.3), 0.004 + r() * 0.005, 0.5 + r() * 0.35); }   // the cluster it feeds · 它注入的星系团
++  for (let i = 0; i < n * 0.25; i++) { const c = at(r(), 0.05); b.add(c[0], c[1], c[2], gas, 0.014 + r() * 0.014, 0.07 + r() * 0.06); }   // faint hot gas along it · 沿丝的暗弱热气体
++  for (let i = 0; i < n * 0.08; i++) {   // galaxies thinly lining the void's rim; nothing inside · 空洞边缘稀疏的星系，内部空无一物
++    const u = r() * 2 - 1, th = r() * Math.PI * 2, q = Math.sqrt(1 - u * u), rad = vr * (1 + Math.abs(gauss(r)) * 0.08);
++    b.add(vx + q * Math.cos(th) * rad, vy + u * rad, vz + q * Math.sin(th) * rad, rimC, 0.005 + r() * 0.004, 0.5 + r() * 0.3);
++  }
++  while (b.n < n) {   // galaxies strung along the thread and its branches, denser towards the cluster · 沿丝排列的星系，越靠近星系团越密
++    let c;
++    if (r() < 0.22) { const [t0, end] = side[Math.floor(r() * side.length)], s = curve(t0), t = r(); c = [s[0] + (end[0] - s[0]) * t + gauss(r) * 0.03, s[1] + (end[1] - s[1]) * t + gauss(r) * 0.03, s[2] + (end[2] - s[2]) * t + gauss(r) * 0.03]; }
++    else c = at(Math.pow(r(), 0.7), 0.035);
++    if (Math.hypot(c[0] - vx, c[1] - vy, c[2] - vz) < vr) continue;   // keep the void empty · 保持空洞
++    galaxy(c, gal, 6 + Math.floor(r() * 14), 0.006 + r() * 0.008);
++  }
+ }
+ 
+ /* ── Star cluster · 星团 ── colors: [main stars, bright stars, haze] */
+@@ -202,7 +266,7 @@ function starfield(b, n, colors, p, r) {
+ }
+ 
+ const KINDS = { 'spiral-galaxy': (b, n, c, p, r) => spiral(b, n, c, p, r, false), 'barred-spiral': (b, n, c, p, r) => spiral(b, n, c, p, r, true),
+-  elliptical, cluster, nebula, web, supercluster, 'galaxy-group': galaxyGroup, star, 'black-hole': blackHole, starfield };
++  elliptical, cluster, nebula, web, supercluster, 'galaxy-group': galaxyGroup, star, 'black-hole': blackHole, starfield, pillars, filament };
+ export const SHAPE_KINDS = Object.keys(KINDS);
+ 
+ // makeShape('barred-spiral', 60000, ['#ffe9c4', '#8fb7ff'], { arms: 2 }, seed) → { positions, colors, sizes, count }
+diff --git a/tests/journey.test.mjs b/tests/journey.test.mjs
+index df8ef9f..da3ad47 100644
+--- a/tests/journey.test.mjs
++++ b/tests/journey.test.mjs
+@@ -117,3 +117,19 @@ test('extra sources (also) are checked; Betelgeuse distance cites both NASA page
+   const bad = structuredClone(b); bad.facts[0].also = [{ name: 'Blog', url: 'https://example.com/x' }];
+   assert.ok(validatePiece(bad).some(e => /also/.test(e)));
+ });
++
++test('cosmic-web filament keeps its void empty; Pillars and M87 sit on their levels', async () => {
++  const w = PIECES.find(x => x.id === 'cosmic-web'), pl = PIECES.find(x => x.id === 'pillars-of-creation'), m = PIECES.find(x => x.id === 'm87');
++  assert.ok(w && pl && m); assert.equal(w.level, 'universe'); assert.equal(pl.level, 'neighbourhood'); assert.equal(m.level, 'supercluster');
++  const s = makeShape(w.shape.kind, w.shape.count, w.shape.colors, w.shape.params, w.shape.seed), [vx, vy, vz, vr] = w.shape.params.void;
++  let inside = 0; for (let i = 0; i < s.count; i++) if (Math.hypot(s.positions[i * 3] - vx, s.positions[i * 3 + 1] - vy, s.positions[i * 3 + 2] - vz) < vr * 0.9) inside++;
++  assert.ok(inside < s.count * 0.01, 'void is nearly empty: ' + inside);
++  // M87 sits on the Virgo Cluster label inside Laniakea · M87 位于室女座星系团
++  const { VIRGO_AT } = await import('../pieces/laniakea.js');
++  assert.deepEqual(m.position, VIRGO_AT); assert.ok(m.isolate && m.size < 10 && Math.hypot(...m.labelAt) > 2);
++  // the jet is optional: an elliptical without it is unchanged · 无喷流时椭圆星系不变
++  const a = makeShape('elliptical', 2000, [], {}, 3), j = makeShape('elliptical', 2000, [], { jet: 1 }, 3);
++  assert.equal(a.count, 2000); assert.equal(j.count, 2000);
++  let far = 0; for (let i = 0; i < j.count; i++) if (j.positions[i * 3] > 0.5 && Math.abs(j.positions[i * 3 + 1]) < 0.08) far++;
++  assert.ok(far > 40, 'jet points along +x: ' + far);
++});
