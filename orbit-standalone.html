@@ -3789,7 +3789,7 @@ const __default = {
     pt: 'De perto, a teia cósmica é feita de fios de galáxias, unidos principalmente pela matéria escura. Um filamento de cerca de 13 milhões de anos-luz flui para um aglomerado de galáxias. Ao lado dos fios ficam vazios como o Vazio Local, com pelo menos 150 milhões de anos-luz e quase vazio, e alguns filamentos escondem gás a mais de 10 milhões de graus, parte da matéria comum que os astrônomos não encontravam.',
   },
   clue: { en: 'A thread of dark matter strung with galaxies, with emptiness at its side.', zh: '一根串满星系的暗物质之线，身旁是一片空旷。', es: 'Un hilo de materia oscura ensartado de galaxias, con el vacío a su lado.', pt: 'Um fio de matéria escura cheio de galáxias, com o vazio ao lado.' },
-  labels: [{ at: [0.15, 0.58, -0.1].map(v => v * 24), names: { en: 'Void', zh: '空洞', es: 'Vacío', pt: 'Vazio' } }],
+  labels: [{ at: [0.15, 0.58, -0.1].map(v => v * 24), names: { en: 'Void', zh: '空洞', es: 'Vacío', pt: 'Vazio' }, onlyOpen: true }],   // shown only in the close-up · 仅在特写中显示
   youAreHere: null,
 };
 
@@ -4014,8 +4014,10 @@ return { default: __default };
 
 __m['pieces/observable-universe'] = (() => {
 // The observable universe · 可观测宇宙 · Universo observable · Universo observável
-// Sources opened: ESA Planck science highlights, NASA COBE, NASA Science (large-scale structures), NASA Hubble (galaxy count).
-const PLANCK = 'https://www.esa.int/Science_Exploration/Space_Science/Planck/Planck_science_highlights';
+// Sources opened (re-checked 2026-11-14): ESA "Planck reveals an almost perfect Universe", ESA "Planck's new cosmic recipe",
+// NASA GSFC COBE science (Mather), NASA Science (large-scale structures), ESA/Hubble heic1620 (galaxy count).
+const PLANCK = 'https://www.esa.int/Science_Exploration/Space_Science/Planck/Planck_reveals_an_almost_perfect_Universe';
+const RECIPE = 'https://sci.esa.int/web/planck/-/51557-planck-new-cosmic-recipe';
 const __default = {
   id: 'observable-universe', level: 'universe',
   names: { en: 'Observable Universe', zh: '可观测宇宙', es: 'Universo observable', pt: 'Universo observável' },
@@ -4026,9 +4028,10 @@ const __default = {
     { label: { en: 'Age', zh: '年龄', es: 'Edad', pt: 'Idade' },
       value: { en: 'About 13.8 billion years', zh: '约 138 亿年', es: 'Unos 13.800 millones de años', pt: 'Cerca de 13,8 bilhões de anos' },
       source: { name: 'ESA', url: PLANCK } },
+    // −270 °C is converted from the page's 2.725 K · 由 2.725 K 换算
     { label: { en: 'Big Bang afterglow', zh: '大爆炸余晖', es: 'Resplandor del Big Bang', pt: 'Brilho do Big Bang' },
       value: { en: '2.725 K · about −270 °C', zh: '2.725 K · 约 −270 °C', es: '2,725 K · unos −270 °C', pt: '2,725 K · cerca de −270 °C' },
-      source: { name: 'NASA', url: 'https://science.nasa.gov/mission/cobe/science/' } },
+      source: { name: 'NASA', url: 'https://asd.gsfc.nasa.gov/archive/mather/cobe/science.html' } },
     { label: { en: 'Shape', zh: '结构', es: 'Forma', pt: 'Forma' },
       value: { en: 'A cosmic web of filaments and voids', zh: '由纤维和空洞组成的宇宙网', es: 'Una red cósmica de filamentos y vacíos', pt: 'Uma teia cósmica de filamentos e vazios' },
       source: { name: 'NASA', url: 'https://science.nasa.gov/universe/galaxies/large-scale-structures/' } },
@@ -4037,16 +4040,16 @@ const __default = {
       source: { name: 'ESA', url: PLANCK } },
     { label: { en: 'Dark matter · dark energy', zh: '暗物质 · 暗能量', es: 'Materia oscura · energía oscura', pt: 'Matéria escura · energia escura' },
       value: { en: 'About 27% · about 68%', zh: '约 27% · 约 68%', es: 'Cerca del 27 % · cerca del 68 %', pt: 'Cerca de 27% · cerca de 68%' },
-      source: { name: 'ESA', url: PLANCK } },
+      source: { name: 'ESA', url: RECIPE } },
     { label: { en: 'Galaxies', zh: '星系数量', es: 'Galaxias', pt: 'Galáxias' },
-      value: { en: 'At least 10× the old estimate of 200 billion', zh: '至少是旧估计（2000 亿）的 10 倍', es: 'Al menos 10 veces la antigua cifra de 200.000 millones', pt: 'Pelo menos 10 vezes a antiga estimativa de 200 bilhões' },
-      source: { name: 'NASA', url: 'https://science.nasa.gov/missions/hubble/hubble-reveals-observable-universe-contains-10-times-more-galaxies-than-previously-thought/' } },
+      value: { en: 'At least 10× the old estimate of 100–200 billion', zh: '至少是旧估计（1000 亿至 2000 亿）的 10 倍', es: 'Al menos 10 veces la antigua cifra de 100.000 a 200.000 millones', pt: 'Pelo menos 10 vezes a antiga estimativa de 100 a 200 bilhões' },
+      source: { name: 'ESA/Hubble', url: 'https://esahubble.org/news/heic1620/' } },
   ],
   narration: {
-    en: 'This is as far as we can see. Galaxies gather along threads and walls, a cosmic web around huge empty voids. The universe is about 13.8 billion years old, and ordinary matter, the stuff of stars and of us, is only about 5% of it.',
-    zh: '这是我们能看到的最远处。星系沿着纤维和墙状结构聚集，围绕着巨大的空洞，构成宇宙网。宇宙大约 138 亿岁，而构成恒星和我们的普通物质只占约 5%。',
-    es: 'Hasta aquí podemos ver. Las galaxias se agrupan en hilos y paredes, una red cósmica alrededor de enormes vacíos. El universo tiene unos 13.800 millones de años, y la materia ordinaria, la de las estrellas y la nuestra, es solo cerca del 5 %.',
-    pt: 'Até aqui conseguimos ver. As galáxias se juntam em fios e paredes, uma teia cósmica em volta de enormes vazios. O universo tem cerca de 13,8 bilhões de anos, e a matéria comum, a das estrelas e a nossa, é só cerca de 5% dele.',
+    en: 'This is as far as we can see. Galaxies gather along threads and walls, a cosmic web around empty voids. The universe is about 13.8 billion years old, and ordinary matter, the stuff of stars and galaxies, is only about 5% of it.',
+    zh: '这是我们能看到的最远处。星系沿着纤维和墙状结构聚集，围绕着空洞，构成宇宙网。宇宙大约 138 亿岁，而构成恒星和星系的普通物质只占约 5%。',
+    es: 'Hasta aquí podemos ver. Las galaxias se agrupan en hilos y paredes, una red cósmica alrededor de vacíos. El universo tiene unos 13.800 millones de años, y la materia ordinaria, la de las estrellas y las galaxias, es solo cerca del 5 %.',
+    pt: 'Até aqui conseguimos ver. As galáxias se juntam em fios e paredes, uma teia cósmica em volta de vazios. O universo tem cerca de 13,8 bilhões de anos, e a matéria comum, a das estrelas e galáxias, é só cerca de 5% dele.',
   },
   clue: { en: 'A web with no spider: every thread is made of galaxies.', zh: '一张没有蜘蛛的网：每一根丝都由星系组成。', es: 'Una telaraña sin araña: cada hilo está hecho de galaxias.', pt: 'Uma teia sem aranha: cada fio é feito de galáxias.' },
   youAreHere: { en: 'You are here · the centre of what we can see', zh: '你在这里 · 我们可见宇宙的中心', es: 'Estás aquí · el centro de lo que podemos ver', pt: 'Você está aqui · o centro do que podemos ver', at: [0, 0, 0] },
@@ -4411,6 +4414,7 @@ function createJourney({ T, scene, pieces = [], sizeScale = () => 1, viewHeight 
   const tags = [];   // HTML labels for pieces and markers · 屏幕标签
   // While a piece is open, hide the other pieces' labels (they slid over the title) · 打开天体时隐藏其他天体的标签
   const otherOpen = t => !!state.piece && t.owner !== state.piece;   // level markers too (judge 2026-11-13b)
+  const hiddenNow = t => t.onlyOpen && state.piece !== t.owner;   // labels with onlyOpen show only in their piece's close-up · 仅特写时显示
   function tag(obj, names, cls, pieceId, level) {
     const el = document.createElement(pieceId ? 'button' : 'div'); el.className = 'jtag ' + cls;
     if (pieceId) { el.type = 'button'; el.innerHTML = `<span class="ring"></span><span class="name">${quad(names)}</span>`; el.onclick = () => onOpen(pieceId); }
@@ -4442,7 +4446,7 @@ function createJourney({ T, scene, pieces = [], sizeScale = () => 1, viewHeight 
     const entry = { p: pc, holder, spin, pts, centre, extra: [] };
     entry.tag = tag(centre, pc.names, 'piece', pc.id, pc.level);
     if (pc.youAreHere) { const o = new T.Object3D(); o.position.fromArray(pc.youAreHere.at); spin.add(o, beacon(pc.youAreHere.at)); entry.here = tag(o, pc.youAreHere, 'here', null, pc.level); }
-    for (const lb of pc.labels || []) { const o = new T.Object3D(); o.position.fromArray(lb.at); spin.add(o); const t = tag(o, lb.names, 'sub', null, pc.level); if (lb.r != null) t.r = lb.r; entry.extra.push(t); }
+    for (const lb of pc.labels || []) { const o = new T.Object3D(); o.position.fromArray(lb.at); spin.add(o); const t = tag(o, lb.names, 'sub', null, pc.level); if (lb.r != null) t.r = lb.r; t.onlyOpen = !!lb.onlyOpen; entry.extra.push(t); }
     for (const t of [entry.tag, entry.here, ...entry.extra]) if (t) t.owner = pc.id;   // whose label is this · 标签归属
     L.pieces.push(entry); pieceById[pc.id] = entry;
   }
@@ -4497,7 +4501,7 @@ function createJourney({ T, scene, pieces = [], sizeScale = () => 1, viewHeight 
     // HTML labels · 屏幕标签
     camera.getWorldPosition(camW);
     for (const t of tags) {
-      const L = levels[t.level], show = !!L && t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t);
+      const L = levels[t.level], show = !!L && t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t) && !hiddenNow(t);
       if (!show) { t.el.style.display = 'none'; continue; }
       t.obj.getWorldPosition(wp); wp.project(camera);
       if (wp.z > 1 || Math.abs(wp.x) > 1.05 || Math.abs(wp.y) > 1.05) { t.el.style.display = 'none'; continue; }
@@ -4537,7 +4541,7 @@ function createJourney({ T, scene, pieces = [], sizeScale = () => 1, viewHeight 
   }
   // Labels for the VR headset (xr.js sprites) · VR 标签
   const xrLabels = (lang = 'en') => tags.map(t => ({ obj: t.obj, text: tr(t.names, lang), color: t.cls === 'here' ? '#8bd6ff' : t.cls === 'sub' ? '#c9d3e6' : '#ffffff', r: t.r ?? (t.cls === 'piece' ? 6 : 2),
-    visible: () => t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t) }));
+    visible: () => t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t) && !hiddenNow(t) }));
 
   return {
     root, go, leave, open, close, update, pick, target, viewRadius, xrLabels,

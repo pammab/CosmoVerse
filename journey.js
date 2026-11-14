@@ -144,6 +144,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
   const tags = [];   // HTML labels for pieces and markers · 屏幕标签
   // While a piece is open, hide the other pieces' labels (they slid over the title) · 打开天体时隐藏其他天体的标签
   const otherOpen = t => !!state.piece && t.owner !== state.piece;   // level markers too (judge 2026-11-13b)
+  const hiddenNow = t => t.onlyOpen && state.piece !== t.owner;   // labels with onlyOpen show only in their piece's close-up · 仅特写时显示
   function tag(obj, names, cls, pieceId, level) {
     const el = document.createElement(pieceId ? 'button' : 'div'); el.className = 'jtag ' + cls;
     if (pieceId) { el.type = 'button'; el.innerHTML = `<span class="ring"></span><span class="name">${quad(names)}</span>`; el.onclick = () => onOpen(pieceId); }
@@ -175,7 +176,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
     const entry = { p: pc, holder, spin, pts, centre, extra: [] };
     entry.tag = tag(centre, pc.names, 'piece', pc.id, pc.level);
     if (pc.youAreHere) { const o = new T.Object3D(); o.position.fromArray(pc.youAreHere.at); spin.add(o, beacon(pc.youAreHere.at)); entry.here = tag(o, pc.youAreHere, 'here', null, pc.level); }
-    for (const lb of pc.labels || []) { const o = new T.Object3D(); o.position.fromArray(lb.at); spin.add(o); const t = tag(o, lb.names, 'sub', null, pc.level); if (lb.r != null) t.r = lb.r; entry.extra.push(t); }
+    for (const lb of pc.labels || []) { const o = new T.Object3D(); o.position.fromArray(lb.at); spin.add(o); const t = tag(o, lb.names, 'sub', null, pc.level); if (lb.r != null) t.r = lb.r; t.onlyOpen = !!lb.onlyOpen; entry.extra.push(t); }
     for (const t of [entry.tag, entry.here, ...entry.extra]) if (t) t.owner = pc.id;   // whose label is this · 标签归属
     L.pieces.push(entry); pieceById[pc.id] = entry;
   }
@@ -230,7 +231,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
     // HTML labels · 屏幕标签
     camera.getWorldPosition(camW);
     for (const t of tags) {
-      const L = levels[t.level], show = !!L && t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t);
+      const L = levels[t.level], show = !!L && t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t) && !hiddenNow(t);
       if (!show) { t.el.style.display = 'none'; continue; }
       t.obj.getWorldPosition(wp); wp.project(camera);
       if (wp.z > 1 || Math.abs(wp.x) > 1.05 || Math.abs(wp.y) > 1.05) { t.el.style.display = 'none'; continue; }
@@ -270,7 +271,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
   }
   // Labels for the VR headset (xr.js sprites) · VR 标签
   const xrLabels = (lang = 'en') => tags.map(t => ({ obj: t.obj, text: tr(t.names, lang), color: t.cls === 'here' ? '#8bd6ff' : t.cls === 'sub' ? '#c9d3e6' : '#ffffff', r: t.r ?? (t.cls === 'piece' ? 6 : 2),
-    visible: () => t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t) }));
+    visible: () => t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t) && !hiddenNow(t) }));
 
   return {
     root, go, leave, open, close, update, pick, target, viewRadius, xrLabels,

@@ -43,6 +43,6 @@ export default {
     pt: 'De perto, a teia cósmica é feita de fios de galáxias, unidos principalmente pela matéria escura. Um filamento de cerca de 13 milhões de anos-luz flui para um aglomerado de galáxias. Ao lado dos fios ficam vazios como o Vazio Local, com pelo menos 150 milhões de anos-luz e quase vazio, e alguns filamentos escondem gás a mais de 10 milhões de graus, parte da matéria comum que os astrônomos não encontravam.',
   },
   clue: { en: 'A thread of dark matter strung with galaxies, with emptiness at its side.', zh: '一根串满星系的暗物质之线，身旁是一片空旷。', es: 'Un hilo de materia oscura ensartado de galaxias, con el vacío a su lado.', pt: 'Um fio de matéria escura cheio de galáxias, com o vazio ao lado.' },
-  labels: [{ at: [0.15, 0.58, -0.1].map(v => v * 24), names: { en: 'Void', zh: '空洞', es: 'Vacío', pt: 'Vazio' } }],
+  labels: [{ at: [0.15, 0.58, -0.1].map(v => v * 24), names: { en: 'Void', zh: '空洞', es: 'Vacío', pt: 'Vazio' }, onlyOpen: true }],   // shown only in the close-up · 仅在特写中显示
   youAreHere: null,
 };

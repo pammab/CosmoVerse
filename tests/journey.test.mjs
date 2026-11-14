@@ -133,3 +133,11 @@ test('cosmic-web filament keeps its void empty; Pillars and M87 sit on their lev
   let far = 0; for (let i = 0; i < j.count; i++) if (j.positions[i * 3] > 0.5 && Math.abs(j.positions[i * 3 + 1]) < 0.08) far++;
   assert.ok(far > 40, 'jet points along +x: ' + far);
 });
+
+test('observable-universe cites the re-checked pages; the Void label waits for the close-up', () => {
+  const u = PIECES.find(x => x.id === 'observable-universe'), w = PIECES.find(x => x.id === 'cosmic-web');
+  assert.ok(!/of us|la nuestra|a nossa/.test(u.narration.en + u.narration.es + u.narration.pt), 'pages say stars and galaxies, not us');
+  assert.ok(u.facts.some(f => /heic1620/.test(f.source.url)) && u.facts.some(f => /planck-new-cosmic-recipe/.test(f.source.url)));
+  assert.ok(u.facts.some(f => /100–200 billion/.test(f.value.en)), 'old estimate quoted as the page range');
+  assert.equal(w.labels[0].onlyOpen, true);
+});
