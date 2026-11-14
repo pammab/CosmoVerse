@@ -117,3 +117,19 @@ test('extra sources (also) are checked; Betelgeuse distance cites both NASA page
   const bad = structuredClone(b); bad.facts[0].also = [{ name: 'Blog', url: 'https://example.com/x' }];
   assert.ok(validatePiece(bad).some(e => /also/.test(e)));
 });
+
+test('cosmic-web filament keeps its void empty; Pillars and M87 sit on their levels', async () => {
+  const w = PIECES.find(x => x.id === 'cosmic-web'), pl = PIECES.find(x => x.id === 'pillars-of-creation'), m = PIECES.find(x => x.id === 'm87');
+  assert.ok(w && pl && m); assert.equal(w.level, 'universe'); assert.equal(pl.level, 'neighbourhood'); assert.equal(m.level, 'supercluster');
+  const s = makeShape(w.shape.kind, w.shape.count, w.shape.colors, w.shape.params, w.shape.seed), [vx, vy, vz, vr] = w.shape.params.void;
+  let inside = 0; for (let i = 0; i < s.count; i++) if (Math.hypot(s.positions[i * 3] - vx, s.positions[i * 3 + 1] - vy, s.positions[i * 3 + 2] - vz) < vr * 0.9) inside++;
+  assert.ok(inside < s.count * 0.01, 'void is nearly empty: ' + inside);
+  // M87 sits on the Virgo Cluster label inside Laniakea · M87 位于室女座星系团
+  const { VIRGO_AT } = await import('../pieces/laniakea.js');
+  assert.deepEqual(m.position, VIRGO_AT); assert.ok(m.isolate && m.size < 10 && Math.hypot(...m.labelAt) > 2);
+  // the jet is optional: an elliptical without it is unchanged · 无喷流时椭圆星系不变
+  const a = makeShape('elliptical', 2000, [], {}, 3), j = makeShape('elliptical', 2000, [], { jet: 1 }, 3);
+  assert.equal(a.count, 2000); assert.equal(j.count, 2000);
+  let far = 0; for (let i = 0; i < j.count; i++) if (j.positions[i * 3] > 0.5 && Math.abs(j.positions[i * 3 + 1]) < 0.08) far++;
+  assert.ok(far > 40, 'jet points along +x: ' + far);
+});

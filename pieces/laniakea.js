@@ -11,6 +11,8 @@ const at = c => c.map(v => v * S);
 // Tilt the flat basin towards the camera; three.js Euler XYZ applies Rz, then Rx · 让盆地面向镜头
 const TILT = [1.05, 0.2];
 const turn = ([x, y, z], [rx, rz] = TILT) => { [x, y] = [x * Math.cos(rz) - y * Math.sin(rz), x * Math.sin(rz) + y * Math.cos(rz)]; [y, z] = [y * Math.cos(rx) - z * Math.sin(rx), y * Math.sin(rx) + z * Math.cos(rx)]; return [x, y, z]; };
+// Where the Virgo Cluster sits on the supercluster level (world coords), for the M87 piece · 室女座星系团在本层的位置（供 M87 使用）
+export const VIRGO_AT = turn(VIRGO.map((v, i) => v - HOME[i])).map(v => v * S);
 export default {
   id: 'laniakea', level: 'supercluster',
   names: { en: 'Laniakea Supercluster', zh: '拉尼亚凯亚超星系团', es: 'Supercúmulo Laniakea', pt: 'Superaglomerado Laniakea' },

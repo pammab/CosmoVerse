@@ -63,12 +63,76 @@ function spiral(b, n, colors, p, r, barred) {
   }
 }
 
-/* ── Elliptical galaxy · 椭圆星系 ── colors: [core, edge] */
+/* ── Elliptical galaxy · 椭圆星系 ── colors: [core, edge, jet]
+   params.jet (optional): length of a thin jet shooting from the centre along +x, e.g. M87's · 可选喷流（沿 +x） */
 function elliptical(b, n, colors, p, r) {
   const core = hexRGB(colors[0] || '#fff1d6'), edge = hexRGB(colors[1] || '#ffc98f'), ax = p.axes || [1, 0.8, 0.9];
-  while (b.n < n) {
+  const nJet = p.jet ? Math.floor(n * (p.jetShare ?? 0.07)) : 0, jetC = hexRGB(colors[2] || '#7fbfff');
+  while (b.n < n - nJet) {
     const rad = Math.min(1.2, Math.pow(-Math.log(1 - r() * 0.999), 2.2) * 0.07), u = r() * 2 - 1, th = r() * Math.PI * 2, s = Math.sqrt(1 - u * u);
     b.add(Math.cos(th) * s * rad * ax[0], u * rad * ax[1], Math.sin(th) * s * rad * ax[2], mix(core, edge, Math.min(1, rad)), 0.005 + r() * 0.006, 1 - Math.min(0.7, rad * 0.6));
+  }
+  // The jet: narrow, slightly widening, with a few brighter knots · 喷流：细长、略微张开，带几个亮结
+  const knots = [0.25, 0.45, 0.62, 0.85];
+  while (b.n < n) {
+    let t = Math.pow(r(), 0.8); if (r() < 0.35) t = knots[Math.floor(r() * knots.length)] + gauss(r) * 0.015;
+    t = Math.min(1, Math.max(0.02, t));
+    const w = 0.006 + 0.028 * t, x = t * p.jet;
+    b.add(x, gauss(r) * w, gauss(r) * w, mix(jetC, WHITE, 0.2 + r() * 0.3), 0.005 + r() * 0.005, 1 - 0.35 * t);
+  }
+}
+
+/* ── Pillars: towers of cool dust carved by young stars' light (Eagle Nebula) · 创生之柱 ──
+   colors: [dust (dim orange-brown), glowing edges (crimson/gold), haze (light blue), stars]
+   params.pillars: [{ x, z, h, w, lean }] in unit coords; bases sit at y = −0.75 · 柱底在 y = −0.75 */
+function pillars(b, n, colors, p, r) {
+  const dust = hexRGB(colors[0] || '#b86a35'), rim = hexRGB(colors[1] || '#ff5a4a'), haze = hexRGB(colors[2] || '#7fc4e6'), starC = hexRGB(colors[3] || '#fff6e6');
+  const cols = p.pillars || [{ x: -0.4, z: 0, h: 1.5, w: 0.15, lean: 0.12 }, { x: 0.08, z: -0.05, h: 1.05, w: 0.12, lean: -0.05 }, { x: 0.45, z: 0.05, h: 0.75, w: 0.1, lean: 0.06 }];
+  for (let i = 0; i < n * 0.012; i++) b.add((r() * 2 - 1) * 0.95, (r() * 2 - 1) * 0.8, gauss(r) * 0.15, mix(starC, WHITE, r() * 0.5), 0.012 + r() * 0.03, 0.7 + r() * 0.3);   // young stars · 年轻恒星
+  for (let i = 0; i < n * 0.22; i++) {   // the glowing blue haze behind the towers · 背后发蓝光的电离气体
+    const x = (r() * 2 - 1) * 1.0, y = -0.2 + gauss(r) * 0.45, z = -0.25 + gauss(r) * 0.12;
+    b.add(x, y, z, mix(haze, WHITE, r() * 0.2), 0.016 + r() * 0.02, 0.2 + r() * 0.15);
+  }
+  const base = -0.75, total = cols.reduce((s, c) => s + c.h * c.w, 0);
+  while (b.n < n) {
+    let k = cols[0], pick = r() * total; for (const c of cols) { pick -= c.h * c.w; if (pick <= 0) { k = c; break; } }
+    const t = Math.pow(r(), 0.9), y = base + t * k.h;
+    // Tapering column with lumpy sides and a rounded head · 逐渐变细、边缘起伏、顶端圆
+    const lump = 1 + 0.22 * Math.sin(t * 17 + k.x * 11) + 0.12 * Math.sin(t * 41 + k.x * 5);
+    const w = k.w * (1.25 - 0.75 * t) * lump * (1 + 0.6 * Math.exp(-((t - 0.95) ** 2) / 0.002));
+    const a = r() * Math.PI * 2, d = Math.sqrt(r()), dx = Math.cos(a) * d * w, dz = Math.sin(a) * d * w * 0.7;
+    const cx = k.x + k.lean * t + Math.sin(t * 9 + k.x * 7) * 0.03, x = cx + dx, z = (k.z || 0) + dz;
+    // The skin facing the stars' light glows (crimson to gold); the dust inside stays dim · 表面被照亮，内部暗
+    const edge = d > 0.86 && r() < 0.75, cap = t > 0.9 && d > 0.5 && r() < 0.7;
+    if (edge || cap) b.add(x, y, z, mix(rim, [1, 0.8, 0.45], cap ? 0.3 + r() * 0.5 : r() * 0.35), 0.006 + r() * 0.006, 0.9 + r() * 0.1);
+    else b.add(x, y, z, mix(dust, [0.3, 0.17, 0.1], r() * 0.6), 0.008 + r() * 0.008, 0.3 + r() * 0.2);
+  }
+}
+
+/* ── One cosmic-web filament full of galaxies, with an empty void beside it · 宇宙网中的一条纤维与旁边的空洞 ──
+   colors: [galaxies along the thread, cluster at its end, hot gas haze, galaxies on the void's rim]
+   params.void: [x, y, z, radius] of the empty bubble · 空洞的位置与半径 */
+function filament(b, n, colors, p, r) {
+  const gal = hexRGB(colors[0] || '#b4c8ff'), clus = hexRGB(colors[1] || '#ffe2b0'), gas = hexRGB(colors[2] || '#6f7fc4'), rimC = hexRGB(colors[3] || '#8fa0d0');
+  const [vx, vy, vz, vr] = p.void || [0.15, 0.55, -0.1, 0.5];
+  // The thread: a gentle S-curve from (−1, −0.35) to a cluster at (0.95, 0.15) · 主丝：平缓的 S 形曲线
+  const curve = t => [-1 + 1.95 * t, -0.35 + 0.5 * t + Math.sin(t * Math.PI * 1.6) * 0.14, Math.sin(t * Math.PI) * 0.18 - 0.05];
+  const side = [[0.42, [0.2, -0.85, 0.25]], [0.7, [0.75, -0.7, -0.2]], [0.18, [-0.75, 0.25, 0.3]]];   // thinner branches · 支丝
+  const at = (t, sp) => { const c = curve(t); return [c[0] + gauss(r) * sp, c[1] + gauss(r) * sp, c[2] + gauss(r) * sp]; };
+  // A tiny galaxy: a small flattened clump of points · 小星系：一小团扁平的点
+  const galaxy = (c, col, k, s) => { const a = r() * Math.PI; for (let i = 0; i < k && b.n < n; i++) { const u = gauss(r) * s, v = gauss(r) * s * 0.35; b.add(c[0] + u * Math.cos(a), c[1] + u * Math.sin(a) + v, c[2] + gauss(r) * s * 0.5, mix(col, WHITE, r() * 0.3), 0.004 + r() * 0.004, 0.55 + r() * 0.35); } };
+  for (let i = 0; i < n * 0.1; i++) { const s = 0.04 + 0.06 * r(), c = curve(1); b.add(c[0] + gauss(r) * s, c[1] + gauss(r) * s, c[2] + gauss(r) * s, mix(clus, WHITE, r() * 0.3), 0.004 + r() * 0.005, 0.5 + r() * 0.35); }   // the cluster it feeds · 它注入的星系团
+  for (let i = 0; i < n * 0.25; i++) { const c = at(r(), 0.05); b.add(c[0], c[1], c[2], gas, 0.014 + r() * 0.014, 0.07 + r() * 0.06); }   // faint hot gas along it · 沿丝的暗弱热气体
+  for (let i = 0; i < n * 0.08; i++) {   // galaxies thinly lining the void's rim; nothing inside · 空洞边缘稀疏的星系，内部空无一物
+    const u = r() * 2 - 1, th = r() * Math.PI * 2, q = Math.sqrt(1 - u * u), rad = vr * (1 + Math.abs(gauss(r)) * 0.08);
+    b.add(vx + q * Math.cos(th) * rad, vy + u * rad, vz + q * Math.sin(th) * rad, rimC, 0.005 + r() * 0.004, 0.5 + r() * 0.3);
+  }
+  while (b.n < n) {   // galaxies strung along the thread and its branches, denser towards the cluster · 沿丝排列的星系，越靠近星系团越密
+    let c;
+    if (r() < 0.22) { const [t0, end] = side[Math.floor(r() * side.length)], s = curve(t0), t = r(); c = [s[0] + (end[0] - s[0]) * t + gauss(r) * 0.03, s[1] + (end[1] - s[1]) * t + gauss(r) * 0.03, s[2] + (end[2] - s[2]) * t + gauss(r) * 0.03]; }
+    else c = at(Math.pow(r(), 0.7), 0.035);
+    if (Math.hypot(c[0] - vx, c[1] - vy, c[2] - vz) < vr) continue;   // keep the void empty · 保持空洞
+    galaxy(c, gal, 6 + Math.floor(r() * 14), 0.006 + r() * 0.008);
   }
 }
 
@@ -202,7 +266,7 @@ function starfield(b, n, colors, p, r) {
 }
 
 const KINDS = { 'spiral-galaxy': (b, n, c, p, r) => spiral(b, n, c, p, r, false), 'barred-spiral': (b, n, c, p, r) => spiral(b, n, c, p, r, true),
-  elliptical, cluster, nebula, web, supercluster, 'galaxy-group': galaxyGroup, star, 'black-hole': blackHole, starfield };
+  elliptical, cluster, nebula, web, supercluster, 'galaxy-group': galaxyGroup, star, 'black-hole': blackHole, starfield, pillars, filament };
 export const SHAPE_KINDS = Object.keys(KINDS);
 
 // makeShape('barred-spiral', 60000, ['#ffe9c4', '#8fb7ff'], { arms: 2 }, seed) → { positions, colors, sizes, count }

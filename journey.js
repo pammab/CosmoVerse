@@ -222,7 +222,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
       if (!p.visible) continue; let o = p; let vis = true; while (o) { if (!o.visible) { vis = false; break; } o = o.parent; } if (!vis) continue;
       p.getWorldScale(wp); const lv = levelOf(p);
       // Other pieces dim while one is open; almost vanish if the open piece asks to be isolated (Sgr A* inside the galaxy's bright core) · 其他天体变暗
-      const dim = state.piece && p.userData.pieceId && p.userData.pieceId !== state.piece ? (pieceById[state.piece]?.p.isolate ? 0.04 : 0.3) : 1;
+      const iso = pieceById[state.piece]?.p.isolate, dim = !state.piece || p.userData.pieceId === state.piece ? 1 : iso ? 0.04 : p.userData.pieceId ? 0.3 : 1;   // isolate also fades the level backdrop (M87 inside the supercluster web) · 隔离时背景也淡出
       p.material.uniforms.uSize.value = p.userData.jp.base * wp.x / ss * (p.userData.jp.beacon ? 1 + 0.35 * Math.sin(now * 3) : 1);
       p.material.uniforms.uOpacity.value = p === warp ? p.userData.jp.fade : (lv?.op ?? 0) * (p.userData.jp.beacon ? 1 : dim);
       p.material.uniforms.uViewH.value = vh;
