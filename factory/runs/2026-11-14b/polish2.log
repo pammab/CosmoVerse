@@ -1,0 +1,7 @@
+overview eyebrow: OUR COSMIC NEIGHBOURHOOD
+galaxy eyebrow: SCALE JOURNEY · GALAXY
+galaxy eyebrow pt: VIAGEM DE ESCALA · GALÁXIA
+m87 eyebrow: SCALE JOURNEY · SUPERCLUSTER
+back in Solar System: level=null eyebrow: OUR COSMIC NEIGHBOURHOOD
+errors: none
+(3-back-overview.png: the loop kept wheeling in after the journey ended (level=null), so the overview zoomed onto the Sun; expected app behaviour, eyebrow restored)

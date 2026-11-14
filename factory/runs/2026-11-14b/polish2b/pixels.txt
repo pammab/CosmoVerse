@@ -1,0 +1,1 @@
+round 2 pixel sample (25x20 px around the nucleus): pure-white pixels after3=111, polish2 round1=96, polish2b=27; max still 255 at the very centre. Core '#ffd890', soft 0.88, bright 0.72.

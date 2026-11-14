@@ -3,8 +3,8 @@
 
 ## A. Scale journey (Pamela chose this first, Nov 13)
 - [x] journey-core: the **scale journey** framework. See "journey-core spec" below. (0771175, judge 7→8/10)
-- [ ] piece milky-way (waiting: Pamela tests the standalone file first): the Milky Way (barred spiral, ~100,000 ly; where the Sun is, in the Orion Arm) — starter shipped in 0771175 (6 sourced facts, Sun marker); refine or tick
-- [ ] piece local-group: the Local Group (Milky Way, Andromeda, Triangulum, dwarf galaxies) — starter shipped in 0771175; refine or tick
+- [ ] piece milky-way (waiting: Pamela tests the standalone file first): the Milky Way (barred spiral, ~100,000 ly; where the Sun is, in the Orion Arm) — starter shipped in 0771175 (6 sourced facts, Sun marker); facts re-checked against the pages and ES/PT "Orion Spur" fixed in b04cba9 (2026-11-14b); tick when Pamela OKs
+- [ ] piece local-group: the Local Group (Milky Way, Andromeda, Triangulum, dwarf galaxies) — starter shipped in 0771175; all 6 facts re-checked 2026-11-14b, nothing to fix; tick when Pamela OKs
 - [x] piece andromeda: Andromeda galaxy M31 (1370eb2, judge 8/10)
 - [x] piece orion-nebula: Orion Nebula M42 (ad197df, judge 7→8/10)
 - [x] piece pleiades: the Pleiades star cluster M45 (ad197df, judge 7→8/10)
@@ -16,6 +16,14 @@
 - [x] piece black-hole: Sagittarius A* (the Milky Way's central black hole) (a2631fb, judge 8.5/10)
 - [x] piece elliptical-galaxy: M87 (giant elliptical) (71eab6e, judge 8/10; supercluster level, on the Virgo Cluster)
 - [x] piece alpha-centauri: Alpha Centauri / Proxima (nearest stars) (ad197df, judge 7→8/10; done early: same level, research ready)
+
+## B. Polish (judges' nice-to-haves; do these while A waits for Pamela)
+- [x] polish-1: M87 jet shorter + core less blown out (`soft`), Alpha Cen A/B warm, Pillars haze fainter, onlyOpen test (b04cba9, judge 7→8/10)
+- [x] polish-2: M87 nucleus still a pure-white point → core '#ffd890' + soft 0.88 (af45f94, judge 7→8/10)
+- [x] polish-3: top-left eyebrow shows "SCALE JOURNEY · <LEVEL>" in journey mode (af45f94, judge 8/10)
+- [ ] polish-5: eyebrow could add the open piece ("SUPERCLUSTER · M87") (judge nice-to-have)
+- [ ] polish-6: ES/PT "espolón (brazo) de Orión" / "esporão (braço) de Órion" so the common name stays recognisable? (ask Pamela)
+- [ ] polish-4: Sgr A* label/pick target overlap with the Milky Way core (lessons: `labelAt` moves only the label)
 
 ## journey-core spec
 Goal: zoom out from the Solar System to the whole universe and back, with hands (webcam and VR) and mouse.

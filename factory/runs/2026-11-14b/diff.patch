@@ -1,0 +1,151 @@
+diff --git a/journey.js b/journey.js
+index f705e37..c1de59d 100644
+--- a/journey.js
++++ b/journey.js
+@@ -31,6 +31,8 @@ export const LEVELS = [
+   { id: 'solar-system', names: L('Solar System', '太阳系', 'Sistema solar', 'Sistema Solar') },
+ ];
+ export const LEVEL_IDS = LEVELS.map(l => l.id);
++// Labels with onlyOpen show only in their own piece's close-up (HTML and VR) · 仅在所属天体特写时显示
++export const onlyOpenHidden = (t, openPiece) => !!t.onlyOpen && openPiece !== t.owner;
+ export const levelById = id => LEVELS.find(l => l.id === id) || null;
+ export const levelIndex = id => LEVEL_IDS.indexOf(id);
+ export const outerLevel = id => levelIndex(id) > 0 ? LEVEL_IDS[levelIndex(id) - 1] : null;
+@@ -144,7 +146,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
+   const tags = [];   // HTML labels for pieces and markers · 屏幕标签
+   // While a piece is open, hide the other pieces' labels (they slid over the title) · 打开天体时隐藏其他天体的标签
+   const otherOpen = t => !!state.piece && t.owner !== state.piece;   // level markers too (judge 2026-11-13b)
+-  const hiddenNow = t => t.onlyOpen && state.piece !== t.owner;   // labels with onlyOpen show only in their piece's close-up · 仅特写时显示
++  const hiddenNow = t => onlyOpenHidden(t, state.piece);
+   function tag(obj, names, cls, pieceId, level) {
+     const el = document.createElement(pieceId ? 'button' : 'div'); el.className = 'jtag ' + cls;
+     if (pieceId) { el.type = 'button'; el.innerHTML = `<span class="ring"></span><span class="name">${quad(names)}</span>`; el.onclick = () => onOpen(pieceId); }
+diff --git a/pieces/alpha-centauri.js b/pieces/alpha-centauri.js
+index 4b5691f..27362e8 100644
+--- a/pieces/alpha-centauri.js
++++ b/pieces/alpha-centauri.js
+@@ -11,9 +11,9 @@ export default {
+   names: { en: 'Alpha Centauri', zh: '半人马座α', es: 'Alfa Centauri', pt: 'Alfa Centauri' },
+   type: { en: 'Triple star system · our nearest stars', zh: '三合星系统 · 离我们最近的恒星', es: 'Sistema de tres estrellas · las más cercanas', pt: 'Sistema de três estrelas · as mais próximas' },
+   // A (Sun-like) and B (a bit smaller) close together, Proxima (a small red dwarf) off to the side · A、B 相伴，比邻星在一旁
+-  shape: { kind: 'galaxy-group', count: 1500, colors: ['#ffffff'], seed: 4, params: { dwarfs: 0, members: [
+-    { at: [-0.16, 0, 0], kind: 'star', r: 0.42, share: 0.45, colors: ['#ffd9a0', '#ffb45c'] },
+-    { at: [0.16, -0.03, 0.02], kind: 'star', r: 0.32, share: 0.35, colors: ['#ffc287', '#ff9248'] },
++  shape: { kind: 'galaxy-group', count: 1000, colors: ['#ffffff'], seed: 4, params: { dwarfs: 0, members: [
++    { at: [-0.16, 0, 0], kind: 'star', r: 0.42, share: 0.45, colors: ['#ffd9a0', '#ffb45c'], bright: 0.6 },
++    { at: [0.16, -0.03, 0.02], kind: 'star', r: 0.32, share: 0.35, colors: ['#ffc287', '#ff9248'], bright: 0.62 },
+     { at: PROXIMA, kind: 'star', r: 0.13, share: 0.2, colors: ['#ff9a72', '#ff5a3c'] },
+   ] } },
+   position: [-34, -4, 16], size: S, frame: 1.6,
+diff --git a/pieces/m87.js b/pieces/m87.js
+index 7787f4c..e17e415 100644
+--- a/pieces/m87.js
++++ b/pieces/m87.js
+@@ -12,7 +12,7 @@ export default {
+   names: { en: 'M87 · Virgo A', zh: 'M87 · 室女座 A', es: 'M87 · Virgo A', pt: 'M87 · Virgo A' },
+   type: { en: 'Giant elliptical galaxy', zh: '巨椭圆星系', es: 'Galaxia elíptica gigante', pt: 'Galáxia elíptica gigante' },
+   // Warm yellow-white glow, with its blue jet · 暖黄白色的光晕和蓝色喷流
+-  shape: { kind: 'elliptical', count: 14000, colors: ['#fff4d6', '#e8b36a', '#6fb8ff'], params: { axes: [1, 0.86, 0.92], jet: 0.95, jetShare: 0.12 }, seed: 87 },
++  shape: { kind: 'elliptical', count: 12000, colors: ['#fff4d6', '#e8b36a', '#6fb8ff'], params: { axes: [1, 0.86, 0.92], jet: 0.6, jetShare: 0.1, bright: 0.8, soft: 0.65 }, seed: 87 },
+   position: VIRGO_AT, size: 3.2, frame: 0.9, tilt: [0.2, 0.35], spin: 0, isolate: true,
+   labelAt: [0, -3.6, 0],   // offset from the "Virgo Cluster" label at the same spot (on screen it sits just above it) · 与“室女座星系团”标签错开
+   facts: [
+diff --git a/pieces/milky-way.js b/pieces/milky-way.js
+index d7045ad..1b8a71c 100644
+--- a/pieces/milky-way.js
++++ b/pieces/milky-way.js
+@@ -1,5 +1,6 @@
+ // The Milky Way, our home galaxy · 银河系 · Vía Láctea · Via Láctea
+-// Sources opened: ESA Gaia guide, NASA Imagine the Universe, NASA "Milky Way: our location".
++// Sources opened (re-checked 2026-11-14): ESA Gaia guide, NASA Imagine the Universe, NASA "Milky Way: our location".
++// The NASA page says "Orion Spur" (a spur, not a full arm): ES "espolón", PT "esporão" · 是支臂而非主旋臂
+ const ESA_GAIA = 'https://www.esa.int/Science_Exploration/Space_Science/Gaia/Guide_to_our_galaxy';
+ const NASA_IMAGINE = 'https://imagine.gsfc.nasa.gov/science/featured_science/milkyway/';
+ export default {
+@@ -19,7 +20,7 @@ export default {
+       value: { en: 'About 26,000 light-years', zh: '约 2.6 万光年', es: 'Unos 26.000 años luz', pt: 'Cerca de 26 mil anos-luz' },
+       source: { name: 'ESA', url: ESA_GAIA } },
+     { label: { en: 'Our address', zh: '我们的位置', es: 'Nuestra dirección', pt: 'Nosso endereço' },
+-      value: { en: 'The Orion Spur', zh: '猎户座支臂', es: 'El brazo de Orión', pt: 'O Braço de Órion' },
++      value: { en: 'The Orion Spur', zh: '猎户座支臂', es: 'El espolón de Orión', pt: 'O esporão de Órion' },
+       source: { name: 'NASA', url: 'https://www.nasa.gov/image-article/milky-way-our-location/' } },
+     { label: { en: 'One lap of the Sun', zh: '太阳绕银心一圈', es: 'Una vuelta del Sol', pt: 'Uma volta do Sol' },
+       value: { en: 'About 250 million years', zh: '约 2.5 亿年', es: 'Unos 250 millones de años', pt: 'Cerca de 250 milhões de anos' },
+@@ -31,8 +32,8 @@ export default {
+   narration: {
+     en: 'This is our home galaxy, seen from outside. It is a barred spiral about 100,000 light-years across. The Sun sits about 26,000 light-years from the centre, in the Orion Spur, and takes about 250 million years to go around once.',
+     zh: '这是从外面看到的我们的家园星系。它是一个棒旋星系，直径约 10 万光年。太阳位于距银心约 2.6 万光年的猎户座支臂上，绕银心一圈大约需要 2.5 亿年。',
+-    es: 'Esta es nuestra galaxia, vista desde fuera. Es una espiral barrada de unos 100.000 años luz de diámetro. El Sol está a unos 26.000 años luz del centro, en el brazo de Orión, y tarda unos 250 millones de años en dar una vuelta.',
+-    pt: 'Esta é a nossa galáxia, vista de fora. É uma espiral barrada com cerca de 100 mil anos-luz de diâmetro. O Sol fica a uns 26 mil anos-luz do centro, no Braço de Órion, e leva cerca de 250 milhões de anos para dar uma volta.',
++    es: 'Esta es nuestra galaxia, vista desde fuera. Es una espiral barrada de unos 100.000 años luz de diámetro. El Sol está a unos 26.000 años luz del centro, en el espolón de Orión, y tarda unos 250 millones de años en dar una vuelta.',
++    pt: 'Esta é a nossa galáxia, vista de fora. É uma espiral barrada com cerca de 100 mil anos-luz de diâmetro. O Sol fica a uns 26 mil anos-luz do centro, no esporão de Órion, e leva cerca de 250 milhões de anos para dar uma volta.',
+   },
+   clue: { en: 'A spinning city of stars with a bar at its heart. Your star lives in one of its quiet side streets.', zh: '一座旋转的恒星之城，中心有一根“棒”。你的恒星住在它安静的小巷里。', es: 'Una ciudad de estrellas que gira, con una barra en el corazón. Tu estrella vive en una de sus calles tranquilas.', pt: 'Uma cidade de estrelas que gira, com uma barra no coração. A sua estrela mora numa das suas ruas tranquilas.' },
+   youAreHere: { en: 'You are here · the Sun', zh: '你在这里 · 太阳', es: 'Estás aquí · el Sol', pt: 'Você está aqui · o Sol', at: [-30, 0, 42.5] },
+diff --git a/shapes.js b/shapes.js
+index ac32f50..297aaf1 100644
+--- a/shapes.js
++++ b/shapes.js
+@@ -64,13 +64,16 @@ function spiral(b, n, colors, p, r, barred) {
+ }
+ 
+ /* ── Elliptical galaxy · 椭圆星系 ── colors: [core, edge, jet]
+-   params.jet (optional): length of a thin jet shooting from the centre along +x, e.g. M87's · 可选喷流（沿 +x） */
++   params.jet (optional): length of a thin jet shooting from the centre along +x, e.g. M87's · 可选喷流（沿 +x）
++   params.bright (optional, 0–1): dims the body; params.soft (optional, 0–1): smaller points near the centre,
++   so a dense core doesn't saturate to white (M87) · 可选：降低亮度、缩小中心粒子，防止核心过曝 */
+ function elliptical(b, n, colors, p, r) {
+   const core = hexRGB(colors[0] || '#fff1d6'), edge = hexRGB(colors[1] || '#ffc98f'), ax = p.axes || [1, 0.8, 0.9];
+   const nJet = p.jet ? Math.floor(n * (p.jetShare ?? 0.07)) : 0, jetC = hexRGB(colors[2] || '#7fbfff');
+   while (b.n < n - nJet) {
+     const rad = Math.min(1.2, Math.pow(-Math.log(1 - r() * 0.999), 2.2) * 0.07), u = r() * 2 - 1, th = r() * Math.PI * 2, s = Math.sqrt(1 - u * u);
+-    b.add(Math.cos(th) * s * rad * ax[0], u * rad * ax[1], Math.sin(th) * s * rad * ax[2], mix(core, edge, Math.min(1, rad)), 0.005 + r() * 0.006, 1 - Math.min(0.7, rad * 0.6));
++    const soft = 1 - (p.soft ?? 0) * Math.exp(-rad / 0.1);
++    b.add(Math.cos(th) * s * rad * ax[0], u * rad * ax[1], Math.sin(th) * s * rad * ax[2], mix(core, edge, Math.min(1, rad)), (0.005 + r() * 0.006) * soft, (1 - Math.min(0.7, rad * 0.6)) * (p.bright ?? 1) * (0.5 + 0.5 * soft));
+   }
+   // The jet: narrow, slightly widening, with a few brighter knots · 喷流：细长、略微张开，带几个亮结
+   const knots = [0.25, 0.45, 0.62, 0.85];
+@@ -91,7 +94,7 @@ function pillars(b, n, colors, p, r) {
+   for (let i = 0; i < n * 0.012; i++) b.add((r() * 2 - 1) * 0.95, (r() * 2 - 1) * 0.8, gauss(r) * 0.15, mix(starC, WHITE, r() * 0.5), 0.012 + r() * 0.03, 0.7 + r() * 0.3);   // young stars · 年轻恒星
+   for (let i = 0; i < n * 0.22; i++) {   // the glowing blue haze behind the towers · 背后发蓝光的电离气体
+     const x = (r() * 2 - 1) * 1.0, y = -0.2 + gauss(r) * 0.45, z = -0.25 + gauss(r) * 0.12;
+-    b.add(x, y, z, mix(haze, WHITE, r() * 0.2), 0.016 + r() * 0.02, 0.2 + r() * 0.15);
++    b.add(x, y, z, mix(haze, WHITE, r() * 0.1), 0.016 + r() * 0.02, 0.11 + r() * 0.09);   // kept faint so the towers lead · 保持淡，突出柱子
+   }
+   const base = -0.75, total = cols.reduce((s, c) => s + c.h * c.w, 0);
+   while (b.n < n) {
+diff --git a/tests/journey.test.mjs b/tests/journey.test.mjs
+index c0fc6b9..4a782c4 100644
+--- a/tests/journey.test.mjs
++++ b/tests/journey.test.mjs
+@@ -1,7 +1,7 @@
+ // Scale journey: level order, zoom-edge transitions, piece data · 尺度之旅测试
+ import { test } from 'node:test';
+ import assert from 'node:assert/strict';
+-import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS } from '../journey.js';
++import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden } from '../journey.js';
+ import { makeShape, SHAPE_KINDS } from '../shapes.js';
+ import { PIECES } from '../pieces/index.js';
+ 
+@@ -141,3 +141,21 @@ test('observable-universe cites the re-checked pages; the Void label waits for t
+   assert.ok(u.facts.some(f => /100–200 billion/.test(f.value.en)), 'old estimate quoted as the page range');
+   assert.equal(w.labels[0].onlyOpen, true);
+ });
++
++test('onlyOpen labels hide unless their own piece is open', () => {
++  const t = { onlyOpen: true, owner: 'cosmic-web' };
++  assert.equal(onlyOpenHidden(t, null), true);
++  assert.equal(onlyOpenHidden(t, 'observable-universe'), true);
++  assert.equal(onlyOpenHidden(t, 'cosmic-web'), false);
++  assert.equal(onlyOpenHidden({ owner: 'cosmic-web' }, null), false);
++});
++
++test('elliptical bright < 1 dims the body but not the jet', () => {
++  const lum = s => { let a = 0; for (let i = 0; i < s.count; i++) a += s.colors[i * 3] + s.colors[i * 3 + 1] + s.colors[i * 3 + 2]; return a; };
++  const p = { axes: [1, 0.86, 0.92], jet: 0.6, jetShare: 0.09 };
++  const full = makeShape('elliptical', 4000, ['#fff4d6', '#e8b36a', '#6fb8ff'], p, 87);
++  const dim = makeShape('elliptical', 4000, ['#fff4d6', '#e8b36a', '#6fb8ff'], { ...p, bright: 0.6 }, 87);
++  assert.ok(lum(dim) < lum(full) * 0.8);
++  const m87 = PIECES.find(x => x.id === 'm87');
++  assert.ok(m87.shape.params.jet <= 0.7, 'M87 jet kept shorter than the galaxy radius');
++});

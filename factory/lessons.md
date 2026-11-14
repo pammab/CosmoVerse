@@ -68,3 +68,14 @@
 - When a page gives a range (old galaxy count "100 to 200 billion", heic1620), quote the whole range, not one end.
 - Sub-labels may set `onlyOpen: true` (journey.js `hiddenNow`): shown only in their piece's close-up, in HTML and VR (xr.js calls
   `visible()` every frame). The cosmic-web "Void" label uses it.
+- `elliptical` takes `bright` (colour) and `soft` (0–1, shrinks and dims points near the centre): dimming colour alone (`bright`)
+  barely changes a dense additive core, shrinking the central points does (M87, 2026-11-14b). For `star` members, fewer points
+  plus `bright` ~0.6 keeps them warm and still brighter than the field; `bright` ~0.3 made Alpha Cen dim grey (judge 7/10).
+- WebFetch refuses URLs that only appear in repo files ("PROVENANCE_REQUIRED"): run a WebSearch first so the URL shows up in a
+  result, then fetch it. The ESA Gaia guide opens as https://www.esa.int/content/view/full/423444.
+- NASA's location page says "Orion Spur" (zh 支臂 already right); ES/PT use "espolón"/"esporão", not "brazo"/"braço" (= arm).
+- NASA pages disagree on the Local Group's size: Imagine says "over 30 galaxies", NASA Science says "over 50 other galaxies".
+- A colour change alone never fixes a clipped additive core (judge sampled 255,255,255 pixels): shrink the central points
+  (`soft` ~0.9) and use a deeper core colour (#ffd890). Judges sample pixels; give them a pixel count before/after.
+- The intro eyebrow is now per mode: main.js `setEyebrow(names|null)`; journey mode writes "SCALE JOURNEY · LEVEL".
+- In a Playwright wheel-in loop, stop when `journey.level` becomes null too, or it keeps zooming into the Sun.

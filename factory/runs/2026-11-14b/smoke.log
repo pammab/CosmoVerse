@@ -1,0 +1,14 @@
+vr button: true
+wheel out → {"level":"neighbourhood","piece":null}
+Alpha Centauri tag at {"x":571.953,"y":452.544}
+webcam point-and-hold → {"level":"neighbourhood","piece":"alpha-centauri"} · Alpha Centauri · 6 links
+click Pillars → {"level":"neighbourhood","piece":"pillars-of-creation"}
+wheel out → {"level":"galaxy","piece":null}
+Milky Way tag at {"x":720,"y":450}
+click → {"level":"galaxy","piece":"milky-way"} · Milky Way · 6 links
+pt has Esporão: false · Braço: false
+local-group → {"level":"local-group","piece":"local-group"} · Local Group · 6 links
+wheel out → {"level":"supercluster","piece":null}
+click → {"level":"supercluster","piece":"m87"} · M87 · Virgo A · 6 links
+errors: none
+(note: the 'Esporão: false' line above is the old case-sensitive regex; the text is now lower-case 'esporão de Órion', see 4-milky-way-open-pt.png; regex fixed in smoke.mjs)

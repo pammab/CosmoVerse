@@ -1,0 +1,80 @@
+diff --git a/journey.js b/journey.js
+index c1de59d..4a1cc06 100644
+--- a/journey.js
++++ b/journey.js
+@@ -46,6 +46,7 @@ export const SCALE_NOTE = L('Each level has its own scale: distances between lev
+   'Cada nível tem a sua própria escala: as distâncias entre níveis não estão em escala e as galáxias aparecem maiores do que são.');
+ export const UI = {
+   here: L('You are here', '你在这里', 'Estás aquí', 'Você está aqui'),
++  journey: L('Scale journey', '尺度之旅', 'Viaje de escala', 'Viagem de escala'),   // top-left eyebrow in journey mode · 左上角小标题
+   out: L('Scroll or pinch out to leave the Solar System', '滚动或捏合缩小，离开太阳系', 'Desplaza o pellizca hacia fuera para salir del sistema solar', 'Role ou pince para fora para sair do Sistema Solar'),
+   back: L('⟵ Back', '⟵ 返回', '⟵ Volver', '⟵ Voltar'),
+   vrBack: L('Press ⟵ Back or hold a fist to return', '按 ⟵ 返回，或保持握拳返回', 'Pulsa ⟵ Volver o mantén el puño para regresar', 'Toque ⟵ Voltar ou feche o punho para voltar'),
+diff --git a/main.js b/main.js
+index 77622ea..bee0cb4 100644
+--- a/main.js
++++ b/main.js
+@@ -412,7 +412,15 @@ function journeyPanel(hint, hintColor, g) {
+ }
+ 
+ /* ───────── Panels & text · 面板与文字 ───────── */
++// The intro eyebrow names the journey level; other modes get the original "Our cosmic neighbourhood" back · 旅程中显示所在层级
++let introEyebrow = null;
++function setEyebrow(names) {
++  const el = $('.intro .eyebrow'); if (!el) return;
++  if (introEyebrow == null) introEyebrow = el.innerHTML;
++  el.innerHTML = names ? quad(names) : introEyebrow;
++}
+ function setIntro(m, b) {
++  if (m !== 'journey') setEyebrow(null);
+   if (m === 'focus') {
+     const idx = b.isSun ? 'STAR' : 'PLANET / ' + String(PLANETS.indexOf(b.p) + 1).padStart(2, '0'), idxZh = b.isSun ? '恒星' : '行星 / ' + String(PLANETS.indexOf(b.p) + 1).padStart(2, '0');
+     $('#headline').innerHTML = bi(...nameOf(b.p)); $('#subtitle').innerHTML = bi(idx, idxZh, idx.replace('STAR', 'ESTRELLA').replace('PLANET', 'PLANETA'), idx.replace('STAR', 'ESTRELA').replace('PLANET', 'PLANETA'));
+@@ -420,6 +428,7 @@ function setIntro(m, b) {
+     const lv = levelById(journey.level || 'neighbourhood'), p = journey.piece && journey.pieceData(journey.piece);
+     $('#headline').innerHTML = quad(p ? p.names : lv.names);
+     $('#subtitle').innerHTML = quad(p ? p.type : lv.blurb);
++    setEyebrow(Object.fromEntries(['en', 'zh', 'es', 'pt'].map(k => [k, `${tr(JUI.journey, k)} · ${tr(lv.names, k)}`.toUpperCase()])));
+   } else if (m === 'trajectory') {
+     $('#headline').innerHTML = bi('Worlds in motion.', '群星，向前。', 'Mundos en movimiento.');
+     $('#subtitle').innerHTML = bi('Our star moves. Eight worlds travel with it. Explore their luminous paths through a moving reference frame.', '太阳向前，八颗行星与它同行。旋转视角，探索运动参考系下交织的发光轨迹。', 'Nuestra estrella se mueve. Ocho mundos viajan con ella. Explora sus trayectorias luminosas.');
+diff --git a/pieces/m87.js b/pieces/m87.js
+index e17e415..6268422 100644
+--- a/pieces/m87.js
++++ b/pieces/m87.js
+@@ -12,7 +12,7 @@ export default {
+   names: { en: 'M87 · Virgo A', zh: 'M87 · 室女座 A', es: 'M87 · Virgo A', pt: 'M87 · Virgo A' },
+   type: { en: 'Giant elliptical galaxy', zh: '巨椭圆星系', es: 'Galaxia elíptica gigante', pt: 'Galáxia elíptica gigante' },
+   // Warm yellow-white glow, with its blue jet · 暖黄白色的光晕和蓝色喷流
+-  shape: { kind: 'elliptical', count: 12000, colors: ['#fff4d6', '#e8b36a', '#6fb8ff'], params: { axes: [1, 0.86, 0.92], jet: 0.6, jetShare: 0.1, bright: 0.8, soft: 0.65 }, seed: 87 },
++  shape: { kind: 'elliptical', count: 12000, colors: ['#ffd890', '#e8b36a', '#6fb8ff'], params: { axes: [1, 0.86, 0.92], jet: 0.6, jetShare: 0.1, bright: 0.72, soft: 0.88 }, seed: 87 },
+   position: VIRGO_AT, size: 3.2, frame: 0.9, tilt: [0.2, 0.35], spin: 0, isolate: true,
+   labelAt: [0, -3.6, 0],   // offset from the "Virgo Cluster" label at the same spot (on screen it sits just above it) · 与“室女座星系团”标签错开
+   facts: [
+diff --git a/tests/journey.test.mjs b/tests/journey.test.mjs
+index 43d2f64..083de9d 100644
+--- a/tests/journey.test.mjs
++++ b/tests/journey.test.mjs
+@@ -1,7 +1,7 @@
+ // Scale journey: level order, zoom-edge transitions, piece data · 尺度之旅测试
+ import { test } from 'node:test';
+ import assert from 'node:assert/strict';
+-import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden } from '../journey.js';
++import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden, UI } from '../journey.js';
+ import { makeShape, SHAPE_KINDS } from '../shapes.js';
+ import { PIECES } from '../pieces/index.js';
+ 
+@@ -162,3 +162,13 @@ test('elliptical bright < 1 dims the body but not the jet', () => {
+   const m87 = PIECES.find(x => x.id === 'm87');
+   assert.ok(m87.shape.params.jet <= 0.7, 'M87 jet kept shorter than the galaxy radius');
+ });
++
++test('every journey UI string exists in EN, zh, ES and PT', () => {
++  const walk = (o, path) => {
++    if (Array.isArray(o)) return o.forEach((x, i) => walk(x, path + '[' + i + ']'));
++    if (o && typeof o === 'object' && 'en' in o) { for (const k of ['en', 'zh', 'es', 'pt']) assert.ok(o[k], path + ' ' + k); return; }
++    if (o && typeof o === 'object') for (const [k, v] of Object.entries(o)) walk(v, path + '.' + k);
++  };
++  walk(UI, 'UI');
++  assert.ok(UI.journey.pt);
++});
