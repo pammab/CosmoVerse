@@ -1,5 +1,6 @@
 // The Milky Way, our home galaxy · 银河系 · Vía Láctea · Via Láctea
-// Sources opened: ESA Gaia guide, NASA Imagine the Universe, NASA "Milky Way: our location".
+// Sources opened (re-checked 2026-11-14): ESA Gaia guide, NASA Imagine the Universe, NASA "Milky Way: our location".
+// The NASA page says "Orion Spur" (a spur, not a full arm): ES "espolón", PT "esporão" · 是支臂而非主旋臂
 const ESA_GAIA = 'https://www.esa.int/Science_Exploration/Space_Science/Gaia/Guide_to_our_galaxy';
 const NASA_IMAGINE = 'https://imagine.gsfc.nasa.gov/science/featured_science/milkyway/';
 export default {
@@ -19,7 +20,7 @@ export default {
       value: { en: 'About 26,000 light-years', zh: '约 2.6 万光年', es: 'Unos 26.000 años luz', pt: 'Cerca de 26 mil anos-luz' },
       source: { name: 'ESA', url: ESA_GAIA } },
     { label: { en: 'Our address', zh: '我们的位置', es: 'Nuestra dirección', pt: 'Nosso endereço' },
-      value: { en: 'The Orion Spur', zh: '猎户座支臂', es: 'El brazo de Orión', pt: 'O Braço de Órion' },
+      value: { en: 'The Orion Spur', zh: '猎户座支臂', es: 'El espolón de Orión', pt: 'O esporão de Órion' },
       source: { name: 'NASA', url: 'https://www.nasa.gov/image-article/milky-way-our-location/' } },
     { label: { en: 'One lap of the Sun', zh: '太阳绕银心一圈', es: 'Una vuelta del Sol', pt: 'Uma volta do Sol' },
       value: { en: 'About 250 million years', zh: '约 2.5 亿年', es: 'Unos 250 millones de años', pt: 'Cerca de 250 milhões de anos' },
@@ -31,8 +32,8 @@ export default {
   narration: {
     en: 'This is our home galaxy, seen from outside. It is a barred spiral about 100,000 light-years across. The Sun sits about 26,000 light-years from the centre, in the Orion Spur, and takes about 250 million years to go around once.',
     zh: '这是从外面看到的我们的家园星系。它是一个棒旋星系，直径约 10 万光年。太阳位于距银心约 2.6 万光年的猎户座支臂上，绕银心一圈大约需要 2.5 亿年。',
-    es: 'Esta es nuestra galaxia, vista desde fuera. Es una espiral barrada de unos 100.000 años luz de diámetro. El Sol está a unos 26.000 años luz del centro, en el brazo de Orión, y tarda unos 250 millones de años en dar una vuelta.',
-    pt: 'Esta é a nossa galáxia, vista de fora. É uma espiral barrada com cerca de 100 mil anos-luz de diâmetro. O Sol fica a uns 26 mil anos-luz do centro, no Braço de Órion, e leva cerca de 250 milhões de anos para dar uma volta.',
+    es: 'Esta es nuestra galaxia, vista desde fuera. Es una espiral barrada de unos 100.000 años luz de diámetro. El Sol está a unos 26.000 años luz del centro, en el espolón de Orión, y tarda unos 250 millones de años en dar una vuelta.',
+    pt: 'Esta é a nossa galáxia, vista de fora. É uma espiral barrada com cerca de 100 mil anos-luz de diâmetro. O Sol fica a uns 26 mil anos-luz do centro, no esporão de Órion, e leva cerca de 250 milhões de anos para dar uma volta.',
   },
   clue: { en: 'A spinning city of stars with a bar at its heart. Your star lives in one of its quiet side streets.', zh: '一座旋转的恒星之城，中心有一根“棒”。你的恒星住在它安静的小巷里。', es: 'Una ciudad de estrellas que gira, con una barra en el corazón. Tu estrella vive en una de sus calles tranquilas.', pt: 'Uma cidade de estrelas que gira, com uma barra no coração. A sua estrela mora numa das suas ruas tranquilas.' },
   youAreHere: { en: 'You are here · the Sun', zh: '你在这里 · 太阳', es: 'Estás aquí · el Sol', pt: 'Você está aqui · o Sol', at: [-30, 0, 42.5] },

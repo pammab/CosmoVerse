@@ -64,13 +64,16 @@ function spiral(b, n, colors, p, r, barred) {
 }
 
 /* ── Elliptical galaxy · 椭圆星系 ── colors: [core, edge, jet]
-   params.jet (optional): length of a thin jet shooting from the centre along +x, e.g. M87's · 可选喷流（沿 +x） */
+   params.jet (optional): length of a thin jet shooting from the centre along +x, e.g. M87's · 可选喷流（沿 +x）
+   params.bright (optional, 0–1): dims the body; params.soft (optional, 0–1): smaller points near the centre,
+   so a dense core doesn't saturate to white (M87) · 可选：降低亮度、缩小中心粒子，防止核心过曝 */
 function elliptical(b, n, colors, p, r) {
   const core = hexRGB(colors[0] || '#fff1d6'), edge = hexRGB(colors[1] || '#ffc98f'), ax = p.axes || [1, 0.8, 0.9];
   const nJet = p.jet ? Math.floor(n * (p.jetShare ?? 0.07)) : 0, jetC = hexRGB(colors[2] || '#7fbfff');
   while (b.n < n - nJet) {
     const rad = Math.min(1.2, Math.pow(-Math.log(1 - r() * 0.999), 2.2) * 0.07), u = r() * 2 - 1, th = r() * Math.PI * 2, s = Math.sqrt(1 - u * u);
-    b.add(Math.cos(th) * s * rad * ax[0], u * rad * ax[1], Math.sin(th) * s * rad * ax[2], mix(core, edge, Math.min(1, rad)), 0.005 + r() * 0.006, 1 - Math.min(0.7, rad * 0.6));
+    const soft = 1 - (p.soft ?? 0) * Math.exp(-rad / 0.1);
+    b.add(Math.cos(th) * s * rad * ax[0], u * rad * ax[1], Math.sin(th) * s * rad * ax[2], mix(core, edge, Math.min(1, rad)), (0.005 + r() * 0.006) * soft, (1 - Math.min(0.7, rad * 0.6)) * (p.bright ?? 1) * (0.5 + 0.5 * soft));
   }
   // The jet: narrow, slightly widening, with a few brighter knots · 喷流：细长、略微张开，带几个亮结
   const knots = [0.25, 0.45, 0.62, 0.85];
@@ -91,7 +94,7 @@ function pillars(b, n, colors, p, r) {
   for (let i = 0; i < n * 0.012; i++) b.add((r() * 2 - 1) * 0.95, (r() * 2 - 1) * 0.8, gauss(r) * 0.15, mix(starC, WHITE, r() * 0.5), 0.012 + r() * 0.03, 0.7 + r() * 0.3);   // young stars · 年轻恒星
   for (let i = 0; i < n * 0.22; i++) {   // the glowing blue haze behind the towers · 背后发蓝光的电离气体
     const x = (r() * 2 - 1) * 1.0, y = -0.2 + gauss(r) * 0.45, z = -0.25 + gauss(r) * 0.12;
-    b.add(x, y, z, mix(haze, WHITE, r() * 0.2), 0.016 + r() * 0.02, 0.2 + r() * 0.15);
+    b.add(x, y, z, mix(haze, WHITE, r() * 0.1), 0.016 + r() * 0.02, 0.11 + r() * 0.09);   // kept faint so the towers lead · 保持淡，突出柱子
   }
   const base = -0.75, total = cols.reduce((s, c) => s + c.h * c.w, 0);
   while (b.n < n) {

@@ -1,7 +1,7 @@
 // Scale journey: level order, zoom-edge transitions, piece data · 尺度之旅测试
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS } from '../journey.js';
+import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden } from '../journey.js';
 import { makeShape, SHAPE_KINDS } from '../shapes.js';
 import { PIECES } from '../pieces/index.js';
 
@@ -140,4 +140,25 @@ test('observable-universe cites the re-checked pages; the Void label waits for t
   assert.ok(u.facts.some(f => /heic1620/.test(f.source.url)) && u.facts.some(f => /planck-new-cosmic-recipe/.test(f.source.url)));
   assert.ok(u.facts.some(f => /100–200 billion/.test(f.value.en)), 'old estimate quoted as the page range');
   assert.equal(w.labels[0].onlyOpen, true);
+});
+
+test('onlyOpen labels hide unless their own piece is open', () => {
+  const t = { onlyOpen: true, owner: 'cosmic-web' };
+  assert.equal(onlyOpenHidden(t, null), true);
+  assert.equal(onlyOpenHidden(t, 'observable-universe'), true);
+  assert.equal(onlyOpenHidden(t, 'cosmic-web'), false);
+  assert.equal(onlyOpenHidden({ owner: 'cosmic-web' }, null), false);
+});
+
+test('elliptical bright < 1 dims the body but not the jet', () => {
+  const lum = s => { let a = 0; for (let i = 0; i < s.count; i++) a += s.colors[i * 3] + s.colors[i * 3 + 1] + s.colors[i * 3 + 2]; return a; };
+  const p = { axes: [1, 0.86, 0.92], jet: 0.6, jetShare: 0.09 };
+  const full = makeShape('elliptical', 4000, ['#fff4d6', '#e8b36a', '#6fb8ff'], p, 87);
+  const dim = makeShape('elliptical', 4000, ['#fff4d6', '#e8b36a', '#6fb8ff'], { ...p, bright: 0.6 }, 87);
+  assert.ok(lum(dim) < lum(full) * 0.8);
+  const jet = (s, n) => { let a = 0; for (let i = s.count - n; i < s.count; i++) a += s.colors[i * 3] + s.colors[i * 3 + 1] + s.colors[i * 3 + 2]; return a; };
+  const nJet = Math.floor(4000 * 0.09);
+  assert.ok(Math.abs(jet(dim, nJet) - jet(full, nJet)) < 1e-6, 'jet colours unchanged');
+  const m87 = PIECES.find(x => x.id === 'm87');
+  assert.ok(m87.shape.params.jet <= 0.7, 'M87 jet kept shorter than the galaxy radius');
 });

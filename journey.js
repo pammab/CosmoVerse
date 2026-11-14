@@ -31,6 +31,8 @@ export const LEVELS = [
   { id: 'solar-system', names: L('Solar System', '太阳系', 'Sistema solar', 'Sistema Solar') },
 ];
 export const LEVEL_IDS = LEVELS.map(l => l.id);
+// Labels with onlyOpen show only in their own piece's close-up (HTML and VR) · 仅在所属天体特写时显示
+export const onlyOpenHidden = (t, openPiece) => !!t.onlyOpen && openPiece !== t.owner;
 export const levelById = id => LEVELS.find(l => l.id === id) || null;
 export const levelIndex = id => LEVEL_IDS.indexOf(id);
 export const outerLevel = id => levelIndex(id) > 0 ? LEVEL_IDS[levelIndex(id) - 1] : null;
@@ -144,7 +146,7 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
   const tags = [];   // HTML labels for pieces and markers · 屏幕标签
   // While a piece is open, hide the other pieces' labels (they slid over the title) · 打开天体时隐藏其他天体的标签
   const otherOpen = t => !!state.piece && t.owner !== state.piece;   // level markers too (judge 2026-11-13b)
-  const hiddenNow = t => t.onlyOpen && state.piece !== t.owner;   // labels with onlyOpen show only in their piece's close-up · 仅特写时显示
+  const hiddenNow = t => onlyOpenHidden(t, state.piece);
   function tag(obj, names, cls, pieceId, level) {
     const el = document.createElement(pieceId ? 'button' : 'div'); el.className = 'jtag ' + cls;
     if (pieceId) { el.type = 'button'; el.innerHTML = `<span class="ring"></span><span class="name">${quad(names)}</span>`; el.onclick = () => onOpen(pieceId); }

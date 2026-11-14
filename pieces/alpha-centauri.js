@@ -11,9 +11,9 @@ export default {
   names: { en: 'Alpha Centauri', zh: '半人马座α', es: 'Alfa Centauri', pt: 'Alfa Centauri' },
   type: { en: 'Triple star system · our nearest stars', zh: '三合星系统 · 离我们最近的恒星', es: 'Sistema de tres estrellas · las más cercanas', pt: 'Sistema de três estrelas · as mais próximas' },
   // A (Sun-like) and B (a bit smaller) close together, Proxima (a small red dwarf) off to the side · A、B 相伴，比邻星在一旁
-  shape: { kind: 'galaxy-group', count: 1500, colors: ['#ffffff'], seed: 4, params: { dwarfs: 0, members: [
-    { at: [-0.16, 0, 0], kind: 'star', r: 0.42, share: 0.45, colors: ['#ffd9a0', '#ffb45c'] },
-    { at: [0.16, -0.03, 0.02], kind: 'star', r: 0.32, share: 0.35, colors: ['#ffc287', '#ff9248'] },
+  shape: { kind: 'galaxy-group', count: 1000, colors: ['#ffffff'], seed: 4, params: { dwarfs: 0, members: [
+    { at: [-0.16, 0, 0], kind: 'star', r: 0.42, share: 0.45, colors: ['#ffd9a0', '#ffb45c'], bright: 0.6 },
+    { at: [0.16, -0.03, 0.02], kind: 'star', r: 0.32, share: 0.35, colors: ['#ffc287', '#ff9248'], bright: 0.62 },
     { at: PROXIMA, kind: 'star', r: 0.13, share: 0.2, colors: ['#ff9a72', '#ff5a3c'] },
   ] } },
   position: [-34, -4, 16], size: S, frame: 1.6,
