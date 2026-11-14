@@ -12,7 +12,7 @@ export default {
   names: { en: 'M87 · Virgo A', zh: 'M87 · 室女座 A', es: 'M87 · Virgo A', pt: 'M87 · Virgo A' },
   type: { en: 'Giant elliptical galaxy', zh: '巨椭圆星系', es: 'Galaxia elíptica gigante', pt: 'Galáxia elíptica gigante' },
   // Warm yellow-white glow, with its blue jet · 暖黄白色的光晕和蓝色喷流
-  shape: { kind: 'elliptical', count: 12000, colors: ['#fff4d6', '#e8b36a', '#6fb8ff'], params: { axes: [1, 0.86, 0.92], jet: 0.6, jetShare: 0.1, bright: 0.8, soft: 0.65 }, seed: 87 },
+  shape: { kind: 'elliptical', count: 12000, colors: ['#ffd890', '#e8b36a', '#6fb8ff'], params: { axes: [1, 0.86, 0.92], jet: 0.6, jetShare: 0.1, bright: 0.72, soft: 0.88 }, seed: 87 },
   position: VIRGO_AT, size: 3.2, frame: 0.9, tilt: [0.2, 0.35], spin: 0, isolate: true,
   labelAt: [0, -3.6, 0],   // offset from the "Virgo Cluster" label at the same spot (on screen it sits just above it) · 与“室女座星系团”标签错开
   facts: [

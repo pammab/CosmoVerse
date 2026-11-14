@@ -1,7 +1,7 @@
 // Scale journey: level order, zoom-edge transitions, piece data · 尺度之旅测试
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden } from '../journey.js';
+import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden, UI } from '../journey.js';
 import { makeShape, SHAPE_KINDS } from '../shapes.js';
 import { PIECES } from '../pieces/index.js';
 
@@ -161,4 +161,14 @@ test('elliptical bright < 1 dims the body but not the jet', () => {
   assert.ok(Math.abs(jet(dim, nJet) - jet(full, nJet)) < 1e-6, 'jet colours unchanged');
   const m87 = PIECES.find(x => x.id === 'm87');
   assert.ok(m87.shape.params.jet <= 0.7, 'M87 jet kept shorter than the galaxy radius');
+});
+
+test('every journey UI string exists in EN, zh, ES and PT', () => {
+  const walk = (o, path) => {
+    if (Array.isArray(o)) return o.forEach((x, i) => walk(x, path + '[' + i + ']'));
+    if (o && typeof o === 'object' && 'en' in o) { for (const k of ['en', 'zh', 'es', 'pt']) assert.ok(o[k], path + ' ' + k); return; }
+    if (o && typeof o === 'object') for (const [k, v] of Object.entries(o)) walk(v, path + '.' + k);
+  };
+  walk(UI, 'UI');
+  assert.ok(UI.journey.pt);
 });

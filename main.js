@@ -412,7 +412,15 @@ function journeyPanel(hint, hintColor, g) {
 }
 
 /* ───────── Panels & text · 面板与文字 ───────── */
+// The intro eyebrow names the journey level; other modes get the original "Our cosmic neighbourhood" back · 旅程中显示所在层级
+let introEyebrow = null;
+function setEyebrow(names) {
+  const el = $('.intro .eyebrow'); if (!el) return;
+  if (introEyebrow == null) introEyebrow = el.innerHTML;
+  el.innerHTML = names ? quad(names) : introEyebrow;
+}
 function setIntro(m, b) {
+  if (m !== 'journey') setEyebrow(null);
   if (m === 'focus') {
     const idx = b.isSun ? 'STAR' : 'PLANET / ' + String(PLANETS.indexOf(b.p) + 1).padStart(2, '0'), idxZh = b.isSun ? '恒星' : '行星 / ' + String(PLANETS.indexOf(b.p) + 1).padStart(2, '0');
     $('#headline').innerHTML = bi(...nameOf(b.p)); $('#subtitle').innerHTML = bi(idx, idxZh, idx.replace('STAR', 'ESTRELLA').replace('PLANET', 'PLANETA'), idx.replace('STAR', 'ESTRELA').replace('PLANET', 'PLANETA'));
@@ -420,6 +428,7 @@ function setIntro(m, b) {
     const lv = levelById(journey.level || 'neighbourhood'), p = journey.piece && journey.pieceData(journey.piece);
     $('#headline').innerHTML = quad(p ? p.names : lv.names);
     $('#subtitle').innerHTML = quad(p ? p.type : lv.blurb);
+    setEyebrow(Object.fromEntries(['en', 'zh', 'es', 'pt'].map(k => [k, `${tr(JUI.journey, k)} · ${tr(lv.names, k)}`.toUpperCase()])));
   } else if (m === 'trajectory') {
     $('#headline').innerHTML = bi('Worlds in motion.', '群星，向前。', 'Mundos en movimiento.');
     $('#subtitle').innerHTML = bi('Our star moves. Eight worlds travel with it. Explore their luminous paths through a moving reference frame.', '太阳向前，八颗行星与它同行。旋转视角，探索运动参考系下交织的发光轨迹。', 'Nuestra estrella se mueve. Ocho mundos viajan con ella. Explora sus trayectorias luminosas.');

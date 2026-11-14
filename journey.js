@@ -46,6 +46,7 @@ export const SCALE_NOTE = L('Each level has its own scale: distances between lev
   'Cada nível tem a sua própria escala: as distâncias entre níveis não estão em escala e as galáxias aparecem maiores do que são.');
 export const UI = {
   here: L('You are here', '你在这里', 'Estás aquí', 'Você está aqui'),
+  journey: L('Scale journey', '尺度之旅', 'Viaje de escala', 'Viagem de escala'),   // top-left eyebrow in journey mode · 左上角小标题
   out: L('Scroll or pinch out to leave the Solar System', '滚动或捏合缩小，离开太阳系', 'Desplaza o pellizca hacia fuera para salir del sistema solar', 'Role ou pince para fora para sair do Sistema Solar'),
   back: L('⟵ Back', '⟵ 返回', '⟵ Volver', '⟵ Voltar'),
   vrBack: L('Press ⟵ Back or hold a fist to return', '按 ⟵ 返回，或保持握拳返回', 'Pulsa ⟵ Volver o mantén el puño para regresar', 'Toque ⟵ Voltar ou feche o punho para voltar'),
