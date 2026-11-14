@@ -15,7 +15,7 @@ import { buildHighlights, HIGHLIGHTS, moonPT } from './highlights.js';
 import { initHabitability } from './habitability.js';
 import { narrate, stopNarration, sfx } from './narration.js';
 import { initXR } from './xr.js';
-import { createJourney, levelById, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, quad, tr, SCALE_NOTE, UI as JUI } from './journey.js';
+import { createJourney, levelById, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, quad, tr, eyebrowText, SCALE_NOTE, UI as JUI } from './journey.js';
 import { PIECES } from './pieces/index.js';
 const $ = s => document.querySelector(s), clamp = T.MathUtils.clamp, bi = window.bi;
 const cap = s => s.charAt(0) + s.slice(1).toLowerCase();
@@ -428,7 +428,7 @@ function setIntro(m, b) {
     const lv = levelById(journey.level || 'neighbourhood'), p = journey.piece && journey.pieceData(journey.piece);
     $('#headline').innerHTML = quad(p ? p.names : lv.names);
     $('#subtitle').innerHTML = quad(p ? p.type : lv.blurb);
-    setEyebrow(Object.fromEntries(['en', 'zh', 'es', 'pt'].map(k => [k, `${tr(JUI.journey, k)} · ${tr(lv.names, k)}`.toUpperCase()])));
+    setEyebrow(Object.fromEntries(['en', 'zh', 'es', 'pt'].map(k => [k, eyebrowText(lv.id, p, k)])));   // names the open piece too · 也显示打开的天体
   } else if (m === 'trajectory') {
     $('#headline').innerHTML = bi('Worlds in motion.', '群星，向前。', 'Mundos en movimiento.');
     $('#subtitle').innerHTML = bi('Our star moves. Eight worlds travel with it. Explore their luminous paths through a moving reference frame.', '太阳向前，八颗行星与它同行。旋转视角，探索运动参考系下交织的发光轨迹。', 'Nuestra estrella se mueve. Ocho mundos viajan con ella. Explora sus trayectorias luminosas.');

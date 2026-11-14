@@ -115,6 +115,29 @@ const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 // All four languages as spans; CSS shows the chosen one · 四种语言，CSS 只显示当前语言
 export const quad = o => LANG4.map(k => `<span class="${k}" lang="${k === 'zh' ? 'zh-CN' : k}">${esc(o?.[k] ?? o?.en ?? '')}</span>`).join('');
 export const tr = (o, lang) => o?.[lang] ?? o?.en ?? '';
+// Top-left eyebrow: "SCALE JOURNEY · GALAXY" on a level, "SUPERCLUSTER · M87 · VIRGO A" with a piece open · 左上角小标题
+export function eyebrowText(levelId, piece, lang) {
+  const lv = levelById(levelId); if (!lv) return '';
+  const L = tr(lv.names, lang).toUpperCase(), P = piece ? tr(piece.names, lang).toUpperCase() : '';
+  // No "LOCAL GROUP · LOCAL GROUP": a piece named like its level keeps the level form; "LANIAKEA SUPERCLUSTER" stands alone · 不重复层级名
+  if (!P || P === L) return `${tr(UI.journey, lang).toUpperCase()} · ${L}`;
+  return P.includes(L) ? P : `${L} · ${P}`;
+}
+// Labels that would overlap on screen: push the lower one down until it clears · 屏幕标签防重叠：较低的往下推
+// boxes: [{ x, y, w, h }] (top-left, px; w = 0 means hidden). Returns the extra dy for each box, in input order.
+export function spreadLabels(boxes, gap = 4) {
+  const dy = boxes.map(() => 0), placed = [];
+  const order = boxes.map((_, i) => i).filter(i => boxes[i].w > 0).sort((a, b) => boxes[a].y - boxes[b].y || a - b);
+  for (const i of order) {
+    const b = boxes[i]; let y = b.y;
+    for (let moved = true, n = 0; moved && n < 20; n++) {
+      moved = false;
+      for (const p of placed) if (b.x < p.x + p.w + gap && p.x < b.x + b.w + gap && y < p.y + p.h + gap && p.y < y + b.h + gap) { y = p.y + p.h + gap; moved = true; }
+    }
+    dy[i] = y - b.y; placed.push({ x: b.x, y, w: b.w, h: b.h });
+  }
+  return dy;
+}
 
 /* ───────── The particle scenes (browser only) · 粒子场景（仅浏览器） ───────── */
 // Soft round points sized in world units; xr.js does not touch ShaderMaterials, so we divide by the VR dolly scale here.
@@ -233,14 +256,22 @@ export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, view
     }
     // HTML labels · 屏幕标签
     camera.getWorldPosition(camW);
+    const shown = [];
     for (const t of tags) {
       const L = levels[t.level], show = !!L && t.level === state.level && state.t > 0.7 && !(t.pieceId && state.piece === t.pieceId) && !otherOpen(t) && !hiddenNow(t);
       if (!show) { t.el.style.display = 'none'; continue; }
       t.obj.getWorldPosition(wp); wp.project(camera);
       if (wp.z > 1 || Math.abs(wp.x) > 1.05 || Math.abs(wp.y) > 1.05) { t.el.style.display = 'none'; continue; }
-      t.el.style.display = 'block'; t.el.style.transform = `translate(${(wp.x + 1) / 2 * innerWidth}px,${(1 - wp.y) / 2 * innerHeight}px)`;
+      t.sx = (wp.x + 1) / 2 * innerWidth; t.sy = (1 - wp.y) / 2 * innerHeight;
+      t.el.style.display = 'block'; t.el.style.transform = `translate(${t.sx}px,${t.sy}px)`;
       t.el.classList.toggle('hover', !!t.pieceId && state.hover === t.pieceId);
+      shown.push(t);
     }
+    // Keep labels from stacking on top of each other (Milky Way and Sgr A* on a phone); only the name moves, the ring stays · 防止标签重叠
+    if (shown.length < 2) { for (const t of shown) if (t.dy) { t.dy = 0; t.nameEl.style.translate = ''; } return; }   // nothing to overlap: skip the layout read · 无需测量
+    const names = shown.map(t => t.nameEl ||= t.el.querySelector('.name'));
+    const dy = spreadLabels(shown.map((t, i) => { const n = names[i], w = n.offsetWidth; return { x: t.sx - w / 2, y: t.sy + n.offsetTop, w, h: n.offsetHeight }; }));
+    shown.forEach((t, i) => { if (t.dy !== dy[i]) { t.dy = dy[i]; names[i].style.translate = dy[i] ? `0 ${dy[i]}px` : ''; } });
   }
   // Tag each piece's Points with its id (for dimming) and find a Points' level · 记录归属
   for (const id in pieceById) pieceById[id].pts.userData.pieceId = id;

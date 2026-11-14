@@ -1,7 +1,7 @@
 // Scale journey: level order, zoom-edge transitions, piece data · 尺度之旅测试
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden, UI } from '../journey.js';
+import { LEVEL_IDS, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, EDGE_THRESHOLD, validatePiece, quad, LEVELS, onlyOpenHidden, UI, eyebrowText, spreadLabels } from '../journey.js';
 import { makeShape, SHAPE_KINDS } from '../shapes.js';
 import { PIECES } from '../pieces/index.js';
 
@@ -171,4 +171,37 @@ test('every journey UI string exists in EN, zh, ES and PT', () => {
   };
   walk(UI, 'UI');
   assert.ok(UI.journey.pt);
+});
+
+test('eyebrow names the level, and the open piece too, in all four languages', () => {
+  const m87 = PIECES.find(x => x.id === 'm87');
+  assert.equal(eyebrowText('galaxy', null, 'en'), 'SCALE JOURNEY · GALAXY');
+  assert.equal(eyebrowText('supercluster', m87, 'en'), ('Supercluster · ' + m87.names.en).toUpperCase());
+  for (const k of ['en', 'zh', 'es', 'pt']) {
+    assert.ok(eyebrowText('supercluster', m87, k).includes(m87.names[k].toUpperCase()), k);
+    assert.ok(!eyebrowText('supercluster', m87, k).includes(UI.journey[k].toUpperCase()), k + ': no journey prefix with a piece open');
+  }
+  assert.equal(eyebrowText('nope', null, 'en'), '');
+});
+
+test('spreadLabels pushes an overlapping lower label below the upper one and leaves others alone', () => {
+  // Phone probe 2026-11-14c: MILKY WAY 147–243 × 382–407, SAGITTARIUS A* 126–254 × 401–425 · 手机上两个标签重叠
+  const dy = spreadLabels([{ x: 126, y: 401, w: 128, h: 24 }, { x: 147, y: 382, w: 96, h: 25 }, { x: 600, y: 401, w: 80, h: 20 }, { x: 140, y: 390, w: 0, h: 20 }]);
+  assert.equal(dy[1], 0, 'upper label stays');
+  assert.equal(401 + dy[0], 382 + 25 + 4, 'lower label clears the upper one with a 4 px gap');
+  assert.equal(dy[2], 0, 'a label elsewhere does not move');
+  assert.equal(dy[3], 0, 'hidden (w = 0) labels are ignored');
+  // Three in a stack end up in a column · 三个叠在一起的标签排成一列
+  const d3 = spreadLabels([{ x: 0, y: 0, w: 50, h: 10 }, { x: 0, y: 2, w: 50, h: 10 }, { x: 0, y: 4, w: 50, h: 10 }], 2);
+  assert.deepEqual(d3.map((d, i) => [0, 2, 4][i] + d), [0, 12, 24]);
+});
+
+test('eyebrow never repeats the level name, for every piece and language', () => {
+  for (const p of PIECES) for (const k of ['en', 'zh', 'es', 'pt']) {
+    const s = eyebrowText(p.level, p, k), lv = LEVELS.find(l => l.id === p.level).names[k].toUpperCase();
+    assert.ok(s.split(lv).length - 1 <= 1, `${p.id} ${k}: "${s}"`);
+    assert.ok(s.includes(lv), `${p.id} ${k}: level named`);
+  }
+  const lg = PIECES.find(x => x.id === 'local-group');
+  assert.equal(eyebrowText('local-group', lg, 'en'), 'SCALE JOURNEY · LOCAL GROUP');
 });
