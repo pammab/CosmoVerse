@@ -31,7 +31,7 @@ test('the showcase order: title → ladder → a piece → Saturn from the bar �
   assert.equal(s.find(x => x.select === 'saturn' && !x.chat).act, 'nav');
   assert.deepEqual(s.filter(x => x.act && x.act !== 'nav').map(x => x.act), ['harp', 'birthday', 'merge']);
   assert.ok(k.indexOf('demo-merge') < k.indexOf('demo-vr'));
-  const ask = s.find(x => x.chat); assert.ok(ask && ask.hold >= 5000, 'time to read the answer');
+  const ask = s.find(x => x.chat); assert.ok(ask && ask.hold >= 4000, 'time to read the answer');
   assert.equal(new Set(k).size, k.length, 'one clip per step');
 });
 

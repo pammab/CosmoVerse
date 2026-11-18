@@ -87,12 +87,12 @@ export function createTour(actions) {
       if (!s.active || s.paused) return;
       const st = steps[s.i], dt = now - s.t0;
       if (s.phase === 'fly') {
-        if (dt > 700 && !a.busy()) { s.said = false; s.need = readMs(st.text[a.lang()] || st.text.en, a.lang()); a.say(st); set('say', now); }
+        if (dt > 200 && !a.busy()) { s.said = false; s.need = readMs(st.text[a.lang()] || st.text.en, a.lang()); a.say(st); set('say', now); }
       } else if (s.phase === 'say') {
         if (a.speaking()) s.said = true;
-        const spoken = a.voiceOn() && s.said ? !a.speaking() && dt > 1200 : dt >= s.need;   // voice on but nothing spoken (turned on mid-stop): reading time · 未开始朗读则按阅读时间
+        const spoken = a.voiceOn() && s.said ? !a.speaking() && dt > 600 : dt >= s.need;   // voice on but nothing spoken (turned on mid-stop): reading time · 未开始朗读则按阅读时间
         if (spoken || dt > s.need * 2.5 + 6000) set('hold', now);   // never stall on a voice that doesn't end · 语音卡住时继续
-      } else if (s.phase === 'hold' && dt > (st.hold ?? (st.ask ? 4000 : 900))) {
+      } else if (s.phase === 'hold' && dt > (st.hold ?? (st.ask ? 4000 : 250))) {
         if (++s.i >= steps.length) { s.i = steps.length - 1; api.stop(true); return; }
         begin(now);
       }

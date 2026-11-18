@@ -65,7 +65,7 @@ export async function voice(query) {
       text, model_id: model,
       ...(model !== 'eleven_multilingual_v2' ? { language_code: query.lang } : {}),
       // A calm, warm documentary delivery · 沉稳温暖的纪录片语气
-      voice_settings: { stability: 0.42, similarity_boost: 0.8, style: 0.35, use_speaker_boost: true, speed: 0.94 },
+      voice_settings: { stability: 0.42, similarity_boost: 0.8, style: 0.35, use_speaker_boost: true, speed: 1.04 },
     }, key);
     return r.audio ? { ...r, headers: { 'cache-control': CACHE } } : r;
   }
