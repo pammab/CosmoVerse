@@ -962,3 +962,6 @@ body.xr-on .mergebar { display: none; }
 .metag .primary { background: #7dffcf22; border-color: #7dffcf88; color: #eafff8; }
 body.xr-on .metag { display: none; }
 
+
+.democard .democlick { margin-top: 18px; padding: 10px 18px; border-radius: 999px; border: 1px solid #8bd6ff66; color: #fff !important; font-size: 16px !important; animation: hintpulse 1.6s ease-in-out infinite; }
+@keyframes hintpulse { 50% { box-shadow: 0 0 24px #8bd6ff55; } }

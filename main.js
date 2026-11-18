@@ -41,7 +41,7 @@ import { parseVoiceCommand, buildNames, VC_SAY, VC_UI } from './voicecmd.js';
 import { UT_UI, UT_MAX_STOPS, UT_MAX_TEXT, UT_MAX_TITLE, encodeTour, tourFromHash, sanitizeTour } from './usertour.js';
 import { createTour, TOUR_UI } from './tour.js';
 import { PM_UI, PM_NOTES, PM_QUIZ, PM_SRC, PM_COLORS, PM_PRESETS, PM_MAX_NAME, KINDS, ATMOS, sanitizePlanet, planetResult, yearDays, planetAge } from './planetmaker.js';
-import { demoSteps, DEMO_CARDS, DEMO_BIRTH_YEAR } from './demo.js';
+import { demoSteps, DEMO_CARDS, DEMO_BIRTH_YEAR, DEMO_UI } from './demo.js';
 import { REF_UI, REF_LICENCES, refsHTML } from './references.js';
 import { BS_UI, BS_STARS, BS_MIN_YEAR, birthdayStar, validYear, bsFill, fmtLy } from './birthday.js';
 import { ME_UI, ME_SRC, ME_LEVELS, roundPlace, namesFrom, placeLine, spherePoint, spinToFace } from './me.js';
@@ -1200,7 +1200,13 @@ function startDemo() {
 // After the demo the closing card stays (for the last frames of the video) until a click or a key · 结束卡片保留到点击或按键
 addEventListener('pointerdown', () => { if (!demoOn) demoCard(null); });
 addEventListener('keydown', () => { if (!demoOn) demoCard(null); });
-if (/[?&]demo=1/.test(location.search)) setTimeout(startDemo, 2500);
+// Browsers keep sound off until the first click, so the demo waits for one (the title card says so) · 浏览器需要先点击才有声音
+if (/[?&]demo=1/.test(location.search)) setTimeout(() => {
+  if (navigator.userActivation?.isActive || navigator.userActivation?.hasBeenActive) return startDemo();
+  demoCard('title'); demoEl.insertAdjacentHTML('beforeend', `<p class="democlick">${quad(DEMO_UI.click)}</p>`);
+  const go = () => { removeEventListener('pointerdown', go, true); removeEventListener('keydown', go, true); setTimeout(startDemo, 600); };
+  addEventListener('pointerdown', go, true); addEventListener('keydown', go, true);
+}, 1500);
 function startTour() {
   demoOn = false; document.body.classList.remove('demo'); demoCard(null);
   welcome.close(); chat?.close?.(); sfx('chime');
@@ -1768,7 +1774,7 @@ function animate(now) {
   bodies.forEach(b => { if (b !== focus && b.surface.material.transparent && !b.isSun) { b.surface.material.opacity = 1; b.surface.material.transparent = false; b.surface.material.needsUpdate = true; } });
 
   // Camera rig · 相机
-  trans = Math.min(1, trans + dt / 1.7);
+  trans = Math.min(1, trans + dt / (demoOn ? 1.05 : 1.7));   // the video demo moves a little faster · 演示稍快
   goalTarget(tv); const gl = Math.log(goalDist());
   if (trans < 1) { const e = ease(trans); rig.target.lerpVectors(from.target, tv, e); rig.logDist = from.logDist + (gl - from.logDist) * e; }
   else { rig.target.copy(tv); rig.logDist += (gl - rig.logDist) * k; }

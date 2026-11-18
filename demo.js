@@ -19,11 +19,12 @@ const firstNOf = (byLang, n) => Object.fromEntries(VOICE_LANGS.map((l, i) => [l,
 export const DEMO_UI = {
   title: L('CosmoVerse demo', 'CosmoVerse 演示', 'Demo de CosmoVerse', 'Demo do CosmoVerse'),
   askName: L('Ask Cosmo', '问问 Cosmo', 'Pregunta a Cosmo', 'Pergunte ao Cosmo'),
+  click: L('▶ Click anywhere to start (with sound)', '▶ 点击任意位置开始（有声音）', '▶ Haz clic en cualquier lugar para empezar (con sonido)', '▶ Clique em qualquer lugar para começar (com som)'),
 };
 // Cards shown full screen (title, hands, closing): heading, lines · 全屏卡片
 export const DEMO_CARDS = {
   title: { head: L('CosmoVerse', 'CosmoVerse', 'CosmoVerse', 'CosmoVerse'),
-    lines: [L('A planetarium you hold in your hands', '握在手中的天文馆', 'Un planetario en tus manos', 'Um planetário nas suas mãos'),
+    lines: [L('The universe is beyond description · explore it with your own hands', '宇宙无法形容 · 用你自己的双手去探索', 'El universo no se puede describir · explóralo con tus propias manos', 'O universo está além de qualquer descrição · explore-o com as suas próprias mãos'),
       L('From Saturn’s rings to the cosmic web · with a guide who speaks and answers', '从土星光环到宇宙网 · 有会说话、会回答的向导', 'De los anillos de Saturno a la red cósmica · con un guía que habla y responde', 'Dos anéis de Saturno à teia cósmica · com um guia que fala e responde')] },
   hands: { head: L('Hands first', '双手优先', 'Primero las manos', 'Primeiro as mãos'),
     icons: [['🤏', L('Pinch and pull to zoom', '捏合拉动来缩放', 'Pellizca y tira para hacer zoom', 'Faça pinça e puxe para dar zoom')],
@@ -38,16 +39,18 @@ export const DEMO_CARDS = {
     lines: [L('Recorded in Meta’s Immersive Web Emulator · Meta Quest 3 with hand tracking · sped up', '录制于 Meta 沉浸式网页模拟器 · Meta Quest 3 手部追踪 · 已加速',
       'Grabado en el Immersive Web Emulator de Meta · Meta Quest 3 con seguimiento de manos · acelerado', 'Gravado no Immersive Web Emulator da Meta · Meta Quest 3 com rastreamento de mãos · acelerado')] },
   end: { head: L('CosmoVerse', 'CosmoVerse', 'CosmoVerse', 'CosmoVerse'),
-    lines: [L('Free · one link · Meta Quest, computer and phone', '免费 · 一个链接 · Meta Quest、电脑和手机', 'Gratis · un enlace · Meta Quest, ordenador y móvil', 'Grátis · um link · Meta Quest, computador e celular'),
+    lines: [L('From the universe to your hands', '从宇宙到你的手中', 'Del universo a tus manos', 'Do universo às suas mãos'),
+      L('There is so much more to explore · ☰ More', '还有更多可以探索 · ☰ 更多', 'Hay mucho más por explorar · ☰ Más', 'Há muito mais para explorar · ☰ Mais'),
+      L('Free · one link · Meta Quest, computer and phone', '免费 · 一个链接 · Meta Quest、电脑和手机', 'Gratis · un enlace · Meta Quest, ordenador y móvil', 'Grátis · um link · Meta Quest, computador e celular'),
       L('English · 中文 · Español · Português · every fact with its source', 'English · 中文 · Español · Português · 每条事实都有来源', 'English · 中文 · Español · Português · cada dato con su fuente', 'English · 中文 · Español · Português · cada fato com sua fonte'),
       L('📔 Stamps, collections and weekly missions · ✎ make and share your own tour · 📰 news from NASA, ESA, ESO and Webb', '📔 印章、收藏册和每周任务 · ✎ 制作并分享你自己的游览 · 📰 来自 NASA、欧空局、欧南台和韦布的新闻', '📔 Sellos, colecciones y misiones semanales · ✎ crea y comparte tu propio tour · 📰 noticias de la NASA, la ESA, ESO y Webb', '📔 Selos, coleções e missões semanais · ✎ crie e compartilhe seu próprio tour · 📰 notícias da NASA, ESA, ESO e Webb')] },
 };
 // Cosmo's demo lines (about the app, no facts) · 演示串场词（只介绍应用）
 export const DEMO_LINES = {
-  title: L('This is CosmoVerse: a planetarium you hold in your hands. Let me show you around.',
-    '这是 CosmoVerse：一座握在手中的天文馆。我带你看看。',
-    'Esto es CosmoVerse: un planetario en tus manos. Déjame enseñártelo.',
-    'Este é o CosmoVerse: um planetário nas suas mãos. Deixe eu te mostrar.'),
+  title: L('The universe is beyond description. But you can explore it, with your own hands. This is CosmoVerse.',
+    '宇宙无法用语言形容。但你可以用自己的双手去探索它。这就是 CosmoVerse。',
+    'El universo no se puede describir con palabras. Pero puedes explorarlo con tus propias manos. Esto es CosmoVerse.',
+    'O universo está além de qualquer descrição. Mas você pode explorá-lo com as suas próprias mãos. Este é o CosmoVerse.'),
   solar: L('One continuous zoom brings us home to the Solar System. Every planet opens up close.',
     '一次连续的缩放把我们带回太阳系。每颗行星都可以近距离打开。',
     'Un solo zoom continuo nos trae de vuelta al sistema solar. Cada planeta se abre de cerca.',
@@ -74,10 +77,10 @@ export const DEMO_LINES = {
     '一切都可以用双手完成：捏合缩放，指向打开，握拳返回。电脑、手机和 VR 都可以。',
     'Todo funciona con las manos: pellizca para hacer zoom, apunta para abrir y cierra el puño para volver. En el ordenador, en el móvil y en VR.',
     'Tudo funciona com as mãos: pinça para dar zoom, apontar para abrir, punho para voltar. No computador, no celular e no VR.'),
-  end: L('CosmoVerse is free, in four languages, one link away. Come and explore.',
-    'CosmoVerse 免费，支持四种语言，一个链接就能打开。来探索吧。',
-    'CosmoVerse es gratis, en cuatro idiomas, a un enlace de distancia. Ven a explorar.',
-    'O CosmoVerse é grátis, em quatro idiomas, a um link de distância. Venha explorar.'),
+  end: L('And just like the universe, there is so much more: stamps and weekly missions, your own tours, and the latest news from NASA, ESA and Webb, all in the More menu. Get exploring. CosmoVerse: from the universe to your hands.',
+    '就像宇宙一样，这里还有更多：印章和每周任务、你自己的游览，以及来自 NASA、欧空局和韦布望远镜的最新消息，都在“更多”菜单里。开始探索吧。CosmoVerse：从宇宙到你的手中。',
+    'Y como el universo, hay mucho más: sellos y misiones semanales, tus propios recorridos y las últimas noticias de la NASA, la ESA y el Webb, todo en el menú Más. A explorar. CosmoVerse: del universo a tus manos.',
+    'E, assim como o universo, há muito mais: selos e missões semanais, os seus próprios tours e as últimas notícias da NASA, da ESA e do Webb, tudo no menu Mais. Bora explorar. CosmoVerse: do universo às suas mãos.'),
 };
 // Ask Cosmo: the question, and the answer shown when the AI server is offline (Saturn's sourced narration) · 问答
 // (the second sentence of Saturn's narration, which the Saturn beat doesn't say) · 土星介绍的第二句
@@ -94,16 +97,16 @@ export const DEMO_BIRTH_YEAR = 1998;
 // Steps, same shape as tour.js plus card / piece / chat · 步骤（与游览相同，另加卡片、天体、问答）
 export function demoSteps() {
   const piece = PIECES.find(p => p.id === DEMO_PIECE);
-  const steps = [{ key: 'demo-title', text: DEMO_LINES.title, card: 'title', title: DEMO_UI.title, hold: 800 }];
+  const steps = [{ key: 'demo-title', text: DEMO_LINES.title, card: 'title', title: DEMO_UI.title, hold: 300 }];
   for (const id of DEMO_LEVELS) { const lv = levelById(id); steps.push({ key: 'level-' + id, text: levelSpeech(lv.blurb), go: id, title: lv.names }); }
   steps.push({ key: 'demo-pillars', text: firstNOf(piece.narration, 2), piece: DEMO_PIECE, title: piece.names });   // its first two sentences · 前两句
   // Saturn, picked from the bottom bar's Solar System ▾ list · 从底栏列表选择土星
   for (const id of DEMO_PLANETS) steps.push({ key: 'tour-' + id, text: firstOf(NARRATION[id]), select: id, act: 'nav' });
-  steps.push({ key: 'demo-ask', text: DEMO_LINES.ask, select: 'saturn', chat: DEMO_QA, title: DEMO_UI.askName, hold: 5000 });   // time to read the answer · 留时间阅读回答
+  steps.push({ key: 'demo-ask', text: DEMO_LINES.ask, select: 'saturn', chat: DEMO_QA, title: DEMO_UI.askName, hold: 4000 });   // time to read the answer · 留时间阅读回答
   steps.push({ key: 'demo-harp', text: DEMO_LINES.harp, act: 'harp', title: L('Orbit harp', '轨道竖琴', 'Arpa de órbitas', 'Harpa de órbitas'), hold: 500 });
-  steps.push({ key: 'demo-birthday', text: DEMO_LINES.birthday, act: 'birthday', title: L('Your birthday star', '你的生日星', 'Tu estrella de cumpleaños', 'A estrela do seu aniversário'), hold: 2500 });
-  steps.push({ key: 'demo-merge', text: DEMO_LINES.merge, act: 'merge', title: L('Galaxy collision', '星系碰撞', 'Choque de galaxias', 'Colisão de galáxias'), hold: 5000 });   // the collision plays to the end · 播完碰撞
-  steps.push({ key: 'demo-vr', text: DEMO_LINES.vr, card: 'vr', title: DEMO_CARDS.vr.head, hold: 9000 });   // the clip is 19 s · 片段 19 秒
+  steps.push({ key: 'demo-birthday', text: DEMO_LINES.birthday, act: 'birthday', title: L('Your birthday star', '你的生日星', 'Tu estrella de cumpleaños', 'A estrela do seu aniversário'), hold: 1500 });
+  steps.push({ key: 'demo-merge', text: DEMO_LINES.merge, act: 'merge', title: L('Galaxy collision', '星系碰撞', 'Choque de galaxias', 'Colisão de galáxias'), hold: 3000 });   // the collision plays to the end · 播完碰撞
+  steps.push({ key: 'demo-vr', text: DEMO_LINES.vr, card: 'vr', title: DEMO_CARDS.vr.head, hold: 10500 });   // the clip is 19 s: show it whole · 片段 19 秒
   steps.push({ key: 'demo-end', text: DEMO_LINES.end, card: 'end', title: DEMO_UI.title, hold: 2500 });
   return steps;
 }
