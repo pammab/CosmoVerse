@@ -1175,7 +1175,7 @@ function demoCard(id) {
   const c = id && DEMO_CARDS[id];
   document.body.classList.toggle('demo-card', !!c);
   if (!c) { demoEl.classList.remove('show'); demoEl.hidden = true; return; }
-  demoEl.innerHTML = `<h1>${quad(c.head)}</h1>${c.video ? `<video src="${c.video}" autoplay muted playsinline preload="auto"></video>` : ''}${c.icons ? `<ol>${c.icons.map(([i, t]) => `<li><i>${i}</i><span>${quad(t)}</span></li>`).join('')}</ol>` : ''}${c.lines.map(t => `<p>${quad(t)}</p>`).join('')}`;
+  demoEl.innerHTML = `${c.logo ? `<img class="demologo" src="${c.logo}" alt="CosmoVerse">` : `<h1>${quad(c.head)}</h1>`}${c.video ? `<video src="${c.video}" autoplay muted playsinline preload="auto"></video>` : ''}${c.icons ? `<ol>${c.icons.map(([i, t]) => `<li><i>${i}</i><span>${quad(t)}</span></li>`).join('')}</ol>` : ''}${c.lines.map(t => `<p>${quad(t)}</p>`).join('')}`;
   demoEl.dataset.card = id; demoEl.hidden = false; requestAnimationFrame(() => demoEl.classList.add('show'));
 }
 // Demo actions for the new features; each step clears what the previous one opened · 演示动作；每步清理上一步
@@ -1183,6 +1183,8 @@ let demoBirth = null, demoNavUntil = 0;
 function demoAct(st) {
   if (st.act !== 'harp' && harpOn) setHarp(false);
   if (st.act !== 'merge' && mergeOn) setMerge(false);
+  const menuOpen = $('#moreBtn')?.getAttribute('aria-expanded') === 'true';
+  if (st.act === 'more' ? !menuOpen : menuOpen) $('#moreBtn')?.click();   // ☰ More open only on its step · 只在该步打开“更多”
   if (st.act !== 'birthday' && demoBirth) { bsCard.hidden = true; bsYear = demoBirth.saved; demoBirth = null; }
   if (st.act === 'harp') {
     home(); setHarp(true);

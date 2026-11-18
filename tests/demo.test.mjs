@@ -23,13 +23,13 @@ test('every demo text exists in all four languages', () => {
 
 test('the showcase order: title → ladder → a piece → Saturn from the bar → Ask → harp → birthday → collision → VR clip → closing', () => {
   const s = demoSteps(), k = s.map(x => x.key);
-  assert.equal(s[0].card, 'title'); assert.equal(s.at(-2).card, 'vr'); assert.equal(s.at(-1).card, 'end');
+  assert.equal(s[0].card, 'title'); assert.equal(s.at(-3).card, 'vr'); assert.equal(s.at(-2).act, 'more'); assert.equal(s.at(-1).card, 'end');
   assert.ok(DEMO_CARDS.vr.video && fs.existsSync(new URL('../' + DEMO_CARDS.vr.video, import.meta.url)), 'the VR clip is in the repo');
   assert.ok(s.some(x => x.go === 'universe'));
   assert.ok(s.findIndex(x => x.piece === DEMO_PIECE) > s.findIndex(x => x.go === 'universe'));
   assert.deepEqual(s.filter(x => x.select && !x.chat && !x.what).map(x => x.select), DEMO_PLANETS);
   assert.equal(s.find(x => x.select === 'saturn' && !x.chat).act, 'nav');
-  assert.deepEqual(s.filter(x => x.act && x.act !== 'nav').map(x => x.act), ['harp', 'birthday', 'merge']);
+  assert.deepEqual(s.filter(x => x.act && x.act !== 'nav').map(x => x.act), ['harp', 'birthday', 'merge', 'more']);
   assert.ok(k.indexOf('demo-merge') < k.indexOf('demo-vr'));
   const ask = s.find(x => x.chat); assert.ok(ask && ask.hold >= 4000, 'time to read the answer');
   assert.equal(new Set(k).size, k.length, 'one clip per step');
