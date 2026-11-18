@@ -78,7 +78,7 @@ test('the tour runner plays the demo list, then the tour again', () => {
 
 test('main.js: ?demo=1 starts it, the standalone bundles demo.js', () => {
   const main = fs.readFileSync(new URL('../main.js', import.meta.url), 'utf8');
-  assert.match(main, /demo=1/); assert.match(main, /demoSteps\(\)/);
+  assert.match(main, /demo=1/); assert.match(main, /demoSteps\(vr\)/); assert.match(main, /demo=2/);
   assert.match(fs.readFileSync(new URL('../build-standalone.mjs', import.meta.url), 'utf8'), /'demo'/);
 });
 
