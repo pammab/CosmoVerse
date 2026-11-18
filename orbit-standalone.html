@@ -974,6 +974,7 @@ body.xr-on .metag { display: none; }
 
 .democard .democlick { margin-top: 18px; padding: 10px 18px; border-radius: 999px; border: 1px solid #8bd6ff66; color: #fff !important; font-size: 16px !important; animation: hintpulse 1.6s ease-in-out infinite; }
 @keyframes hintpulse { 50% { box-shadow: 0 0 24px #8bd6ff55; } }
+.democard .demologo { width: min(40vh, 340px); height: auto; border-radius: 24px; box-shadow: 0 0 60px #8bd6ff33; margin-bottom: 6px; }
 
 </style>
 <style>
@@ -8175,12 +8176,11 @@ const DEMO_CARDS = {
   vr: { head: L('In VR, with your hands', '在 VR 中，用你的双手', 'En VR, con tus manos', 'No VR, com as suas mãos'), video: 'media/vr-emulator.mp4',
     lines: [L('Recorded in Meta’s Immersive Web Emulator · Meta Quest 3 with hand tracking · sped up', '录制于 Meta 沉浸式网页模拟器 · Meta Quest 3 手部追踪 · 已加速',
       'Grabado en el Immersive Web Emulator de Meta · Meta Quest 3 con seguimiento de manos · acelerado', 'Gravado no Immersive Web Emulator da Meta · Meta Quest 3 com rastreamento de mãos · acelerado')] },
-  end: { head: L('CosmoVerse', 'CosmoVerse', 'CosmoVerse', 'CosmoVerse'),
-    lines: [L('From the universe to your hands', '从宇宙到你的手中', 'Del universo a tus manos', 'Do universo às suas mãos'),
-      L('There is so much more to explore · ☰ More', '还有更多可以探索 · ☰ 更多', 'Hay mucho más por explorar · ☰ Más', 'Há muito mais para explorar · ☰ Mais'),
-      L('Free · one link · Meta Quest, computer and phone', '免费 · 一个链接 · Meta Quest、电脑和手机', 'Gratis · un enlace · Meta Quest, ordenador y móvil', 'Grátis · um link · Meta Quest, computador e celular'),
-      L('English · 中文 · Español · Português · every fact with its source', 'English · 中文 · Español · Português · 每条事实都有来源', 'English · 中文 · Español · Português · cada dato con su fuente', 'English · 中文 · Español · Português · cada fato com sua fonte'),
-      L('📔 Stamps, collections and weekly missions · ✎ make and share your own tour · 📰 news from NASA, ESA, ESO and Webb', '📔 印章、收藏册和每周任务 · ✎ 制作并分享你自己的游览 · 📰 来自 NASA、欧空局、欧南台和韦布的新闻', '📔 Sellos, colecciones y misiones semanales · ✎ crea y comparte tu propio tour · 📰 noticias de la NASA, la ESA, ESO y Webb', '📔 Selos, coleções e missões semanais · ✎ crie e compartilhe seu próprio tour · 📰 notícias da NASA, ESA, ESO e Webb')] },
+  end: { head: L('CosmoVerse', 'CosmoVerse', 'CosmoVerse', 'CosmoVerse'), logo: 'media/cosmoverse-logo.png',
+    lines: [
+      L('From the universe to your hands', '从宇宙到你的手中', 'Del universo a tus manos', 'Do universo às suas mãos'),
+      L('Everything backed by science, with its sources', '一切都有科学依据，并附上来源', 'Todo respaldado por la ciencia, con sus fuentes', 'Tudo baseado na ciência, com as fontes'),
+      L('There is so much more to explore', '还有更多可以探索', 'Hay mucho más por explorar', 'Há muito mais para explorar')] },
 };
 // Cosmo's demo lines (about the app, no facts) · 演示串场词（只介绍应用）
 const DEMO_LINES = {
@@ -8200,24 +8200,28 @@ const DEMO_LINES = {
     '输入你出生的年份，找到那颗在那时发出光的恒星。',
     'Escribe el año en que naciste y encuentra la estrella cuya luz salió de ella por entonces.',
     'Digite o ano em que você nasceu e encontre a estrela cuja luz saiu dela nessa época.'),
-  merge: L('At the Local Group, clap your hands and watch the Milky Way and Andromeda collide and merge.',
-    '在本星系群，拍拍手，看银河系和仙女座星系相撞并合并。',
-    'En el Grupo Local, aplaude y mira cómo la Vía Láctea y Andrómeda chocan y se fusionan.',
-    'No Grupo Local, bata palmas e veja a Via Láctea e Andrômeda colidirem e se fundirem.'),
+  merge: L('At the Local Group, clap your hands and watch the Milky Way and Andromeda collide and merge. A 2025 study with NASA and ESA telescopes, Hubble and Gaia, gives about a 50% chance of this happening in the next 10 billion years.',
+    '在本星系群，拍拍手，看银河系和仙女座星系相撞并合并。2025 年一项利用 NASA 和欧空局望远镜（哈勃和盖亚）的研究认为，未来 100 亿年内发生这种碰撞的概率约为 50%。',
+    'En el Grupo Local, aplaude y mira cómo la Vía Láctea y Andrómeda chocan y se fusionan. Un estudio de 2025 con telescopios de la NASA y la ESA, Hubble y Gaia, da cerca de un 50 % de probabilidad de que ocurra en los próximos 10 000 millones de años.',
+    'No Grupo Local, bata palmas e veja a Via Láctea e Andrômeda colidirem e se fundirem. Um estudo de 2025 com telescópios da NASA e da ESA, o Hubble e o Gaia, dá cerca de 50% de chance de isso acontecer nos próximos 10 bilhões de anos.'),
   vr: L('Everything works with your hands, on Meta Quest, with a webcam, or on a phone. In VR, point to play the harp, and clap to merge the galaxies.',
     '一切都可以用双手完成：Meta Quest、摄像头或手机都行。在 VR 中，用手指弹奏竖琴，拍手让星系合并。',
     'Todo funciona con las manos: en Meta Quest, con la cámara web o en el móvil. En VR, apunta para tocar el arpa y aplaude para fusionar las galaxias.',
     'Tudo funciona com as mãos: no Meta Quest, com a webcam ou no celular. No VR, aponte para tocar a harpa e bata palmas para fundir as galáxias.'),
-  ask: L('And you can ask me anything about what you see.', '你还可以问我关于眼前任何东西的问题。',
-    'Y puedes preguntarme cualquier cosa sobre lo que ves.', 'E você pode me perguntar qualquer coisa sobre o que está vendo.'),
+  ask: L('And you can ask me about anything you see, and I will explain.', '你还可以问我眼前看到的任何东西，我来为你讲解。',
+    'Y puedes preguntarme sobre cualquier cosa que veas, y te lo explicaré.', 'E você pode me perguntar sobre qualquer coisa que vê, e eu explico.'),
   hands: L('Everything works with your hands: pinch to zoom, point to open, a fist to come back. On a computer, on a phone, and in VR.',
     '一切都可以用双手完成：捏合缩放，指向打开，握拳返回。电脑、手机和 VR 都可以。',
     'Todo funciona con las manos: pellizca para hacer zoom, apunta para abrir y cierra el puño para volver. En el ordenador, en el móvil y en VR.',
     'Tudo funciona com as mãos: pinça para dar zoom, apontar para abrir, punho para voltar. No computador, no celular e no VR.'),
-  end: L('And just like the universe, there is so much more: stamps and weekly missions, your own tours, and the latest news from NASA, ESA and Webb, all in the More menu. Get exploring. CosmoVerse: from the universe to your hands.',
-    '就像宇宙一样，这里还有更多：印章和每周任务、你自己的游览，以及来自 NASA、欧空局和韦布望远镜的最新消息，都在“更多”菜单里。开始探索吧。CosmoVerse：从宇宙到你的手中。',
-    'Y como el universo, hay mucho más: sellos y misiones semanales, tus propios recorridos y las últimas noticias de la NASA, la ESA y el Webb, todo en el menú Más. A explorar. CosmoVerse: del universo a tus manos.',
-    'E, assim como o universo, há muito mais: selos e missões semanais, os seus próprios tours e as últimas notícias da NASA, da ESA e do Webb, tudo no menu Mais. Bora explorar. CosmoVerse: do universo às suas mãos.'),
+  more: L('And just like the universe, there is so much more. Explore: build your own planet, make your own tour, compare sizes and orbits. Learn: collect stamps on weekly missions, follow the sky calendar and the latest space news.',
+    '就像宇宙一样，这里还有更多。探索：打造你自己的行星、制作你自己的游览、比较大小和轨道。学习：在每周任务中收集印章，关注星空日历和最新的太空新闻。',
+    'Y como el universo, hay mucho más. Explora: crea tu propio planeta, haz tu propio recorrido, compara tamaños y órbitas. Aprende: reúne sellos en misiones semanales, sigue el calendario del cielo y las últimas noticias del espacio.',
+    'E, assim como o universo, há muito mais. Explore: crie o seu próprio planeta, faça o seu próprio tour, compare tamanhos e órbitas. Aprenda: junte selos em missões semanais, acompanhe o calendário do céu e as últimas notícias do espaço.'),
+  end: L('CosmoVerse. A planetarium you hold in your hands. Everything backed by science. There is so much more to explore.',
+    'CosmoVerse。握在手中的天文馆。一切都有科学依据。还有更多等你探索。',
+    'CosmoVerse. Un planetario en tus manos. Todo respaldado por la ciencia. Hay mucho más por explorar.',
+    'CosmoVerse. Um planetário nas suas mãos. Tudo baseado na ciência. Há muito mais para explorar.'),
 };
 // Ask Cosmo: the question, and the answer shown when the AI server is offline (Saturn's sourced narration) · 问答
 // (the second sentence of Saturn's narration, which the Saturn beat doesn't say) · 土星介绍的第二句
@@ -8242,8 +8246,9 @@ function demoSteps() {
   steps.push({ key: 'demo-ask', text: DEMO_LINES.ask, select: 'saturn', chat: DEMO_QA, title: DEMO_UI.askName, hold: 4000 });   // time to read the answer · 留时间阅读回答
   steps.push({ key: 'demo-harp', text: DEMO_LINES.harp, act: 'harp', title: L('Orbit harp', '轨道竖琴', 'Arpa de órbitas', 'Harpa de órbitas'), hold: 500 });
   steps.push({ key: 'demo-birthday', text: DEMO_LINES.birthday, act: 'birthday', title: L('Your birthday star', '你的生日星', 'Tu estrella de cumpleaños', 'A estrela do seu aniversário'), hold: 1500 });
-  steps.push({ key: 'demo-merge', text: DEMO_LINES.merge, act: 'merge', title: L('Galaxy collision', '星系碰撞', 'Choque de galaxias', 'Colisão de galáxias'), hold: 3000 });   // the collision plays to the end · 播完碰撞
+  steps.push({ key: 'demo-merge', text: DEMO_LINES.merge, act: 'merge', title: L('Galaxy collision', '星系碰撞', 'Choque de galaxias', 'Colisão de galáxias'), hold: 600 });   // the collision plays to the end (its line is longer now) · 播完碰撞
   steps.push({ key: 'demo-vr', text: DEMO_LINES.vr, card: 'vr', title: DEMO_CARDS.vr.head, hold: 10500 });   // the clip is 19 s: show it whole · 片段 19 秒
+  steps.push({ key: 'demo-more', text: DEMO_LINES.more, act: 'more', title: L('More', '更多', 'Más', 'Mais'), hold: 600 });   // ☰ More opens: Explore and Learn · 打开“更多”
   steps.push({ key: 'demo-end', text: DEMO_LINES.end, card: 'end', title: DEMO_UI.title, hold: 2500 });
   return steps;
 }
@@ -9532,7 +9537,7 @@ function demoCard(id) {
   const c = id && DEMO_CARDS[id];
   document.body.classList.toggle('demo-card', !!c);
   if (!c) { demoEl.classList.remove('show'); demoEl.hidden = true; return; }
-  demoEl.innerHTML = `<h1>${quad(c.head)}</h1>${c.video ? `<video src="${c.video}" autoplay muted playsinline preload="auto"></video>` : ''}${c.icons ? `<ol>${c.icons.map(([i, t]) => `<li><i>${i}</i><span>${quad(t)}</span></li>`).join('')}</ol>` : ''}${c.lines.map(t => `<p>${quad(t)}</p>`).join('')}`;
+  demoEl.innerHTML = `${c.logo ? `<img class="demologo" src="${c.logo}" alt="CosmoVerse">` : `<h1>${quad(c.head)}</h1>`}${c.video ? `<video src="${c.video}" autoplay muted playsinline preload="auto"></video>` : ''}${c.icons ? `<ol>${c.icons.map(([i, t]) => `<li><i>${i}</i><span>${quad(t)}</span></li>`).join('')}</ol>` : ''}${c.lines.map(t => `<p>${quad(t)}</p>`).join('')}`;
   demoEl.dataset.card = id; demoEl.hidden = false; requestAnimationFrame(() => demoEl.classList.add('show'));
 }
 // Demo actions for the new features; each step clears what the previous one opened · 演示动作；每步清理上一步
@@ -9540,6 +9545,8 @@ let demoBirth = null, demoNavUntil = 0;
 function demoAct(st) {
   if (st.act !== 'harp' && harpOn) setHarp(false);
   if (st.act !== 'merge' && mergeOn) setMerge(false);
+  const menuOpen = $('#moreBtn')?.getAttribute('aria-expanded') === 'true';
+  if (st.act === 'more' ? !menuOpen : menuOpen) $('#moreBtn')?.click();   // ☰ More open only on its step · 只在该步打开“更多”
   if (st.act !== 'birthday' && demoBirth) { bsCard.hidden = true; bsYear = demoBirth.saved; demoBirth = null; }
   if (st.act === 'harp') {
     home(); setHarp(true);
