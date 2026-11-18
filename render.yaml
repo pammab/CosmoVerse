@@ -1,0 +1,21 @@
+# Render Blueprint for CosmoVerse: one free Node web service running server.mjs (the app + Cosmo's AI + the voice).
+# Spec: https://render.com/docs/blueprint-spec
+# Secrets are NOT in this file: `sync: false` makes Render ask for each value once, in the dashboard.
+services:
+  - type: web
+    name: cosmoverse
+    runtime: node
+    plan: free                  # without this line Render picks a PAID instance
+    region: oregon
+    branch: main                # deploy main
+    buildCommand: npm install      # installs nothing: no dependencies (plain ES modules)
+    startCommand: npm start        # node server.mjs, listens on $PORT
+    healthCheckPath: /
+    autoDeployTrigger: commit
+    envVars:
+      - key: TRUST_PROXY        # 1 proxy hop: rate limits per visitor (X-Forwarded-For entry the proxy appends), not per proxy
+        value: "1"
+      - key: ANTHROPIC_API_KEY  # Cosmo's AI chat
+        sync: false
+      - key: ELEVENLABS_API_KEY # Cosmo's voice
+        sync: false

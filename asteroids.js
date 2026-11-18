@@ -509,10 +509,84 @@
     "The local orbital catalog could not be read.":"No se pudo leer el catálogo orbital local.","No matching asteroid found in this filtered catalog.":"No se encontró ningún asteroide coincidente en este catálogo filtrado.",
     "matching result(s). Select one to plot its orbit.":" resultado(s). Selecciona uno para dibujar su órbita."
   };
+  // Português (Brasil) · 葡萄牙语
+  const P = {
+    "COSMOVERSE · SENTRY DATA ANALYSIS":"COSMOVERSE · ANÁLISE DE DADOS DE RISCO","Asteroid Impact Risk Analyzer":"Analisador de risco de impacto de asteroides",
+    "↻ Recalculate":"↻ Recalcular","✕ Close":"✕ Fechar",
+    "Impact-monitoring records":"Registros de monitoramento de impactos","rows in uploaded dataset":"linhas no conjunto de dados enviado",
+    "Each row is one possible impact date/solution in the saved Sentry export, not necessarily a different asteroid.":"Cada linha é uma possível data/solução de impacto no arquivo Sentry salvo, não necessariamente um asteroide diferente.","Highest listed probability":"Maior probabilidade listada",
+    "The largest probability in any single row. It is not the combined chance across all rows.":"A maior probabilidade de uma única linha. Não é a chance somada de todas as linhas.","Impact energy range":"Faixa de energia de impacto",
+    "megatonnes (Mt)":"megatons (Mt)","Estimated energy if an impact occurred; 1 Mt is equivalent to one million tons of TNT.":"Energia estimada se houvesse um impacto; 1 Mt equivale a um milhão de toneladas de TNT.",
+    "Torino Scale":"Escala de Turim","all records in this file":"todos os registros deste arquivo",
+    "A public 0–10 hazard communication scale. 0 means no unusual level of concern; higher values indicate greater concern.":"Escala pública de 0 a 10 para comunicar o perigo. 0 significa nenhum nível incomum de preocupação; valores maiores indicam mais preocupação.","Highest individual impact probabilities":"Maiores probabilidades individuais de impacto",
+    "Top 10 records ranked by the probability listed for each date. Probabilities are not added together.":"Os 10 principais registros, ordenados pela probabilidade de cada data. As probabilidades não são somadas.","Probability":"Probabilidade",
+    "means the estimated chance for the specific impact scenario shown in one row. A value such as 0.01% is a one-in-10,000 chance for that scenario; it is not a prediction that an impact will happen.":"é a chance estimada do cenário de impacto específico de uma linha. Um valor como 0,01% é uma chance em 10.000 para aquele cenário; não é uma previsão de que o impacto vai acontecer.","Dataset overview":"Visão geral dos dados",
+    "Quick definitions:":"Definições rápidas:","median":"mediana",
+    "is the middle value after sorting;":"é o valor do meio depois de ordenar;","Palermo Scale":"Escala de Palermo",
+    "compares a scenario's risk with the background risk from objects of similar size.":"compara o risco de um cenário com o risco de fundo de objetos de tamanho parecido.","The uploaded file does not include an asteroid name or usable Earth-distance / impact-width values. Those fields are intentionally shown as unavailable. Palermo values are logarithmic comparisons with background risk; Torino values are a separate 0–10 public communication scale.":"O arquivo enviado não traz o nome do asteroide nem valores utilizáveis de distância da Terra / largura do impacto. Esses campos aparecem de propósito como indisponíveis. Os valores de Palermo são comparações logarítmicas com o risco de fundo; os de Turim são uma escala pública separada, de 0 a 10.",
+    "Date: earliest first":"Data: mais antiga primeiro","Probability: highest first":"Probabilidade: maior primeiro",
+    "Palermo: highest first":"Palermo: maior primeiro","Search date…":"Buscar data…",
+    "Search impact date":"Buscar data de impacto","Loading saved Sentry dataset…":"Carregando o conjunto de dados Sentry salvo…",
+    "How to read the columns:":"Como ler as colunas:","Potential impact date":"Data de possível impacto",
+    "= the modeled date of a possible encounter;":"= data modelada de um possível encontro;","= chance for that row's scenario;":"= chance do cenário daquela linha;",
+    "Energy (Mt)":"Energia (Mt)","= estimated impact energy;":"= energia de impacto estimada;",
+    "Palermo":"Palermo","= technical comparison against background impact risk (negative values are below background);":"= comparação técnica com o risco de impacto de fundo (valores negativos ficam abaixo do fundo);",
+    "Torino":"Turim","= 0–10 public hazard scale. Click a row to see more fields.":"= escala pública de perigo de 0 a 10. Clique numa linha para ver mais campos.",
+    "Source: user-provided “Sentry Earth Impact Monitoring” CSV. Date values retain the source's yyyy-mm-dd.dd format.":"Fonte: CSV “Sentry Earth Impact Monitoring” fornecido pelo usuário. As datas mantêm o formato original yyyy-mm-dd.dd.","Selected record":"Registro selecionado",
+    "Select a row to inspect its values.":"Selecione uma linha para ver os valores.","Scientific note:":"Nota científica:",
+    " This is an analysis of a saved Sentry monitoring export, not a live risk assessment. Each probability belongs to an individual listed date/solution. Do not sum the probabilities: the records may be related solutions for the same object. A Torino Scale of 0 means the listed scenario is below the scale's threshold for concern; it does not mean the object has zero probability. The CSV does not identify the asteroid, so this dashboard does not assign it a name.":" Esta é uma análise de uma exportação salva do monitoramento Sentry, não uma avaliação de risco em tempo real. Cada probabilidade pertence a uma data/solução listada individualmente. Não some as probabilidades: os registros podem ser soluções relacionadas do mesmo objeto. Nível 0 na Escala de Turim significa que o cenário está abaixo do limite de preocupação da escala; não quer dizer que a probabilidade do objeto seja zero. O CSV não identifica o asteroide, então este painel não dá um nome a ele.","No matching dates.":"Nenhuma data encontrada.",
+    "Records with probability values":"Registros com valores de probabilidade","How many rows contain a usable probability number.":"Quantas linhas têm um valor de probabilidade utilizável.",
+    "Median individual probability":"Mediana da probabilidade individual","The middle probability when all row values are sorted from low to high.":"A probabilidade do meio quando todos os valores são ordenados do menor para o maior.",
+    "Highest Palermo Scale value":"Maior valor na Escala de Palermo","The row with the greatest relative risk compared with background impact risk.":"A linha com o maior risco relativo em comparação com o risco de impacto de fundo.",
+    "Lowest Palermo Scale value":"Menor valor na Escala de Palermo","The row furthest below background impact risk on the Palermo scale.":"A linha mais abaixo do risco de impacto de fundo na Escala de Palermo.",
+    "Records with Torino Scale 0":"Registros com nível 0 na Escala de Turim","Rows assigned the lowest Torino category: no unusual level of concern.":"Linhas na categoria mais baixa de Turim: nenhum nível incomum de preocupação.",
+    "Impact distance / width":"Distância / largura do impacto","How close the modeled path passes Earth and how wide the possible impact corridor is. Not present in this CSV.":"Quão perto da Terra passa a trajetória modelada e qual a largura do possível corredor de impacto. Não consta neste CSV.",
+    "Not supplied":"Não fornecido","Not available":"Indisponível",
+    "Loaded ":"Carregados "," records from the local CSV snapshot. No internet connection or NASA API key is needed.":" registros da cópia local do CSV. Não é preciso internet nem chave da API da NASA.",
+    "Individual impact probability":"Probabilidade individual de impacto","Chance for this one modeled date/solution only; do not add probabilities from different rows.":"Chance apenas desta data/solução modelada; não some probabilidades de linhas diferentes.",
+    "Impact energy":"Energia de impacto","Estimated energy released in a hypothetical impact. Mt = million tons of TNT equivalent.":"Energia estimada liberada num impacto hipotético. Mt = milhões de toneladas equivalentes de TNT.",
+    "A logarithmic technical scale comparing this scenario with the background impact risk. Negative = below background; positive = above background.":"Escala técnica logarítmica que compara este cenário com o risco de impacto de fundo. Negativo = abaixo do fundo; positivo = acima do fundo.","A 0–10 public communication scale. 0 means no unusual concern; higher numbers signal increasing concern.":"Escala pública de comunicação de 0 a 10. 0 significa nenhuma preocupação incomum; números maiores indicam preocupação crescente.",
+    "A statistical uncertainty field in the source export. It is not a probability or a stand-alone danger score.":"Campo de incerteza estatística do arquivo original. Não é uma probabilidade nem uma nota de perigo independente.","Distance expressed in multiples of Earth's radius (about 6,371 km). Missing means the CSV did not provide it.":"Distância em múltiplos do raio da Terra (cerca de 6.371 km). Se faltar, o CSV não a forneceu.",
+    "Width of the modeled region where an impact solution could pass; not the asteroid's physical diameter.":"Largura da região modelada por onde uma solução de impacto poderia passar; não é o diâmetro físico do asteroide.","Specialized uncertainty descriptors from the source dataset (impact solution / line of variations). Interpret with the original Sentry documentation, not as direct risk ratings.":"Descritores especializados de incerteza do conjunto original (solução de impacto / linha de variações). Interprete com a documentação original do Sentry, não como notas diretas de risco.",
+    "These values are reproduced from the selected row in your uploaded CSV. Missing fields are not estimated or filled in.":"Estes valores vêm da linha selecionada do CSV que você enviou. Campos ausentes não são estimados nem preenchidos.","Selected impact-monitoring record":"Registro de monitoramento de impacto selecionado",
+    "Impact corridor width":"Largura do corredor de impacto","Sigma VI":"Sigma VI (indicador de incerteza)",
+    "Distance (Earth radii)":"Distância (raios terrestres)","Sigma Impact / Sigma LOV":"Sigma Impact / Sigma LOV (indicadores de incerteza)"
+  };
+  const orbitP = {
+    "NEO candidates":"candidatos a NEO","Search asteroid by name or number":"Buscar asteroide por nome ou número",
+    "Search":"Buscar","e.g. Eros or 433":"Por exemplo, Eros ou 433",
+    "Showing the closest matches. Select a result to plot its orbit.":"Mostrando os resultados mais próximos. Selecione um para desenhar a órbita.","Time from orbital epoch":"Tempo desde a época orbital",
+    "days":"dias","−10 years":"−10 anos",
+    "+10 years":"+10 anos","▶ Animate orbit":"▶ Animar órbita",
+    "Ⅱ Pause animation":"Ⅱ Pausar animação","HELICENTRIC ORBIT · TOP VIEW":"ÓRBITA HELIOCÊNTRICA · VISTA DE CIMA",
+    "Scale: AU":"Escala: UA","How to read this map:":"Como ler este mapa:",
+    "The Sun is at the center. The blue dashed circle is Earth's 1 AU orbit. The orange curve is the selected asteroid's calculated orbit; the orange dot is its position at the chosen date.":"O Sol está no centro. O círculo azul tracejado é a órbita da Terra, a 1 UA. A curva laranja é a órbita calculada do asteroide selecionado; o ponto laranja é a posição dele na data escolhida.","AU":"UA",
+    "(astronomical unit) is the average Earth–Sun distance, about 150 million km. This is a top-down 2D view, so inclination above/below Earth's orbital plane is not visible here.":"(unidade astronômica) é a distância média entre a Terra e o Sol, cerca de 150 milhões de km. É uma vista 2D de cima, então a inclinação acima/abaixo do plano da órbita da Terra não aparece aqui.","Sun":"Sol",
+    "Earth's orbit (1 AU)":"Órbita da Terra (1 UA)","Selected asteroid":"Asteroide selecionado",
+    "Asteroid orbit":"Órbita do asteroide","Choose an asteroid to inspect its orbital elements.":"Escolha um asteroide para ver seus elementos orbitais.",
+    "Move the slider to calculate the asteroid's approximate position before or after the catalog reference date. The animation advances simulated days, not real-time days.":"Mova o controle deslizante para calcular a posição aproximada do asteroide antes ou depois da data de referência do catálogo. A animação avança dias simulados, não dias reais.","Why are these called NEO candidates?":"Por que eles são chamados de candidatos a NEO?",
+    "This local subset was selected using perihelion distance q < 1.3 AU. That means the orbit comes within 1.3 times Earth's average distance from the Sun at its closest point. It is a catalog filter, not proof of an Earth crossing or collision risk.":"Este subconjunto local foi selecionado pela distância do periélio q < 1,3 UA. Ou seja, no ponto mais próximo do Sol, a órbita fica a menos de 1,3 vez a distância média da Terra ao Sol. É um filtro do catálogo, não uma prova de que cruza a órbita da Terra nem de risco de colisão.","COSMOVERSE · ASTORB CATALOG":"COSMOVERSE · CATÁLOGO ASTORB",
+    "The plotted path is calculated from the catalog's osculating Keplerian elements at epoch 2026-09-17. It is a two-body approximation, not an N-body ephemeris; it does not include planetary perturbations or predict an Earth impact. The catalog's perihelion-distance filter q < 1.3 AU is used to select near-Earth-object candidates. It does not mean these objects are on a collision course.":"A trajetória é calculada a partir dos elementos keplerianos osculadores do catálogo na época 2026-09-17. É uma aproximação de dois corpos, não uma efeméride de N corpos; não inclui perturbações dos planetas nem prevê impactos na Terra. O filtro de distância do periélio q < 1,3 UA seleciona candidatos a objetos próximos da Terra. Isso não significa que esses objetos estejam em rota de colisão.","Data: Lowell Observatory's astorb.dat. Catalog attribution: Lowell Observatory endowment and NASA PDART grant NNX16AG52G. ":"Dados: astorb.dat do Lowell Observatory. Atribuição do catálogo: Lowell Observatory endowment e financiamento NASA PDART NNX16AG52G. ",
+    "Model limitations:":"Limitações do modelo:","About the astorb database":"Sobre o banco de dados astorb",
+    "Perihelion · q":"Periélio · q","Closest point to the Sun along this orbit.":"Ponto desta órbita mais próximo do Sol.",
+    "Aphelion · Q":"Afélio · Q","Farthest point from the Sun along this orbit.":"Ponto desta órbita mais distante do Sol.",
+    "Semi-major axis · a":"Semieixo maior · a","Half the longest width of the ellipse; sets the orbit's overall size.":"Metade da maior largura da elipse; define o tamanho geral da órbita.",
+    "Eccentricity · e":"Excentricidade · e","How stretched the orbit is: 0 is a circle; closer to 1 is more elongated.":"O quanto a órbita é alongada: 0 é um círculo; quanto mais perto de 1, mais alongada.",
+    "Inclination · i":"Inclinação · i","Tilt of the asteroid's orbital plane relative to Earth's orbital plane.":"Inclinação do plano orbital do asteroide em relação ao plano orbital da Terra.",
+    "Orbital period · approx.":"Período orbital · aprox.","Estimated time for one trip around the Sun, using Kepler's simplified relation.":"Tempo estimado de uma volta ao redor do Sol, pela relação simplificada de Kepler.",
+    "Absolute magnitude · H":"Magnitude absoluta · H","A measure of intrinsic brightness; lower H usually means a brighter, often larger object, but size also depends on reflectivity.":"Medida do brilho intrínseco; um H menor costuma indicar um objeto mais brilhante e muitas vezes maior, mas o tamanho também depende da refletividade.",
+    "Mean anomaly · M":"Anomalia média · M","A time-like angle that tells where the asteroid is in its orbit relative to perihelion at the catalog epoch.":"Ângulo ligado ao tempo que indica onde o asteroide está na órbita em relação ao periélio, na época do catálogo.",
+    "Argument of perihelion · ω":"Argumento do periélio · ω","Orientation angle locating the closest-to-Sun point within the orbital plane.":"Ângulo de orientação que localiza o ponto mais próximo do Sol dentro do plano orbital.",
+    "Ascending node · Ω":"Longitude do nodo ascendente · Ω","Angle locating where the orbit crosses Earth's reference plane from south to north.":"Ângulo que indica onde a órbita cruza o plano de referência da Terra de sul para norte.",
+    "The catalog supplies orbital elements, not a photographed asteroid shape. The point shown is its calculated heliocentric position in a simplified Keplerian model.":"O catálogo fornece elementos orbitais, não uma foto nem a forma real do asteroide. O ponto mostrado é a posição heliocêntrica calculada num modelo kepleriano simplificado.","Unnamed asteroid":"Asteroide sem nome",
+    "Minor-planet number ":"Número de planeta menor ","Provisional designation":"Designação provisória",
+    "The local orbital catalog could not be read.":"Não foi possível ler o catálogo orbital local.","No matching asteroid found in this filtered catalog.":"Nenhum asteroide encontrado neste catálogo filtrado.",
+    "matching result(s). Select one to plot its orbit.":" resultado(s). Selecione um para desenhar a órbita."
+  };
   const roots = [document.getElementById('asteroidApp'), document.querySelector('.orbit-explorer')].filter(Boolean);
   const originalText = new WeakMap(), originalAttrs = new WeakMap();
   const lang = () => document.documentElement.dataset.lang || 'en';
-  const dict = () => lang()==='zh' ? {...Z,...orbitZ} : lang()==='es' ? {...E,...orbitE} : {};
+  const dict = () => lang()==='zh' ? {...Z,...orbitZ} : lang()==='es' ? {...E,...orbitE} : lang()==='pt' ? {...P,...orbitP} : {};
   function translateText(node) {
     if (!originalText.has(node)) originalText.set(node,node.nodeValue);
     const source=originalText.get(node), d=dict();
@@ -534,6 +608,12 @@
       core=core.replace(/^(\d+) matching result\(s\)\. Select one to plot its orbit\.$/, '$1 resultado(s). Selecciona uno para dibujar su órbita.');
       core=core.replace(/^(\+\d+|\-\d+) days · (.+)$/, '$1 días · $2');
       core=core.replace(/^(\d+) days · (.+)$/, '$1 días · $2');
+    } else if (lang()==='pt') {
+      core=core.replace(/^Epoch: /, 'Época: ');
+      core=core.replace(/^Loaded (\d+) records from the local CSV snapshot\. No internet connection or NASA API key is needed\.$/, 'Carregados $1 registros da cópia local do CSV. Não é preciso internet nem chave da API da NASA.');
+      core=core.replace(/^(\d+) matching result\(s\)\. Select one to plot its orbit\.$/, '$1 resultado(s). Selecione um para desenhar a órbita.');
+      core=core.replace(/^(\+\d+|\-\d+) days · (.+)$/, '$1 dias · $2');
+      core=core.replace(/^(\d+) days · (.+)$/, '$1 dias · $2');
     }
     if (lang()==='zh') {
       core=core.replace(/^Minor-planet number (.+) · orbital epoch (.+)$/, '小行星编号 $1 · 轨道历元 $2');
@@ -547,6 +627,13 @@
       core=core.replace(/^(\d+(?:\.\d+)?) years$/, '$1 años');
       core=core.replace(/^(\d+(?:\.\d+)?) AU$/, '$1 AU');
       core=core.replace(/^q (\d+(?:\.\d+)?) AU$/, 'Perihelio q: $1 AU');
+    } else if (lang()==='pt') {
+      const comma=x=>x.replace('.',',');
+      core=core.replace(/^Minor-planet number (.+) · orbital epoch (.+)$/, 'Número de planeta menor $1 · época orbital $2');
+      core=core.replace(/^Provisional designation · orbital epoch (.+)$/, 'Designação provisória · época orbital $1');
+      core=core.replace(/^(\d+(?:\.\d+)?) years$/, (_,n)=>comma(n)+' anos');
+      core=core.replace(/^(\d+(?:\.\d+)?) AU$/, (_,n)=>comma(n)+' UA');
+      core=core.replace(/^q (\d+(?:\.\d+)?) AU$/, (_,n)=>'Periélio q: '+comma(n)+' UA');
     }
     result=lead+core+tail;
     if (node.nodeValue!==result) node.nodeValue=result;
