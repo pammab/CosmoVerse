@@ -21,23 +21,24 @@ test('every demo text exists in all four languages', () => {
   for (const s of demoSteps()) assert.ok(full(s.text), s.key);
 });
 
-test('the showcase order: title card → ladder → a piece → planets → Ask Cosmo → hands → closing card', () => {
-  const s = demoSteps();
-  assert.equal(s[0].card, 'title'); assert.equal(s.at(-2).card, 'hands'); assert.equal(s.at(-1).card, 'end');
+test('the showcase order: title → ladder → a piece → Saturn from the bar → Ask → harp → birthday → collision → VR clip → closing', () => {
+  const s = demoSteps(), k = s.map(x => x.key);
+  assert.equal(s[0].card, 'title'); assert.equal(s.at(-2).card, 'vr'); assert.equal(s.at(-1).card, 'end');
+  assert.ok(DEMO_CARDS.vr.video && fs.existsSync(new URL('../' + DEMO_CARDS.vr.video, import.meta.url)), 'the VR clip is in the repo');
   assert.ok(s.some(x => x.go === 'universe'));
   assert.ok(s.findIndex(x => x.piece === DEMO_PIECE) > s.findIndex(x => x.go === 'universe'));
   assert.deepEqual(s.filter(x => x.select && !x.chat && !x.what).map(x => x.select), DEMO_PLANETS);
-  // demo-guide-2: a "What is this?" stop on Mars, before the Earth · 火星上的“这是什么？”，在地球之前
-  const w = s.findIndex(x => x.what === 'spot-olympus-mons'); assert.ok(w > s.findIndex(x => x.select === 'mars') && w < s.findIndex(x => x.select === 'earth'));
+  assert.equal(s.find(x => x.select === 'saturn' && !x.chat).act, 'nav');
+  assert.deepEqual(s.filter(x => x.act && x.act !== 'nav').map(x => x.act), ['harp', 'birthday', 'merge']);
+  assert.ok(k.indexOf('demo-merge') < k.indexOf('demo-vr'));
   const ask = s.find(x => x.chat); assert.ok(ask && ask.hold >= 5000, 'time to read the answer');
-  const keys = s.map(x => x.key); assert.equal(new Set(keys).size, keys.length, 'one clip per step');
+  assert.equal(new Set(k).size, k.length, 'one clip per step');
 });
 
 test('facts only come from sourced texts: planet narration, level blurbs, piece narration', () => {
   const piece = PIECES.find(p => p.id === DEMO_PIECE);
   const s = demoSteps();
   for (const l of L4) assert.ok(piece.narration[l].startsWith(s.find(x => x.piece).text[l]), 'piece ' + l);
-  const om = LANDMARKS.mars.find(l => l.id === 'olympus-mons'); for (const l of L4) assert.equal(s.find(x => x.what).text[l], om.text[l], 'the What-is-this line is the sourced landmark text');
   for (const x of s.filter(x => x.select && !x.chat && !x.what)) for (const [i, l] of L4.entries()) assert.ok(NARRATION[x.select][i].startsWith(x.text[l]), x.key + l);
   for (const [i, l] of L4.entries()) { assert.ok(DEMO_QA.a[l].length > 10 && NARRATION.saturn[i].includes(DEMO_QA.a[l]), 'the offline answer is a sourced Saturn sentence');
     assert.ok(!s.find(x => x.select === 'saturn' && !x.chat).text[l].includes(DEMO_QA.a[l]), 'and not the one the Saturn beat already said'); }
@@ -52,7 +53,7 @@ test('firstN keeps whole sentences (also Chinese) and never adds words', () => {
 
 test('lasts under 3 minutes when read without voice, plus flights', () => {
   const ms = demoSteps().reduce((t, x) => t + readMs(x.text.en) + 3000 + (x.hold ?? 900), 0);
-  assert.ok(ms < 150000, `${Math.round(ms / 1000)} s`);
+  assert.ok(ms < 150000, `${Math.round(ms / 1000)} s`);   // ≤ 2:30, 30 s under the limit
 });
 
 test('demo clips can be voiced on the server and by make-voice; clip keys are unique', () => {

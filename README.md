@@ -34,6 +34,12 @@ powered by Claude, anything about what you're looking at. Switch the whole inter
 
 - **Hand sensitivity slider (1–5)** under the camera preview. Higher means smaller hand movements move the cursor further and react faster; lower is calmer and steadier. The setting is remembered on that device.
 - **Steadier tracking:** fingers are read from 3D joint angles, so a tilted hand still works. A gesture must win a short vote over recent frames, so it doesn't flicker. The cursor uses a One-Euro filter: steady when you hold still, quick when you move.
+- **Play with the universe** (☰ More menu on desktop, the "Go to" menu in VR)
+  - 🎂 *Birthday star*: enter your birth year to find the star whose light reaching Earth tonight left it around then (36 stars, 4–129 light-years, NASA/ESA/ESO sources). The year stays on your device.
+  - 🎵 *Orbit harp*: sweep the mouse, your hand or a fingertip across the orbits to pluck them; each note comes from the planet's year (NASA). "Jupiter's moons" plays the 1:2:4 Io–Europa–Ganymede rhythm.
+  - 👏 *Galaxy collision*: at the Local Group, clap your hands in VR (or press Start, or pinch on the webcam) to watch the Milky Way and Andromeda merge, following NASA's 2012 Hubble scenario (a simple illustration; a 2025 Hubble + Gaia study gives about a 50-50 chance).
+- **🧭 Universe → Me / Me → Universe**: fly from the observable universe down every level to Earth, turned to your part of the world (location rounded to ~2 km, kept on the device; a typed city is looked up on OpenStreetMap), and back out. Same in VR, on a computer and on a phone.
+- **Bottom bar of levels** (largest to smallest; Solar System ▾ opens the Sun and planets) and a **Narration on/off** switch (web and VR) that leaves Ask Cosmo's voice on.
 - **Ask Cosmo (AI + voice)**
   - Type, or press 🎙 and speak. Answers can be read aloud (🔊).
   - Voice and text navigation work without the AI: "Go to Mars", "去火星", "Compare sizes", "Back".
@@ -51,7 +57,7 @@ powered by Claude, anything about what you're looking at. Switch the whole inter
   **Immersive Web Emulator** browser extension.
 
 Files: `xr.js` (VR session, dolly, hands, panel) and `xr-hands.js` (maps the Quest's 25 hand joints to the
-21 MediaPipe landmarks, so `classify()` in `gestures.js` works unchanged). Tests: `node --test tests/xr-hands.test.mjs`.
+21 MediaPipe landmarks, so `classify()` in `gestures.js` works unchanged; it also detects a two-palm clap). Tests: `node --test tests/xr-hands.test.mjs`.
 
 ## Project structure
 
@@ -72,6 +78,10 @@ chat.js               Ask Cosmo chat panel and voice commands
 main.js               Scene, camera, views, mouse and gesture controls
 xr.js                 VR mode: WebXR session, hands, floating info panel
 xr-hands.js           Quest hand joints → the same gestures as the webcam
+birthday.js           🎂 Birthday star: the star list with sources and the year → star match
+harp.js               🎵 Orbit harp: notes from the planets' years and the plucked-string sound
+merger.js             👏 Galaxy collision: the Milky Way–Andromeda simulation and its texts
+me.js                 🧭 Universe → Me: rounding the place, its names, turning the globe to face you
 api/chat.js           AI endpoint on Vercel (prompt, limits, Claude API call)
 server.mjs            Local server: the app plus the AI chat on http://localhost:8000
 *.jpg, *.png          Planet surface maps

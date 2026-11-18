@@ -17,7 +17,7 @@ test('option A groups: every element exists in index.html and none is lost', () 
   for (const id of ids) assert.match(html, new RegExp(`id="${id}"`), id);
   assert.equal(new Set(ids).size, ids.length, 'no element in two groups');
   assert.deepEqual(MENU_GROUPS.map(g => g.key), ['settings', 'explore', 'learn', 'sound', 'about']);
-  assert.deepEqual(MENU_GROUPS[1].ids, ['habitability', 'asteroidOpen', 'trajectory', 'lineup', 'tourMake', 'pmOpen', 'pause']);
+  assert.deepEqual(MENU_GROUPS[1].ids, ['habitability', 'asteroidOpen', 'trajectory', 'lineup', 'tourMake', 'pmOpen', 'bsOpen', 'harpOpen', 'mergeOpen', 'pause']);
   assert.deepEqual(MENU_GROUPS[2].ids, ['resourcesOpen', 'logOpen', 'newsOpen', 'calOpen', 'talk']);
   for (const id of CLOSES_MENU) assert.ok(ids.includes(id), id);
   // essentials stay in the bar · 常用按钮留在顶栏

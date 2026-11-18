@@ -12,13 +12,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import * as T from 'three';
 import { GESTURE_COLORS } from './gestures.js';
-import { toLandmarks, GestureFilter, anchorJoints, PinchDetector, TwoHandGesture } from './xr-hands.js';
+import { toLandmarks, GestureFilter, anchorJoints, PinchDetector, TwoHandGesture, ClapDetector, palmCentre } from './xr-hands.js';
 import { choosePlane, aheadOf, facesUp, tableScale, LIFT_M, TABLE_SPAN_M } from './mr.js';
 
 const VIEW_DISTANCE_M = 1.4;     // how far (in metres) the object in view should appear
 const PANEL_W = 0.56, PANEL_H = 0.42, PX = 1024;
 
-export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent, onTwoHand, onBack, backVisible = () => false, labels = () => [], labelsVisible = () => false, menu = () => null, menuStamp = null, onMenu, onPlaced }) {
+export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panelContent, onTwoHand, onBack, backVisible = () => false, labels = () => [], labelsVisible = () => false, menu = () => null, menuStamp = null, onMenu, onPlaced, onClap }) {
   renderer.xr.enabled = true;
   renderer.xr.setReferenceSpaceType('local');
 
@@ -180,6 +180,15 @@ export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panel
     });
     const L = pts.find(p => p?.side === 'left') || pts[0], R = pts.find(p => p && p !== L) || null;
     return twoHand.push(L?.p || null, R?.p || null);
+  }
+
+  // 👏 Clap: both palms come together fast · 拍手
+  const clap = new ClapDetector();
+  function readClap(now) {
+    if (!onClap) return;
+    if (twoHand.active || pinches[0].on || pinches[1].on) { clap.reset(); return; }   // a two-hand zoom is not a clap · 双手缩放不算拍手
+    const palm = h => { const j = h.hand.joints; const w = j?.['wrist'], m = j?.['middle-finger-phalanx-proximal']; return w?.visible && m?.visible ? palmCentre(w.position, m.position) : null; };
+    if (clap.push(palm(hands[0]), palm(hands[1]), now / 1000)) onClap();   // metres in the hand space; the dolly scale doesn't matter · 手部空间的米
   }
 
   const filter = new GestureFilter();
@@ -368,7 +377,7 @@ export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panel
     if (mr) updateMR(dt);
 
     // Both hands pinching → zoom/turn; the single-hand gestures pause meanwhile · 双手捏合
-    const two = readTwoHand();
+    const two = readTwoHand(); readClap(now);
     if (two && !mr?.placing) onTwoHand?.(two);
     if (twoHand.active) {
       cursor.visible = false; filter.reset(); smooth.ok = false;
@@ -447,11 +456,18 @@ export function initXR({ renderer, scene, camera, onHand, onEnter, onExit, panel
     tex.needsUpdate = true;
   }
 
+  // Index fingertips in world space (for touching things in the scene, e.g. the orbit harp) · 世界坐标中的食指指尖
+  const tipW = [new T.Vector3(), new T.Vector3()];
+  function tips() {
+    const out = []; if (!active()) return out;
+    hands.forEach((h, i) => { const j = h.hand.joints?.['index-finger-tip']; if (j?.visible) { tipW[i].copy(j.position); dolly.localToWorld(tipW[i]); out.push({ i, p: tipW[i], scale: dolly.scale.x }); } });
+    return out;
+  }
   // Divide world-unit particle sizes by this in VR (1 outside VR) · VR 中粒子尺寸除以此值
   const sizeScale = () => active() ? pointScale : 1;
 
   const mrState = () => mr && { placing: mr.placing, kind: mr.kind, anchored: !!mr.anchor, aims: mr.hits.size + (mr.viewerHit ? 1 : 0) };
-  return { dolly, active, enter, supported, supportedAR, placeRig, update, sizeScale, refreshLabels, mrState, placeAgain };
+  return { dolly, active, enter, supported, supportedAR, placeRig, update, sizeScale, refreshLabels, mrState, placeAgain, tips };
 }
 
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }

@@ -240,6 +240,9 @@ void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = proj
 const FRAG = `varying vec3 vColor; varying float vA; void main(){ float r = length(gl_PointCoord - 0.5) * 2.0; if (r > 1.0) discard;
   float g = pow(1.0 - r, 1.7); gl_FragColor = vec4(vColor, g * vA); }`;
 
+// The same soft, size-capped dots for other point clouds (the galaxy collision): FOV-aware, 1.6–24 px · 共用的点材质
+export const pointsMaterial = T => new T.ShaderMaterial({ uniforms: { uSize: { value: 1 }, uOpacity: { value: 1 }, uViewH: { value: 900 } }, vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthWrite: false, blending: T.AdditiveBlending });
+
 // inXR(): true while the headset is presenting (the HTML labels are not seen there, so their layout is skipped); hud(): the header
 // buttons' rect { x, y, w, h } or null, which moved labels avoid · VR 中跳过屏幕标签布局；顶部按钮区域
 export function createJourney({ T, scene, pieces = [], sizeScale = () => 1, viewHeight = () => innerHeight, onOpen = () => {}, inXR = () => false, hud = () => null }) {
