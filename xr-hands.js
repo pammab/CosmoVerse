@@ -77,3 +77,22 @@ export class TwoHandGesture {
     return { phase: 'move', ratio: d / this.d0, dAngle: da };
   }
 }
+
+// Clap = both palms come together fast. push(a, b, t): palm centres {x,y,z} in metres (null when a hand isn't
+// tracked) and the time in seconds. Fires once when the palms were > 25 cm apart within the last second, are now
+// < 8 cm apart and closed in at > 0.35 m/s; then waits 1.5 s. · 拍手：双掌快速合拢
+export const palmCentre = (wrist, mid) => (wrist && mid ? { x: (wrist.x + mid.x) / 2, y: (wrist.y + mid.y) / 2, z: (wrist.z + mid.z) / 2 } : null);
+export class ClapDetector {
+  constructor({ far = 0.25, near = 0.08, speed = 0.35, window = 1, cooldown = 1.5 } = {}) { Object.assign(this, { far, near, speed, window, cooldown }); this.hist = []; this.last = -1e9; }
+  reset() { this.hist.length = 0; }
+  push(a, b, t) {
+    if (!a || !b) { this.hist.length = 0; return false; }
+    const d = Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z), h = this.hist;
+    h.push({ d, t }); while (h.length && t - h[0].t > this.window) h.shift();
+    if (d >= this.near || t - this.last < this.cooldown || h.length < 2) return false;
+    // speed of the whole closing stroke, from the last moment the palms were far apart (one jittery frame can't pass) · 整个合拢动作的平均速度
+    const farPt = h.findLast(p => p.d > this.far); if (!farPt) return false;
+    if ((farPt.d - d) / Math.max(1e-3, t - farPt.t) < this.speed) return false;
+    this.last = t; h.length = 0; return true;
+  }
+}

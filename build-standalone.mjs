@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.dirname(fileURLToPath(import.meta.url));
 // Journey pieces (pieces/*.js) are picked up automatically, before pieces/index · 自动包含 pieces/ 目录
 const PIECE_FILES = fs.readdirSync(path.join(root, 'pieces')).filter(f => f.endsWith('.js') && f !== 'index.js').sort().map(f => 'pieces/' + f.slice(0, -3));
-const ORDER = ['i18n', 'data', 'noise', 'textures', 'maps', 'bodies', 'landmarks', 'highlights', 'habitability', 'gestures', 'voice', 'narration-text', 'narration', 'cosmofacts', 'chat', 'xr-hands', 'mr', 'xr', 'shapes', ...PIECE_FILES, 'pieces/index', 'journey', 'voice-clips', 'intros', 'headmenu', 'favs', 'vrcosmo', 'voicecmd', 'guide', 'usertour', 'logbook', 'collections', 'planetmaker', 'references', 'events', 'calendar', 'news', 'what', 'scale', 'tour', 'demo', 'welcome', 'main'];
+const ORDER = ['i18n', 'data', 'noise', 'textures', 'maps', 'bodies', 'landmarks', 'highlights', 'habitability', 'gestures', 'voice', 'narration-text', 'narration', 'cosmofacts', 'chat', 'xr-hands', 'mr', 'xr', 'shapes', ...PIECE_FILES, 'pieces/index', 'journey', 'voice-clips', 'intros', 'headmenu', 'favs', 'vrcosmo', 'voicecmd', 'guide', 'usertour', 'logbook', 'collections', 'planetmaker', 'birthday', 'harp', 'merger', 'me', 'references', 'events', 'calendar', 'news', 'what', 'scale', 'tour', 'demo', 'welcome', 'main'];
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 
 // Module ids are paths without .js ('main', 'pieces/milky-way'); relative imports resolve against the module's folder.

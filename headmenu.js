@@ -16,13 +16,13 @@ export const MORE_UI = {
 // Element ids per group (all already in index.html; their ids and handlers stay the same) · 每组的元素 id（不改 id）
 export const MENU_GROUPS = [
   { key: 'settings', ids: ['language', 'voiceToggle'], phoneOnly: true },
-  { key: 'explore', ids: ['habitability', 'asteroidOpen', 'trajectory', 'lineup', 'tourMake', 'pmOpen', 'pause'] },
+  { key: 'explore', ids: ['habitability', 'asteroidOpen', 'trajectory', 'lineup', 'tourMake', 'pmOpen', 'bsOpen', 'harpOpen', 'mergeOpen', 'pause'] },
   { key: 'learn', ids: ['resourcesOpen', 'logOpen', 'newsOpen', 'calOpen', 'talk'] },
   { key: 'sound', ids: ['stellarMusic'] },
   { key: 'about', ids: ['refsOpen'] },   // 📚 References & licences, last and discreet (Pamela, Nov 17) · 参考资料与许可，放在最后
 ];
 // Buttons that start something close the menu; settings and music keep it open · 启动功能的按钮会关闭菜单
-export const CLOSES_MENU = ['habitability', 'asteroidOpen', 'trajectory', 'lineup', 'tourMake', 'pmOpen', 'pause', 'resourcesOpen', 'logOpen', 'newsOpen', 'calOpen', 'talk', 'refsOpen'];
+export const CLOSES_MENU = ['habitability', 'asteroidOpen', 'trajectory', 'lineup', 'tourMake', 'pmOpen', 'bsOpen', 'harpOpen', 'mergeOpen', 'pause', 'resourcesOpen', 'logOpen', 'newsOpen', 'calOpen', 'talk', 'refsOpen'];
 
 export function initHeadMenu({ quad, phoneQuery = '(max-width: 800px)' }) {
   const $ = id => document.getElementById(id), bar = document.querySelector('.headbuttons');

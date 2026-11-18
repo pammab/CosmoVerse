@@ -866,3 +866,99 @@ body.xr-on :is(.dailycard, .celebrate) { display: none; }
 /* 🔎 Sources under Cosmo's answers · Cosmo 回答下方的来源 */
 #chatLog .msg .srcs { margin-top: 6px; padding-top: 5px; border-top: 1px solid #ffffff14; font-size: 11px; color: #9fb2c4; }
 #chatLog .msg .srcs :is(.en, .zh, .es, .pt) { display: inline; } #chatLog .msg .srcs a { color: #9fc9ff; text-decoration: none; } #chatLog .msg .srcs a:hover { text-decoration: underline; }
+/* 🎂 Your birthday star (birthday.js) · 你的生日星 */
+.bscard { border-color: #ffd27a44; }
+.bscard .eyebrow { color: #ffe1a3; }
+.bscard :is(.bsform label, .bsname, .bsaway, .bsleft, .bsfact, .bsnext, .bsnote, .bserr, .src, .bspl, .calfly, .jback, button) :is(.en, .zh, .es, .pt) { display: inline; }
+.bsform { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 4px 0 12px; }
+.bsform label { font-size: 12px; color: #c3d0dd; }
+.bsform input { width: 96px; padding: 7px 10px; border-radius: 10px; border: 1px solid #ffd27a55; background: #0b1020; color: #fff; font: 15px Manrope, system-ui, sans-serif; }
+.bsform button { padding: 7px 14px; border-radius: 16px; font-size: 12px; }
+.bsstar { display: flex; align-items: center; gap: 12px; margin: 6px 0 8px; }
+.bsstar i { width: 26px; height: 26px; border-radius: 50%; flex: none; background: radial-gradient(circle, #fff 0 18%, var(--c) 40%, transparent 72%); box-shadow: 0 0 22px var(--c); }
+.bsstar .bsname { display: block; font: 600 20px Manrope, system-ui, sans-serif; color: #fff; letter-spacing: 0; }
+.bsstar .bsaway { font: 11px monospace; letter-spacing: .06em; color: #ffe1a3; }
+.bsleft { margin: 0 0 8px; font-size: 13px; line-height: 1.6; color: #e6eef8; }
+.bsfact, .bsnext { margin: 0 0 8px; font-size: 12px; line-height: 1.55; color: #c3d0dd; }
+.bsnext { color: #bfe6ff; }
+.bspl { padding: 1px 7px; border-radius: 8px; background: #9fe8c422; color: #c9f5e0; font-size: 11px; white-space: nowrap; }
+.bscard .src { font: 10px monospace; color: #6f9fc4; text-decoration: none; }
+.bsruler { display: block; width: 100%; height: auto; margin: 6px 0 4px; }
+.bsruler text { font: 9px monospace; fill: #8f9bb5; }
+.bsruler text.you { fill: #8bd6ff; font-weight: 700; }
+.bsnote { margin: 4px 0 10px; font-size: 10.5px; line-height: 1.5; color: #8f9bb5; }
+.bserr { font-size: 12px; color: #ffb3a1; }
+.bsacts { display: flex; flex-wrap: wrap; gap: 8px; }
+.bsacts .calfly { padding: 4px 10px; font-size: 11px; border-radius: 16px; border-color: #ffd27a55; color: #ffe9c2; }
+/* 🎵 Orbit harp (harp.js) · 轨道竖琴 */
+.harpbar { position: fixed; right: 16px; bottom: 112px; z-index: 25; width: min(400px, calc(100vw - 24px)); padding: 12px 16px;
+  border-radius: 16px; border: 1px solid #9fe8c444; background: linear-gradient(145deg, #0f1a17, #070b16); box-shadow: 0 18px 60px #000a; color: #e6eef8; }
+.harpbar[hidden] { display: none; }
+.harpbar :is(.en, .zh, .es, .pt) { display: inline; }
+.harpbar .hbtop { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.harpbar .hbtop b { font-weight: 600; font-size: 14px; color: #c9f5e0; }
+.harpbar .jback { padding: 4px 10px; font-size: 11px; border-radius: 14px; }
+.harpbar .hbhint { margin: 6px 0; font-size: 12px; line-height: 1.5; color: #c3d0dd; }
+.harpbar .hblast { margin: 0 0 8px; min-height: 18px; font: 12px monospace; color: #e8fff4; display: flex; align-items: center; gap: 8px; }
+.harpbar .hblast i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
+.harpbar .hbacts { display: flex; flex-wrap: wrap; gap: 8px; }
+.harpbar .hbacts button { padding: 5px 12px; font-size: 12px; border-radius: 16px; border-color: #9fe8c455; color: #dcfff0; }
+.harpbar .hbmoons { display: flex; gap: 16px; margin: 0 0 8px; font: 11px monospace; color: #c3d0dd; }
+.harpbar .hbmoons[hidden] { display: none; }
+.harpbar .hbmoons span { display: inline-flex; align-items: center; gap: 6px; }
+.harpbar .hbmoons i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); opacity: .25; }
+.harpbar .hbmoons span.on i { animation: hbpulse .38s ease-out; }
+@keyframes hbpulse { from { opacity: 1; transform: scale(1.6); box-shadow: 0 0 14px var(--c); } to { opacity: .25; transform: scale(1); } }
+.harpbar .hbhow { margin-top: 8px; font-size: 11px; color: #8f9bb5; }
+.harpbar .hbhow summary { cursor: pointer; }
+.harpbar .hbhow p { margin: 6px 0 0; line-height: 1.5; }
+.harpbar .src { font: 10px monospace; color: #6f9fc4; text-decoration: none; }
+body.xr-on .harpbar { display: none; }
+@media (max-width: 760px) { .harpbar { left: 12px; right: 12px; width: auto; bottom: 96px; padding: 10px 12px; } }
+
+/* 👏 Galaxy collision · 星系碰撞 */
+.mergebar { border-color: #ffb3c844; }
+.mergebar .hbtop b { color: #ffd6e2; }
+.mergebar .hbacts button { border-color: #ffb3c855; color: #ffe8ef; }
+.mergebar .mgtime { margin: 0 0 8px; min-height: 18px; font-size: 12px; line-height: 1.5; color: #f4e9ee; }
+.mergebar .mgtime b { font: 600 13px monospace; color: #ffd6e2; }
+body.merging .jtag { display: none !important; }
+body.xr-on .mergebar { display: none; }
+
+/* Bottom bar of levels + ▾ Sun and planets · 尺度底栏 */
+.nav .navsplit { display: flex; gap: 0; }
+.nav .navsplit > button:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.nav .navmore { min-width: 0; width: 30px; padding: 0; justify-content: center; border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-color: #ffffff10; font-size: 13px; color: #ffc861; }
+.nav button.active { border-color: #8bd6ff88; background: #8bd6ff1c; color: #fff; }
+.navplanets { position: fixed; z-index: 30; display: grid; grid-template-columns: repeat(3, minmax(84px, 1fr)); gap: 6px; padding: 9px; background: #08111ef2;
+  border: 1px solid #ffffff22; border-radius: 15px; backdrop-filter: blur(12px); box-shadow: 0 12px 40px #0008; }
+.navplanets[hidden] { display: none; }
+.navplanets button { padding: 8px 10px; font-size: 11px; display: flex; flex-direction: column; align-items: center; }
+.navplanets button i { width: 8px; height: 8px; border-radius: 50%; margin-bottom: 5px; box-shadow: 0 0 8px currentColor; }
+.navplanets button.active { border-color: #8bd6ff88; background: #8bd6ff1c; }
+.navplanets .zh { font-size: 10px; margin-top: 2px; }
+@media (max-width: 760px) { .navplanets { grid-template-columns: repeat(3, 1fr); left: 12px !important; right: 12px; } }
+/* Demo: the VR clip card · 演示：VR 片段卡片 */
+.democard video { width: min(70vw, 960px); max-height: 52vh; aspect-ratio: 16 / 9; border-radius: 16px; border: 1px solid #8bd6ff40; box-shadow: 0 20px 60px #000a; background: #000; }
+.democard[data-card="vr"] { gap: 8px; }
+.democard[data-card="vr"] h1 { font-size: clamp(26px, 4vw, 44px); margin: 0; }
+.democard[data-card="vr"] p { font-size: clamp(12px, 1.4vw, 15px); color: #9fb2c4; }
+
+/* 🧭 Universe → Me · 从宇宙到我 */
+.nav .navme > button:first-child { color: #d9fff3; }
+.memenu { grid-template-columns: 1fr; }
+.memenu button { flex-direction: row; justify-content: flex-start; padding: 10px 14px; font-size: 12px; }
+.mecard { width: min(420px, calc(100vw - 24px)); }
+.mecard #meGeo { width: 100%; margin: 6px 0 10px; }
+.meform { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.meform label { flex-basis: 100%; font-size: 11px; color: #9fb2c4; }
+.meform input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 10px; border: 1px solid #ffffff22; background: #08111e; color: #fff; font: inherit; }
+.memsg { min-height: 1.2em; font-size: 12px; color: #ffd27a; margin: 6px 0 0; }
+.metag { position: fixed; left: 50%; top: 92px; transform: translateX(-50%); z-index: 6; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 10px;
+  padding: 10px 14px; border-radius: 16px; background: #08111ee6; border: 1px solid #7dffcf55; box-shadow: 0 10px 30px #0008; max-width: calc(100vw - 24px); }
+.metag[hidden] { display: none; }
+.metag small { flex-basis: 100%; text-align: center; font: 10px monospace; letter-spacing: .2em; text-transform: uppercase; color: #7dffcf; }
+.metag b { font-weight: 400; font-size: 18px; color: #fff; }
+.metag .primary { background: #7dffcf22; border-color: #7dffcf88; color: #eafff8; }
+body.xr-on .metag { display: none; }
+

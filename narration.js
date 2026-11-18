@@ -58,7 +58,6 @@ function synthWhoosh(name) {
   src.connect(f).connect(g).connect(c.destination); src.start(t); src.stop(t + dur);
 }
 export async function sfx(name) {
-  if (!enabled) return;
   const c = ac(); if (!c) return;
   const buf = buffers.get(name) || (online ? await Promise.race([loadSfx(name), new Promise(r => setTimeout(() => r(null), 350))]) : null);
   if (!buf) { synthWhoosh(name); return; }                     // not ready in time: play the synthesized one
@@ -67,7 +66,7 @@ export async function sfx(name) {
 }
 // Fetch the sounds after the first click, so they are ready for the next transitions.
 addEventListener('pointerdown', async () => {
-  if (!enabled || !online) return;
+  if (!online) return;
   await loadSfx('whoosh-in');                               // one probe first: no key means no more requests
   if (online) ['whoosh-out', 'warp', 'chime'].forEach(loadSfx);
 }, { once: true });
@@ -88,8 +87,8 @@ function syncCaptions(parts, progress) {          // progress 0..1 → show the 
 // Last resort (no clip, no server, no browser voice): captions only · 最后手段：仅字幕
 let captionTimer = 0;
 function captionsOnly(text, lang, id) {
-  const parts = sentences(text), perChar = lang === 'zh' ? 230 : 62; let i = 0;
-  const next = () => { if (id !== narrationId) return; if (i >= parts.length) return done(id); showCaption(parts[i]); captionTimer = setTimeout(next, Math.max(1800, parts[i++].length * perChar)); };
+  const parts = sentences(text), perChar = lang === 'zh' ? 200 : 52; let i = 0;
+  const next = () => { if (id !== narrationId) return; if (i >= parts.length) return done(id); showCaption(parts[i]); captionTimer = setTimeout(next, Math.max(1500, parts[i++].length * perChar)); };
   next();
 }
 // A soft, spacious reverb around the narrator · 空间混响
@@ -119,8 +118,9 @@ function voicesReady() {
 function bestVoice(voices, lang) {
   const base = lang.slice(0, 2).toLowerCase(), same = voices.filter(v => v.lang?.toLowerCase().replace('_', '-').startsWith(base));
   const exact = same.filter(v => v.lang?.replace('_', '-') === lang);
-  const nice = list => list.find(v => /natural|neural|premium|enhanced|google/i.test(v.name));
-  return nice(exact) || nice(same) || exact[0] || same[0] || null;
+  // voices on the device first: Chrome's online voices can stay silent and only end after ~10 s · 优先本机语音
+  const local = list => list.filter(v => v.localService !== false), nice = list => list.find(v => /natural|neural|premium|enhanced|google/i.test(v.name));
+  return nice(local(exact)) || nice(local(same)) || local(exact)[0] || local(same)[0] || nice(exact) || nice(same) || exact[0] || same[0] || null;
 }
 async function browserVoice(text, lang, id) {
   const voice = bestVoice(await voicesReady(), VOICE_LANG[lang] || 'en-US');
@@ -132,7 +132,12 @@ async function browserVoice(text, lang, id) {
     if (i >= parts.length) { synthOn = false; return done(id); }
     const u = new SpeechSynthesisUtterance(parts[i]); showCaption(parts[i++]);
     u.voice = voice; u.lang = voice.lang; u.rate = 1; u.pitch = 1;
-    u.onend = next; u.onerror = e => { if (id !== narrationId) return; if (e.error === 'interrupted' || e.error === 'canceled') { synthOn = false; done(id); } else next(); };
+    // A voice that never starts (blocked or silent) would hold each caption for ~10 s: after 1.5 s with no sound,
+    // stop it and show the captions at reading speed instead · 语音未开始：改为按阅读速度显示字幕
+    let started = false; u.onstart = () => { started = true; };
+    const guard = setTimeout(() => { if (started || id !== narrationId || utter !== u) return; synthOn = false; u.onend = u.onerror = null;
+      try { speechSynthesis.cancel(); } catch {} captionsOnly(parts.slice(i - 1).join(' '), lang, id); }, 1500);
+    u.onend = () => { clearTimeout(guard); next(); }; u.onerror = e => { if (id !== narrationId) return; if (e.error === 'interrupted' || e.error === 'canceled') { synthOn = false; done(id); } else next(); };
     utter = u; speechSynthesis.speak(u);            // keep a reference: Chrome can drop it before 'end' · 保持引用
   };
   speechSynthesis.cancel(); next(); return true;
@@ -200,18 +205,25 @@ export function stopNarration() {
 addEventListener('stellar-speak', () => { narrationId++; synthOn = false; clearTimeout(captionTimer); if (audio) { try { audio.pause(); } catch {} audio = null; } showCaption(''); });
 
 /* ───────── On/off button · 开关 ───────── */
+// Turns off only the spoken introductions (planets, levels, pieces); Ask Cosmo still answers aloud · 只关闭介绍语音，AI 不受影响
+export const NARRATION_UI = {
+  on: { en: '🗣 Narration on', zh: '🗣 讲解已开启', es: '🗣 Narración activada', pt: '🗣 Narração ligada' },
+  off: { en: '🔇 Narration off', zh: '🔇 讲解已关闭', es: '🔇 Narración desactivada', pt: '🔇 Narração desligada' },
+  title: { en: 'Turn the spoken introductions on or off (Ask Cosmo still answers aloud)', zh: '开启或关闭语音介绍（问 Cosmo 仍会朗读回答）', es: 'Activa o desactiva las presentaciones habladas (Pregunta a Cosmo sigue respondiendo en voz alta)', pt: 'Liga ou desliga as apresentações faladas (Pergunte ao Cosmo continua respondendo em voz alta)' },
+};
 function render() {
   if (!button) return;
+  const t = enabled ? NARRATION_UI.on : NARRATION_UI.off;
   button.classList.toggle('active', enabled); button.setAttribute('aria-pressed', String(enabled));
-  button.innerHTML = enabled
-    ? window.bi('🗣 Voice On', '🗣 语音已开启', '🗣 Voz activada')
-    : window.bi('🔇 Voice Off', '🔇 语音已关闭', '🔇 Voz desactivada');
+  button.title = NARRATION_UI.title[getLanguage()] || NARRATION_UI.title.en;
+  button.innerHTML = window.bi(t.en, t.zh, t.es, t.pt);
 }
-if (button) button.onclick = () => {
-  enabled = !enabled; try { localStorage.setItem('stellar-voice', enabled ? 'on' : 'off'); } catch {}
+export function setNarration(on) {
+  enabled = !!on; try { localStorage.setItem('stellar-voice', enabled ? 'on' : 'off'); } catch {}
   if (!enabled) stopNarration(); else sfx('chime');
-  render();
-};
+  render(); return true;
+}
+if (button) button.onclick = () => setNarration(!enabled);
 render();
 
 // Chimes for the team's panels · 面板提示音

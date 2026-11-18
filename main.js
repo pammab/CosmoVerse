@@ -20,7 +20,7 @@ import { CAL_UI, upcoming, countdown, fmtDate } from './calendar.js';
 import { canListen, stopListening, stopSpeaking } from './voice.js';
 import { buildHighlights, HIGHLIGHTS, moonPT } from './highlights.js';
 import { initHabitability } from './habitability.js';
-import { narrate, stopNarration, sfx, voiceStatus, speakingKey } from './narration.js';
+import { narrate, stopNarration, sfx, voiceStatus, speakingKey, setNarration, NARRATION_UI } from './narration.js';
 import { createIntros } from './intros.js';
 import { initHeadMenu } from './headmenu.js';
 import { createFavs, FAV_UI } from './favs.js';
@@ -28,7 +28,7 @@ import { ringInfo } from './textures.js';
 import { SCALES, UI as SUI, factorBetween, fmtFactor } from './scale.js';
 import { initXR } from './xr.js';
 import { MR_UI } from './mr.js';
-import { LEVELS, createJourney, levelById, levelIndex, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, quad, tr, eyebrowText, ladderRows, ladderTarget, SCALE_NOTE, UI as JUI } from './journey.js';
+import { LEVELS, createJourney, levelById, levelIndex, outerLevel, innerLevel, pathFrom, edgeStep, decayEdge, quad, tr, eyebrowText, ladderRows, ladderTarget, SCALE_NOTE, UI as JUI, pointsMaterial } from './journey.js';
 import { PIECES } from './pieces/index.js';
 import { initWelcome } from './welcome.js';
 import { levelSpeech, firstSentence } from './voice-clips.js';
@@ -41,8 +41,12 @@ import { parseVoiceCommand, buildNames, VC_SAY, VC_UI } from './voicecmd.js';
 import { UT_UI, UT_MAX_STOPS, UT_MAX_TEXT, UT_MAX_TITLE, encodeTour, tourFromHash, sanitizeTour } from './usertour.js';
 import { createTour, TOUR_UI } from './tour.js';
 import { PM_UI, PM_NOTES, PM_QUIZ, PM_SRC, PM_COLORS, PM_PRESETS, PM_MAX_NAME, KINDS, ATMOS, sanitizePlanet, planetResult, yearDays, planetAge } from './planetmaker.js';
-import { demoSteps, DEMO_CARDS } from './demo.js';
+import { demoSteps, DEMO_CARDS, DEMO_BIRTH_YEAR } from './demo.js';
 import { REF_UI, REF_LICENCES, refsHTML } from './references.js';
+import { BS_UI, BS_STARS, BS_MIN_YEAR, birthdayStar, validYear, bsFill, fmtLy } from './birthday.js';
+import { ME_UI, ME_SRC, ME_LEVELS, roundPlace, namesFrom, placeLine, spherePoint, spinToFace } from './me.js';
+import { MERGE_UI, MERGE_SRC, SIM_END, createMergerSim, gyrAt, stageAt, whenText } from './merger.js';
+import { HARP_UI, HARP_PERIODS, HARP_PERIODS_SRC, RESONANCE_SRC, MOONS, noteForPeriod, noteName, crossed, ringDistance, moonBeats, createHarp } from './harp.js';
 const $ = s => document.querySelector(s), clamp = T.MathUtils.clamp, bi = window.bi;
 const cap = s => s.charAt(0) + s.slice(1).toLowerCase();
 const nameOf = p => [cap(p.en), p.zh, cap(p.es), cap(p.pt)];   // [en, zh, es, pt]
@@ -300,7 +304,7 @@ $('#flightView').onclick=()=>{const views=[[flightFaceYaw,flightFacePitch],[flig
 
 let tour = null;   // Tour with Cosmo (created below) · 游览
 let quietUntil = 0;   // ?start=<planet>: skip the planet's narration at load · 启动时不朗读
-let whatNow = null, whatVR = false, whatHinted = false, guideVR = false, logVR = false, refsVR = false, pmVR = false;   // "What is this?": { b, it } in the card / on the VR panel (declared early: showHighlights runs at start) · 当前对象   // ?start=<planet>: skip the planet's narration at load · 启动时不朗读
+let whatNow = null, whatVR = false, whatHinted = false, guideVR = false, logVR = false, refsVR = false, pmVR = false, bsVR = false, harpOn = false, mergeOn = false;   // "What is this?": { b, it } in the card / on the VR panel (declared early: showHighlights runs at start) · 当前对象   // ?start=<planet>: skip the planet's narration at load · 启动时不朗读
 function home() {
   if (mode === 'overview') return;
   sfx('whoosh-out'); stopNarration();
@@ -481,7 +485,7 @@ function updateCrumb() {
   const show = mode === 'overview' || mode === 'journey', cur = mode === 'journey' ? journey.level : 'solar-system';
   const key = show + ':' + cur + ':' + mode;
   if (key === crumbKey) return; crumbKey = key;
-  crumb.style.display = show ? 'flex' : 'none'; if (!show) return;
+  crumb.style.display = 'none'; return;   // the bottom bar now shows the levels · 底栏已显示各尺度
   const out = outerLevel(cur);
   crumb.innerHTML = `<span class="lbl">${quad(JUI.here)}:</span>` +
     shortPath(cur).map((id, i) => `${i ? '<i>▸</i>' : ''}${id === '…' ? '<i>…</i>' : `<button type="button" data-level="${id}" class="${id === cur ? 'on' : ''}">${quad(levelById(id).names)}</button>`}`).join('') +
@@ -495,14 +499,21 @@ const ladderState = () => ({ level: mode === 'journey' && journey.level ? journe
 let ladderPending = null;   // a click during a transition runs when it ends (the last click wins) · 过渡中的点击稍后执行
 function ladderGo(id, queue = true) {
   if (id === 'toggle') return setLadderOpen(!ladder.classList.contains('open'));
+  if (id === 'V:narration') return setNarration(!voiceStatus().enabled);
+  if (id === 'U:down') { meDown(); return true; }   // VR: 🧭 Universe → Me · VR：从宇宙到我
+  if (id === 'U:up') { meUp(); return true; }   // VR: 🗣 narration on/off · VR：讲解开关
   if (id.startsWith('C:')) return cosmoGo(id);   // VR: Ask Cosmo rows · VR：问 Cosmo
   if (id === 'N:news') { newsVR = !newsVR; if (newsVR) markNewsSeen(); return true; }   // VR: 📰 News · VR：新闻
   if (id.startsWith('N:f')) { const n = newsFlyable()[+id.slice(3)]; if (!n) return false; newsVR = false; id = newsFlyId(n); }
   if (!id.startsWith('N:') && newsVR) newsVR = false;
   if (id === 'R:refs') { refsVR = !refsVR; if (refsVR) logVR = guideVR = calVR = newsVR = false; return true; }   // VR: 📚 Sources & licences (the panels above it in the order close) · VR：来源与许可
   if (id !== 'R:refs' && refsVR) refsVR = false;
+  if (!id.startsWith('Z:') && bsVR) bsVR = false;   // any other row closes 🎂 (before the rows that return early) · 其他行关闭生日星
   if (id.startsWith('Y:')) return pmGo(id);   // VR: 🪐 Your planet · VR：你的行星
   if (pmVR) pmVR = false;
+  if (id.startsWith('Z:')) return bsGo(id);   // VR: 🎂 Birthday star · VR：生日星
+  if (id.startsWith('H:')) return harpGo(id);   // VR: 🎵 Orbit harp · VR：轨道竖琴
+  if (id.startsWith('X:')) return mergeGo(id);   // VR: 👏 Galaxy collision · VR：星系碰撞
   if (id === 'O:log') { logVR = !logVR; return true; }   // VR: 📔 Logbook · VR：日志
   if (id === 'O:fly') { logVR = false; id = dailyId() || 'L:universe'; }
   if (/^O:m\d$/.test(id)) { const m = weekMissions(weekKey())[+id.slice(3)]; if (!m) return false; logVR = false; spotHint(m); id = missionFly(m); }   // VR: a weekly mission row · VR：每周任务
@@ -517,7 +528,7 @@ function ladderGo(id, queue = true) {
   if (id === 'S:fav') { toggleFav(); return true; }   // ☆ Save this place (drop-down, VR menu) · 收藏当前地点
   const fromFav = id.startsWith('F:'); if (fromFav) id = id.slice(2);   // a saved place: fly there · 飞往收藏地点
   if (id === 'T:tour') { if (!tour.active) startTour(); else tour.toggle(performance.now()); return true; }   // the tour row · 游览行
-  tour?.pause(performance.now());   // the visitor picked a place: the tour waits · 访客自选地点：游览暂停
+  if (!demoOn) tour?.pause(performance.now());   // the visitor picked a place: the tour waits (the video demo moves by itself) · 访客自选地点：游览暂停
   if (journey.busy || trans < 0.6) { if (queue) ladderPending = fromFav ? 'F:' + id : id; return false; }   // hands don't queue: they retry next frame · 手势不排队
   ladderPending = null;
   if (fromFav) favOpen = false;   // close the drop-down only once the pick runs (hands/VR retry next frame) · 真正执行后才关闭下拉
@@ -723,7 +734,7 @@ function setIntro(m, b) {
     $('#subtitle').innerHTML = bi('Eight worlds and their star, shown at their true sizes. Select a planet, use your hands, or just ask.', '八颗行星与太阳，按真实大小呈现。点击行星、用手势控制，或直接提问。');
   }
 }
-function highlightNav(id) { document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('active', b.dataset.id === id)); }
+function highlightNav(id) { document.querySelectorAll('#navPlanets button').forEach(b => b.classList.toggle('active', b.dataset.id === id)); }
 
 function highlightsHTML(id) {
   const h = HIGHLIGHTS[id]; if (!h) return '';
@@ -770,11 +781,50 @@ function renderInfo(b) {
 }
 
 /* ───────── Nav & header · 导航与顶部按钮 ───────── */
+// Bottom bar: the levels of the universe, largest first. Solar System has a ▾ list of the Sun and planets · 底栏：从大到小的尺度
+const NAV_DOT = { universe: '#c9a8ff', supercluster: '#8bd6ff', 'local-group': '#ffb3c8', galaxy: '#a9c8ff', neighbourhood: '#ffe08a', 'solar-system': '#ffc861' };
+for (const id of LEVELS.map(l => l.id)) {
+  const btn = document.createElement('button'); btn.type = 'button'; btn.dataset.level = id;
+  btn.innerHTML = `<i style="background:${NAV_DOT[id] || '#9fb2c4'}"></i>${quad(levelById(id).names)}`;
+  btn.onclick = () => { closeNavPlanets(); ladderGo('L:' + id); };
+  if (id !== 'solar-system') { $('#nav').append(btn); continue; }
+  const grp = document.createElement('div'); grp.className = 'navsplit';
+  const more = document.createElement('button'); more.type = 'button'; more.className = 'navmore'; more.id = 'navPlanetsBtn';
+  more.setAttribute('aria-haspopup', 'true'); more.setAttribute('aria-expanded', 'false'); more.setAttribute('aria-label', 'Sun and planets'); more.textContent = '▾';
+  more.onclick = e => { e.stopPropagation(); navPlanets.hidden ? openNavPlanets() : closeNavPlanets(); };
+  grp.append(btn, more); $('#nav').append(grp);
+  // 🧭 Universe → Me (▾: Me → Universe, change my place) · 从宇宙到我
+  const meGrp = document.createElement('div'); meGrp.className = 'navsplit navme';
+  const meB = document.createElement('button'); meB.type = 'button'; meB.id = 'meBtn'; meB.innerHTML = `<i style="background:#7dffcf"></i>${quad(ME_UI.down)}`;
+  const meM = document.createElement('button'); meM.type = 'button'; meM.className = 'navmore'; meM.id = 'meMoreBtn'; meM.textContent = '▾';
+  meM.setAttribute('aria-haspopup', 'true'); meM.setAttribute('aria-expanded', 'false'); meM.setAttribute('aria-label', ME_UI.up.en);
+  meGrp.append(meB, meM); $('#nav').append(meGrp);
+}
+const navPlanets = document.createElement('div'); navPlanets.id = 'navPlanets'; navPlanets.className = 'navplanets'; navPlanets.hidden = true;
+navPlanets.setAttribute('role', 'menu'); document.body.append(navPlanets);
 bodies.forEach(b => {
-  const btn = document.createElement('button'); btn.dataset.id = b.p.id;
+  const btn = document.createElement('button'); btn.type = 'button'; btn.dataset.id = b.p.id; btn.setAttribute('role', 'menuitem');
   btn.innerHTML = `<i style="background:${b.p.color}"></i>${bi(...nameOf(b.p))}`;
-  btn.onclick = () => select(b.p.id); $('#nav').append(btn);
+  btn.onclick = () => { closeNavPlanets(); ladderGo('B:' + b.p.id); }; navPlanets.append(btn);
 });
+function openNavPlanets() {
+  const r = $('#navPlanetsBtn').getBoundingClientRect(); navPlanets.hidden = false;
+  const w = navPlanets.offsetWidth, x = Math.min(innerWidth - w - 8, Math.max(8, r.right - w));
+  navPlanets.style.left = x + 'px'; navPlanets.style.bottom = (innerHeight - r.top + 8) + 'px';
+  $('#navPlanetsBtn').setAttribute('aria-expanded', 'true');
+}
+function closeNavPlanets() { navPlanets.hidden = true; $('#navPlanetsBtn')?.setAttribute('aria-expanded', 'false'); }
+addEventListener('pointerdown', e => { if (!navPlanets.hidden && !e.target.closest('#navPlanets, #navPlanetsBtn')) closeNavPlanets(); }, true);
+addEventListener('keydown', e => { if (e.key === 'Escape' && !navPlanets.hidden) { closeNavPlanets(); e.stopImmediatePropagation(); } }, true);
+addEventListener('resize', closeNavPlanets);
+let navKey = '';
+function updateNav() {   // light up the level you are at (and the planet, in the ▾ list) · 高亮当前尺度
+  const cur = mode === 'journey' ? journey.level : 'solar-system', key = cur;
+  if (key === navKey) return; navKey = key;
+  document.querySelectorAll('#nav button[data-level]').forEach(b => b.classList.toggle('active', b.dataset.level === cur));
+  const on = $(`#nav button[data-level="${cur}"]`), nav = $('#nav');   // phone: scroll the bar so the current level shows · 手机上滚动到当前尺度
+  if (on && nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: on.offsetLeft - (nav.clientWidth - on.offsetWidth) / 2, behavior: 'smooth' });
+}
 $('#lineup').onclick = lineup; $('#pause').onclick = () => setPaused(!paused);
 
 function notice(en, zh, es, ms = 4500, pt) { const s = $('#status'); s.innerHTML = bi(en, zh, es, pt); s.style.display = 'block'; clearTimeout(notice.t); notice.t = setTimeout(() => s.style.display = 'none', ms); }
@@ -783,14 +833,16 @@ function notice(en, zh, es, ms = 4500, pt) { const s = $('#status'); s.innerHTML
 const canvas = renderer.domElement, pointers = new Map(); let down = null, moved = false, pinchDist = 0;
 canvas.addEventListener('pointerdown', e => { pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); canvas.setPointerCapture(e.pointerId); down = { x: e.clientX, y: e.clientY }; moved = false; if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinchDist = Math.hypot(a.x - b.x, a.y - b.y); } });
 canvas.addEventListener('pointermove', e => {
+  if (harpOn) harpAt(e.clientX, e.clientY, 'mouse');   // 🎵 sweep across the orbits · 划过轨道
   if (!pointers.has(e.pointerId)) { if (e.pointerType === 'mouse') setHover(pickAt(e.clientX, e.clientY)); return; }
   const old = pointers.get(e.pointerId); if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) moved = true;
   if (pointers.size === 1) { goal.yaw -= (e.clientX - old.x) * 0.006; goal.pitch = mode === 'trajectory' ? goal.pitch + (e.clientY-old.y)*.005 : clamp(goal.pitch + (e.clientY - old.y) * 0.005, mode === 'focus' ? -1.35 : 0.02, 1.45); }
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (pointers.size === 2) { const [a, b] = [...pointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y); zoomBy(d / Math.max(1, pinchDist)); pinchDist = d; }
 });
-canvas.addEventListener('pointerup', e => { pointers.delete(e.pointerId); if (!moved && pointers.size === 0) { const id = pickAt(e.clientX, e.clientY, e.pointerType === 'touch' ? 34 : 22); if (id) select(id); } });
+canvas.addEventListener('pointerup', e => { pointers.delete(e.pointerId); if (!moved && pointers.size === 0 && !harpOn && !mergeOn) { const id = pickAt(e.clientX, e.clientY, e.pointerType === 'touch' ? 34 : 22); if (id) select(id); } });
 canvas.addEventListener('pointercancel', e => pointers.delete(e.pointerId));
+canvas.addEventListener('pointerleave', () => { harpPrev.mouse = null; });
 // Wheel anywhere on the scene, including over a planet's label ring · 滚轮缩放（含标签区域）
 addEventListener('wheel', e => { if (!e.target.closest?.('canvas, .tag, .jtag, .mtag, .flight-label')) return; e.preventDefault(); tour?.pause(performance.now()); zoomBy(Math.exp(-e.deltaY * 0.0012)); }, { passive: false });
 addEventListener('keydown', e => {
@@ -835,6 +887,7 @@ function onHand(u) {
   else if (!hand.downAt) { hand.downAt = now; hand.absent = false; }
   const dx = hand.present ? x - hand.x : 0, dy = hand.present ? y - hand.y : 0, onset = g !== hand.prev;
   hand.present = true; hand.x = x; hand.y = y; hand.lastSeen = now; if (onset) hand.since = now;
+  if (mergeOn && !renderer.xr.isPresenting && onset && g === 'pinch' && (!merge.sim || merge.done)) mergePlay();   // 👏 webcam only: a pinch starts the collision (VR: clap or the menu row) · 摄像头：捏合开始
   const held = now - hand.since, browsing = mode !== 'focus';
   let progress = 0;
   // Welcome card open: a pinch or point + hold closes it, nothing else happens · 欢迎卡片打开时：捏合或指向停留关闭
@@ -862,13 +915,15 @@ function onHand(u) {
   if (lrow || ladderRowAt.inside(x, y)) hand.offLadder = now;
   const pointPause = g === 'point' && !document.body.classList.contains('xr-on') && now - Math.max(hand.since, hand.offLadder || 0) > 800;
   if (tour?.active && !tour.paused && !lrow && now - tour.state.since > 1500 && ((onset && (g === 'pinch' || g === 'fist' || g === 'victory')) || pointPause)) tour.pause(performance.now());
+  // 🎵 Orbit harp: the hand cursor (webcam, or the VR fingertip aim) strums the orbits; a fist still goes back · 手势拨动轨道
+  if (harpOn && !lrow && g !== 'fist') harpAt(x, y, 'hand'); else harpPrev.hand = null;
   // Aim: hover a planet with the cursor (bigger target area for hands) · 瞄准行星
   if (!lrow && browsing && (g === 'point' || g === 'open' || g === 'other')) {
     const id = pickAt(x, y, 54); setHover(id);
     if (id) { hand.hoverId = id; hand.hoverAt = now; }
     // Dwell to open: keep pointing at the same planet · 停留打开
     // While a journey piece is open, keep pointing from re-opening whatever drifts under the hand · 天体打开时不再停留触发
-    if (g === 'point' && id && !(mode === 'journey' && journey.piece)) {
+    if (g === 'point' && id && !harpOn && !mergeOn && !(mode === 'journey' && journey.piece)) {
       if (hand.dwellId !== id) { hand.dwellId = id; hand.dwellSince = now; }
       progress = Math.min(1, (now - hand.dwellSince) / dwellMs());
       if (progress >= 1 && hand.dwellDone !== id) { hand.dwellDone = id; select(id); }
@@ -885,7 +940,7 @@ function onHand(u) {
   if (g === 'pinch') {
     if (onset) {
       const recent = hand.hoverId && now - hand.hoverAt < 900;
-      if (browsing && recent && mode !== 'journey') { select(hand.hoverId); hand.dwellDone = hand.hoverId; hand.pinch = null; }
+      if (browsing && recent && mode !== 'journey' && !harpOn && !mergeOn) { select(hand.hoverId); hand.dwellDone = hand.hoverId; hand.pinch = null; }
       else hand.pinch = { y, last: 1, m: zoomKey() };
     } else if (hand.pinch && hand.pinch.m === zoomKey()) { const want = Math.exp((hand.pinch.y - y) / innerHeight * 3.4 * gain); zoomBy(want / hand.pinch.last); hand.pinch.last = want; }
   } else hand.pinch = null;
@@ -936,14 +991,15 @@ let twoHand = null, vrEnterAt = 0, mrPlacedAt = -1e9;   // two-hand zoom/turn in
 const xr = initXR({
   renderer, scene, camera, onHand,
   onEnter: isMR => { stars.visible = !isMR; if (tracker.active) $('#cam').click(); document.body.classList.add('xr-on'); vrEnterAt = performance.now(); welcome.close(); featureIntro('vr', 2500); },
-  onExit: () => { guideVR = false; stars.visible = true; lastNear = 0; document.body.classList.remove('xr-on'); if (vrAsk.open) { Object.assign(vrAsk, { open: false, q: null, a: null, err: null, state: null }); stopListening(); stopSpeaking(); } },   // leave Ask Cosmo behind · 退出 VR 时关闭
+  onExit: () => { if (harpOn) harpBar.hidden = false; if (mergeOn) mergeBar.hidden = false; guideVR = false; stars.visible = true; lastNear = 0; document.body.classList.remove('xr-on'); if (vrAsk.open) { Object.assign(vrAsk, { open: false, q: null, a: null, err: null, state: null }); stopListening(); stopSpeaking(); } },   // leave Ask Cosmo behind · 退出 VR 时关闭
   onBack: () => back(),
   backVisible: () => !atCover() || !!tour?.active,
   labels: () => [...bodies.map(b => ({ obj: b.anchor, text: nameOf(b.p)[Math.max(0, ['en', 'zh', 'es', 'pt'].indexOf(lang()))], color: b.isSun ? '#ffd27a' : '#ffffff', r: b.r, visible: () => mode === 'overview' || mode === 'lineup' })),
-    ...journey.xrLabels(lang())],
+    ...journey.xrLabels(lang()).map(o => ({ ...o, visible: () => !merge.shown && o.visible() }))],   // the collision hides the Local Group labels · 碰撞时隐藏标签
   labelsVisible: () => mode === 'overview' || mode === 'lineup' || mode === 'journey',
   menu: () => vrMenu(),
-  menuStamp: () => ladderKey + '|' + lang() + '|' + (xr.mrState()?.placing ?? '-') + '|' + (vrAsk.open ? vrContextKey() : '-') + (vrAsk.state === 'listening' || vrAsk.state === 'transcribing' ? '|V' : '') + (calVR ? '|K' : '') + (refsVR ? '|R' : '') + (newsVR ? '|N' : '') + (guideVR ? '|G' : '') + (logVR ? '|O' + logCount() + '.' + doneCount(logBook.mission) : '') + (pmVR ? '|Y' + pmVer : '|y' + (myPlanet ? 1 : 0)) + (whatVR ? '|W' + (mode === 'focus' ? focus?.p.id : '') + (whatNow ? whatNow.it.key : '') : '') + (mode === 'focus' && focus?.hl ? '|h' : ''),   // changes only when the rows or the language change · 行或语言变化时改变
+  menuStamp: () => ladderKey + '|' + lang() + '|' + (voiceStatus().enabled ? 'n' : 'q') + '|' + (xr.mrState()?.placing ?? '-') + '|' + (vrAsk.open ? vrContextKey() : '-') + (vrAsk.state === 'listening' || vrAsk.state === 'transcribing' ? '|V' : '') + (calVR ? '|K' : '') + (refsVR ? '|R' : '') + (newsVR ? '|N' : '') + (guideVR ? '|G' : '') + (logVR ? '|O' + logCount() + '.' + doneCount(logBook.mission) : '') + (pmVR ? '|Y' + pmVer : '|y' + (myPlanet ? 1 : 0)) + (bsVR ? '|Z' + bsYear : '') + (harpOn ? '|H' : '') + (mergeOn ? '|X' + (merge.sim ? 1 : 0) : '') + (whatVR ? '|W' + (mode === 'focus' ? focus?.p.id : '') + (whatNow ? whatNow.it.key : '') : '') + (mode === 'focus' && focus?.hl ? '|h' : ''),   // changes only when the rows or the language change · 行或语言变化时改变
+  onClap: () => mergeClap(),   // 👏 both palms together · 拍手
   onPlaced: () => { mrPlacedAt = performance.now(); },
   onMenu: id => { if (id === 'M:place') { xr.placeAgain(); return true; } return ladderGo(id, false); },
   onTwoHand: e => {
@@ -967,6 +1023,10 @@ const xr = initXR({
     if (vrAsk.open && (vrAsk.q || vrAsk.state || vrAsk.err)) return cosmoPanel();
     if (whatNow && xr.active() && mode === 'focus' && whatNow.b === focus) return whatPanel();   // ℹ What is this? · 这是什么？
     if (pmVR) return pmPanel();   // 🪐 Your planet · 你的行星
+    if (bsVR) return bsPanel();   // 🎂 Birthday star · 生日星
+    if (harpOn) return harpPanel();   // 🎵 Orbit harp · 轨道竖琴
+    if (mergeOn) return mergePanel();   // 👏 Galaxy collision · 星系碰撞
+    if (mePin.on) return mePanel();   // 🧭 You are here · 你在这里
     if (logVR) return logPanel();   // 📔 Logbook · 日志
     if (guideVR) return guidePanel();   // 🧭 How to move · 怎么操作
     if (newsVR) return newsPanel();   // 📰 News · 新闻
@@ -1077,6 +1137,7 @@ const curLevel = () => mode === 'journey' && journey.level ? journey.level : 'so
 tour = createTour({
   fly: st => {
     demoCard(st.card); if (demoOn && !st.chat) chat?.close?.();
+    if (demoOn) demoAct(st);   // the new features (harp, birthday star, collision) and their clean-up · 演示新功能
     if (!st.what && whatNow) closeWhat();
     // demo: open a "What is this?" card once the planet's labels exist (the step's own line is spoken by the tour) · 演示：打开“这是什么？”卡片
     if (st.what) setTimeout(() => { const it = focus?.hl?.items.find(i => i.key === st.what); if (it && tour.step === st && !tour.paused) openWhat(focus, it, false); }, 800);   // as Cosmo starts the line · 与解说同时
@@ -1086,9 +1147,13 @@ tour = createTour({
       goLevel(st.go, levelIndex(st.go) < levelIndex(curLevel()) ? 'up' : 'down');
     } else if (st.home) home();
     else if (st.piece) openPiece(st.piece);
+    else if (st.act === 'nav' && st.select) {   // demo: open the bar's ▾ list, light the planet, then go · 演示：打开底栏列表再前往
+      openNavPlanets(); highlightNav(st.select); demoNavUntil = performance.now() + 1700;
+      setTimeout(() => { if (tour.step !== st) return; closeNavPlanets(); select(st.select); }, 1600);
+    }
     else if (st.select) select(st.select);
   },
-  busy: () => journey.busy || trans < 1,
+  busy: () => tour.step?.card === 'title' ? false : journey.busy || trans < 1 || performance.now() < demoNavUntil,   // the title card doesn't wait for the opening zoom · 标题卡不等开场动画
   say: st => {
     if (st.chat) { const l = lang(); chat.open({ focus: false }); if (!st.asked) st.asked = chat.ask(st.chat.q[l] || st.chat.q.en, false, st.chat.a[l] || st.chat.a.en) || true; }   // resuming says the line again but asks once · 继续时只问一次
     narrate(st.key, st.text); setTimeout(renderTourBar, 0);   // after the runner has switched to 'say' (the bar shows the line then) · 在切换到朗读阶段之后
@@ -1099,7 +1164,7 @@ tour = createTour({
   voiceOn: () => voiceStatus().enabled,
   lang: () => lang(),
   onChange: () => renderTourBar(),
-  onEnd: finished => { renderTourBar(); if (demoOn) { demoOn = false; document.body.classList.remove('demo'); if (!finished) demoCard(null); } },
+  onEnd: finished => { renderTourBar(); if (demoOn) { demoAct({});  demoOn = false; document.body.classList.remove('demo'); if (!finished) demoCard(null); } },
 });
 /* ───────── Demo for the video (?demo=1) · 演示模式 ───────── */
 // Same runner as the tour, another step list (demo.js): cards, the ladder, a piece, planets, Ask Cosmo · 与游览同一运行器
@@ -1110,8 +1175,22 @@ function demoCard(id) {
   const c = id && DEMO_CARDS[id];
   document.body.classList.toggle('demo-card', !!c);
   if (!c) { demoEl.classList.remove('show'); demoEl.hidden = true; return; }
-  demoEl.innerHTML = `<h1>${quad(c.head)}</h1>${c.icons ? `<ol>${c.icons.map(([i, t]) => `<li><i>${i}</i><span>${quad(t)}</span></li>`).join('')}</ol>` : ''}${c.lines.map(t => `<p>${quad(t)}</p>`).join('')}`;
+  demoEl.innerHTML = `<h1>${quad(c.head)}</h1>${c.video ? `<video src="${c.video}" autoplay muted playsinline preload="auto"></video>` : ''}${c.icons ? `<ol>${c.icons.map(([i, t]) => `<li><i>${i}</i><span>${quad(t)}</span></li>`).join('')}</ol>` : ''}${c.lines.map(t => `<p>${quad(t)}</p>`).join('')}`;
   demoEl.dataset.card = id; demoEl.hidden = false; requestAnimationFrame(() => demoEl.classList.add('show'));
+}
+// Demo actions for the new features; each step clears what the previous one opened · 演示动作；每步清理上一步
+let demoBirth = null, demoNavUntil = 0;
+function demoAct(st) {
+  if (st.act !== 'harp' && harpOn) setHarp(false);
+  if (st.act !== 'merge' && mergeOn) setMerge(false);
+  if (st.act !== 'birthday' && demoBirth) { bsCard.hidden = true; bsYear = demoBirth.saved; demoBirth = null; }
+  if (st.act === 'harp') {
+    home(); setHarp(true);
+    const t = setInterval(() => { if (tour.step !== st) return clearInterval(t);
+      if (mode === 'overview' && trans >= 1) { clearInterval(t); harpAll(); setTimeout(() => { if (tour.step === st && harpOn) harpAll(); }, 2700); } }, 200);
+  } else if (st.act === 'birthday') {   // shows 1998 without saving it on this device · 只显示，不保存
+    demoBirth = { saved: bsYear }; bsYear = DEMO_BIRTH_YEAR; renderBS(); bsCard.hidden = false;
+  } else if (st.act === 'merge') { setMerge(true); mergePlay(); }
 }
 function startDemo() {
   welcome.close(); chat?.close?.(); setLadderOpen(false);
@@ -1151,7 +1230,7 @@ function renderTourBar() {
 addEventListener('pointerdown', e => { if (tour.active && !tour.paused && !(e.target.closest?.('#moreMenu') && !e.target.closest('button')) && !e.target.closest?.('#tourBar, #vr, #mr, [data-go="T:tour"], #voiceToggle, #language, #moreBtn, .mg-settings, .favrow, .favstar, #ladder .ltoggle, #musicToggle, #musicOptions, #musicPanel, #helpBtn')) tour.pause(performance.now()); }, true);
 // VR panel during the tour: the stop's name and line · VR 面板
 // The VR ladder panel's rows (also used by the VR harness) · VR 阶梯面板的行
-const vrMenu = () => { const l = lang(); return { title: tr(JUI.goTo, l), rows: [...(xr.mrState() ? [{ id: 'M:place', text: tr(MR_UI.menuRow, l), depth: 0, color: '#9fe8c4', on: xr.mrState().placing }] : []), { id: 'G:guide', text: tr(GUIDE_UI.button, l), depth: 0, color: '#7dffcf', on: guideVR }, { id: 'T:tour', text: tr(tourLabel(), l), depth: 0, color: '#8bd6ff', on: !!tour?.active && !tour.paused }, ...whatRows(l), ...cosmoRows(l), ...logRows(l), ...pmRows(l), ...newsRows(l), ...calRows(l), ...ladderRows(ladderState()).map(r => ({ id: r.id, text: tr(r.names, l), depth: r.depth, color: r.color, on: r.on, here: r.here })), { id: 'R:refs', text: tr(REF_UI.vrRow, l), depth: 0, color: '#c9d6e3', on: refsVR }, ...favMenuRows(l)] }; };   // 📚 after the ladder, before ★ (which stays last) · 放在阶梯之后
+const vrMenu = () => { const l = lang(); return { title: tr(JUI.goTo, l), rows: [...(xr.mrState() ? [{ id: 'M:place', text: tr(MR_UI.menuRow, l), depth: 0, color: '#9fe8c4', on: xr.mrState().placing }] : []), { id: 'G:guide', text: tr(GUIDE_UI.button, l), depth: 0, color: '#7dffcf', on: guideVR }, { id: 'T:tour', text: tr(tourLabel(), l), depth: 0, color: '#8bd6ff', on: !!tour?.active && !tour.paused }, { id: 'U:down', text: tr(ME_UI.down, l), depth: 0, color: '#7dffcf' }, { id: 'U:up', text: tr(ME_UI.up, l), depth: 0, color: '#7dffcf' }, { id: 'V:narration', text: tr(voiceStatus().enabled ? NARRATION_UI.on : NARRATION_UI.off, l), depth: 0, color: '#c9d6e3', on: voiceStatus().enabled }, ...whatRows(l), ...cosmoRows(l), ...logRows(l), ...pmRows(l), ...bsRows(l), ...harpRows(l), ...mergeRows(l), ...newsRows(l), ...calRows(l), ...ladderRows(ladderState()).map(r => ({ id: r.id, text: tr(r.names, l), depth: r.depth, color: r.color, on: r.on, here: r.here })), { id: 'R:refs', text: tr(REF_UI.vrRow, l), depth: 0, color: '#c9d6e3', on: refsVR }, ...favMenuRows(l)] }; };   // 📚 after the ladder, before ★ (which stays last) · 放在阶梯之后
 /* ───────── "What is this?": moons, spacecraft and surface landmarks in a close-up (click, point + hold, VR rows) · “这是什么？” ───────── */
 const whatCard = document.createElement('section'); whatCard.id = 'whatCard'; whatCard.className = 'whatcard'; whatCard.hidden = true;
 whatCard.setAttribute('role', 'dialog'); whatCard.setAttribute('aria-labelledby', 'whatName'); document.body.append(whatCard);
@@ -1663,11 +1742,11 @@ function animate(now) {
     b.angle += dt * orbitSpeed * (Math.PI * 2 / 60) * (365.25 / b.p.periodDays);   // Earth: one orbit per minute
     orbitPos.set(Math.cos(b.angle) * b.orbit, 0, Math.sin(b.angle) * b.orbit); linePos.set(lineX[b.p.id], 0, 0);
     b.anchor.position.lerpVectors(orbitPos, linePos, ease(lineBlend));
-    b.line.visible = mode !== 'trajectory' && mode !== 'journey' && lineBlend < 0.98 && focusFade < 0.97; b.line.material.opacity = (hoverId === b.p.id ? 0.75 : 0.3) * (1 - lineBlend) * (1 - focusFade);
+    b.line.visible = mode !== 'trajectory' && mode !== 'journey' && lineBlend < 0.98 && focusFade < 0.97; b.line.material.opacity = Math.max(hoverId === b.p.id ? 0.75 : 0.3, 0.95 * (b.harpGlow || 0)) * (1 - lineBlend) * (1 - focusFade);
     if (b.spinOn) b.spin.rotation.y += dt * (Math.PI * 2 / 20) * (23.93 / b.p.rotationHours);     // Earth: one spin per 20 s
     if (b.clouds) b.clouds.rotation.y += dt * 0.012;
   }
-  sun.spin.rotation.y += dt * 0.02; pmTick(dt);   // 🪐 your planet · 你的行星
+  sun.spin.rotation.y += dt * 0.02; pmTick(dt); harpTick(dt, inXR, now); mergeTick(dt); mePinTick(dt);   // 🪐 your planet · 你的行星
   belt.rotation.y += dt * orbitSpeed * 0.02; belt.material.opacity = 0.5 * (1 - lineBlend) * (1 - focusFade * 0.7);
 
   // Particle spread for the focused planet · 当前行星的粒子扩散
@@ -1752,7 +1831,7 @@ function animate(now) {
   // 混合现实特写：只保留当前行星（太阳等会飘在房间里）
   if (inXR && mode === 'focus' && xr.mrState()) { for (const b of bodies) if (b !== focus) b.anchor.visible = false; belt.visible = false; }
   tour.tick(performance.now());
-  journey.update(dt, camera, mode === 'journey'); decayEdge(edge, dt); updateCrumb(); updateLadder();
+  journey.update(dt, camera, mode === 'journey'); decayEdge(edge, dt); updateCrumb(); updateNav(); updateLadder();
   if (ladderPending && !journey.busy && trans >= 0.6) ladderGo(ladderPending);
   if (inXR) xr.update(hand.progress || 0);
   renderer.render(scene, camera);
@@ -1983,6 +2062,434 @@ function pmPanel() {
   const { r, rows } = pmFacts(myPlanet, l);
   return { eyebrow: tr(PM_UI.badge, l).toUpperCase(), title: pmName(myPlanet, l), accent: myPlanet.color, text: r.notes.slice(0, 2).map(k => tr(PM_NOTES[k][0], l)).join(' '), facts: [...rows.slice(0, 4), ...(pmAgeLine(l) ? [pmAgeLine(l)] : [])], hint: planetAge(myPlanet) ? `🎂 ${tr(planetAge(myPlanet).fast ? PM_UI.ageFast : PM_UI.ageReal, l)}` : tr(PM_UI.vrPick, l), hintColor: '#c7b7ef' };
 }
+/* ───────── 🎂 Your birthday star (birthday.js) · 你的生日星 ───────── */
+// Desktop: a card from ☰ More › Explore (type your birth year). VR: a "🎂 Birthday star" row; open, four rows step the year and
+// the panel shows the match. The year is kept on this device only. · 桌面：卡片；VR：用四行调整年份；年份只存在本机
+const BS_KEY = 'cosmo-birthyear';
+let bsYear = (() => { try { const y = +localStorage.getItem(BS_KEY); return validYear(y) ? y : null; } catch { return null; } })();
+function bsSave(y) { bsYear = y; try { if (y == null) localStorage.removeItem(BS_KEY); else localStorage.setItem(BS_KEY, String(y)); } catch {} }
+const bsSrcName = u => /esa\.int|esawebb/.test(u) ? 'ESA' : /eso\.org/.test(u) ? 'ESO' : 'NASA';
+const bsName = (s, l) => tr(s.names, l);
+// A UI sentence with its {placeholders} filled per language (star names differ by language) · 每种语言分别填入
+const bsL4 = (o, vars) => L4(l => tr(bsFill(o, typeof vars === 'function' ? vars(l) : vars), l));
+const bsCard = document.createElement('section'); bsCard.id = 'bsCard'; bsCard.className = 'calcard bscard'; bsCard.hidden = true;
+bsCard.setAttribute('role', 'dialog'); bsCard.setAttribute('aria-labelledby', 'bsTitle'); document.body.append(bsCard);
+function bsRuler(r, l) {
+  const W = 480, H = 74, x = ly => 14 + Math.min(135, ly) / 135 * (W - 28), esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const ticks = [0, 25, 50, 75, 100, 125].map(t => `<line x1="${x(t)}" x2="${x(t)}" y1="40" y2="46" stroke="#ffffff33"/><text x="${x(t)}" y="60" text-anchor="middle">${t ? esc(tr(bsFill(BS_UI.ly, { d: t }), l)) : '☉'}</text>`).join('');
+  const dots = BS_STARS.map(s => { const on = s === r.star; return `<circle cx="${x(s.ly)}" cy="40" r="${on ? 6 : 3}" fill="${s.color}" opacity="${on ? 1 : .55}"${s.planets ? ` stroke="#9fe8c4" stroke-width="${on ? 2 : 1}"` : ''}><title>${esc(bsName(s, l))} · ${esc(tr(bsFill(BS_UI.ly, { d: fmtLy(s.ly, l) }), l))}</title></circle>`; }).join('');
+  const you = `<line x1="${x(r.age)}" x2="${x(r.age)}" y1="14" y2="40" stroke="#8bd6ff" stroke-width="2"/><text x="${Math.min(W - 34, Math.max(34, x(r.age)))}" y="10" text-anchor="middle" class="you">${esc(tr(BS_UI.you, l))} · ${r.age}</text>`;
+  return `<svg class="bsruler" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(tr(BS_UI.ruler, l))}"><line x1="${x(0)}" x2="${x(135)}" y1="40" y2="40" stroke="#ffffff26"/>${ticks}${dots}${you}</svg>`;
+}
+function bsResultHTML(y) {
+  const forget = bsYear != null ? `<div class="bsacts"><button type="button" class="jback" id="bsForget">${quad(BS_UI.forget)}</button></div>` : '';
+  if (!validYear(y)) return `<p class="bserr">${quad(bsFill(BS_UI.bad, { a: BS_MIN_YEAR, b: new Date().getFullYear() }))}</p>${forget}`;
+  const r = birthdayStar(y), l = lang(), esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const link = u => `<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${quad(BS_UI.source)}: ${bsSrcName(u)} ↗</a>`;
+  const nextLine = r.next ? `<p class="bsnext">${quad(bsL4(BS_UI.next, l2 => ({ y: r.nextYear, s: bsName(r.next, l2), d: fmtLy(r.next.ly, l2) })))}</p>` : '';
+  if (r.young) return `<p class="bsleft">${quad(bsFill(BS_UI.young, { y: r.nextYear }))}</p>${bsRuler(r, l)}<p class="bsnote">${quad(BS_UI.note)} ${link(BS_STARS[0].src)}</p>${forget}`;
+  const s = r.star;
+  return `${r.old ? `<p class="bsleft">${quad(bsFill(BS_UI.old, { d: BS_STARS[BS_STARS.length - 1].ly }))}</p>` : ''}
+    <div class="bsstar" style="--c:${s.color}"><i aria-hidden="true"></i><div><b class="bsname">${quad(s.names)}</b><span class="bsaway">${quad(bsL4(BS_UI.away, l2 => ({ d: fmtLy(s.ly, l2) })))}</span></div></div>
+    <p class="bsleft">${quad(bsL4(BS_UI.left, l2 => ({ s: bsName(s, l2), y: r.leftYear, b: y })))}</p>
+    <p class="bsfact">${quad(s.fact)}${s.planets ? ` <span class="bspl">${quad(BS_UI.planets)}</span>` : ''}<br>${link(s.src)}${s.also ? ' · ' + link(s.also) : ''}</p>
+    ${nextLine}${bsRuler(r, l)}<p class="bsnote">${quad(BS_UI.note)}</p>
+    <div class="bsacts"><button type="button" class="calfly" id="bsFly">✈ ${quad(BS_UI.fly)}</button><button type="button" class="jback" id="bsForget">${quad(BS_UI.forget)}</button></div>`;
+}
+function renderBS() {
+  const Y = new Date().getFullYear();
+  bsCard.innerHTML = `<div class="jtop"><div class="eyebrow" id="bsTitle">🎂 ${quad(BS_UI.title)}</div><button type="button" class="jback" id="bsClose">✕ ${quad(BS_UI.close)}</button></div>
+    <p class="calintro">${quad(BS_UI.intro)}</p>
+    <form id="bsForm" class="bsform" novalidate><label for="bsYear">${quad(BS_UI.year)}</label>
+      <input id="bsYear" type="number" inputmode="numeric" min="${BS_MIN_YEAR}" max="${Y}" step="1" placeholder="${Y - 25}" value="${bsYear ?? ''}">
+      <button type="submit" class="primary">${quad(BS_UI.find)}</button></form>
+    <div id="bsOut" aria-live="polite">${bsYear != null ? bsResultHTML(bsYear) : ''}</div>`;
+}
+function openBS(y) {
+  if (y != null && validYear(+y)) bsSave(+y);
+  renderBS(); bsCard.hidden = false; (bsYear != null ? $('#bsClose') : $('#bsYear')).focus();
+}
+$('#bsOpen').onclick = () => openBS();
+bsCard.addEventListener('submit', e => {
+  e.preventDefault(); const y = Math.round(+$('#bsYear').value);
+  if (validYear(y)) { bsSave(y); sfx('chime'); }
+  $('#bsOut').innerHTML = bsResultHTML(y);
+});
+bsCard.addEventListener('click', e => {
+  if (e.target.closest('#bsClose')) { bsCard.hidden = true; $('#moreBtn')?.focus(); return; }
+  if (e.target.closest('#bsForget')) { bsSave(null); renderBS(); $('#bsYear').focus(); return; }
+  if (e.target.closest('#bsFly')) { bsCard.hidden = true; ladderGo('L:neighbourhood'); }
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && !bsCard.hidden) { bsCard.hidden = true; e.stopImmediatePropagation(); $('#moreBtn')?.focus(); } }, true);
+$('#language')?.addEventListener('change', () => setTimeout(() => { if (!bsCard.hidden) { const v = $('#bsYear')?.value; renderBS(); if (v) $('#bsYear').value = v; } }, 0));
+// VR: the head row toggles; four rows step the year (no keyboard in a headset) · VR：四行调整年份（头显里没有键盘）
+const BS_STEPS = { 'Z:-10': -10, 'Z:-1': -1, 'Z:+1': 1, 'Z:+10': 10 };
+function bsRows(l) {
+  const head = { id: 'Z:bs', text: tr(BS_UI.vrRow, l) + (bsVR ? ' · ' + (bsYear ?? new Date().getFullYear() - 25) : ''), depth: 0, color: '#ffd27a', on: bsVR };
+  if (!bsVR) return [head];
+  return [head, ...[['Z:-10', 'minus10'], ['Z:-1', 'minus1'], ['Z:+1', 'plus1'], ['Z:+10', 'plus10']].map(([id, k]) => ({ id, text: tr(BS_UI[k], l), depth: 1, color: '#ffd27a' }))];
+}
+function bsGo(id) {
+  if (id === 'Z:bs') { bsVR = !bsVR; return true; }   // a default year shows, but nothing is saved until a step row is used · 仅在调整后保存
+  if (!(id in BS_STEPS)) return false;
+  bsSave(Math.min(new Date().getFullYear(), Math.max(BS_MIN_YEAR, (bsYear ?? new Date().getFullYear() - 25) + BS_STEPS[id]))); sfx('chime'); return true;
+}
+function bsPanel() {
+  const l = lang(), y = bsYear ?? new Date().getFullYear() - 25, r = birthdayStar(y), eyebrow = tr(BS_UI.vrRow, l).replace(/^🎂\s*/, '').toUpperCase();
+  const lyTxt = s => tr(bsFill(BS_UI.ly, { d: fmtLy(s.ly, l) }), l);
+  const next = r.next ? [[tr(BS_UI.nextLabel, l), `${r.nextYear} · ${bsName(r.next, l)}`]] : [];
+  if (r.young) return { eyebrow, title: bsName(BS_STARS[0], l), accent: BS_STARS[0].color, text: tr(bsFill(BS_UI.young, { y: r.nextYear }), l),
+    facts: [[tr(BS_UI.born, l), String(y)], ...next], hint: tr(BS_UI.vrHint, l), hintColor: '#ffd27a' };
+  const s = r.star;
+  return { eyebrow, title: bsName(s, l), accent: s.color, text: tr(bsFill(BS_UI.left, { s: bsName(s, l), y: r.leftYear, b: y }), l),
+    facts: [[tr(BS_UI.born, l), String(y)], [tr(BS_UI.dist, l), `${lyTxt(s)} · ${bsSrcName(s.src)}`], [tr(BS_UI.leftLabel, l), '≈ ' + r.leftYear], ...next],
+    hint: tr(BS_UI.vrHint, l), hintColor: '#ffd27a' };
+}
+/* ───────── 🎵 Orbit harp (harp.js) · 轨道竖琴 ───────── */
+// In the overview, sweeping across an orbit plucks it: mouse (pointermove), webcam hand cursor and VR fingertip aim (onHand),
+// and in VR also a real fingertip that touches the orbital plane (mixed reality on your table) · 鼠标、手势光标、VR 指尖均可拨动
+const harp = createHarp(), harpPrev = {}, HARP_LINE = new T.Color('#3b5870'), harpColor = new T.Color();
+let harpLast = null, harpMoon = null, harpCount = 0;
+const harpNotes = Object.fromEntries(planets.map(b => [b.p.id, noteForPeriod(HARP_PERIODS[b.p.id])])), harpRadii = planets.map(b => b.orbit);
+// A soft glowing band over each orbit, lit when the string is plucked (a 1-px line alone is too thin to see) · 拨动时发光的光带
+for (const b of planets) {
+  const w = Math.max(0.6, b.orbit * 0.012);
+  b.harpRing = new T.Mesh(new T.RingGeometry(b.orbit - w, b.orbit + w, 256, 1).rotateX(-Math.PI / 2),
+    new T.MeshBasicMaterial({ color: b.p.color, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, toneMapped: false }));
+  b.harpRing.visible = false; scene.add(b.harpRing);
+}
+const harpBar = document.createElement('section'); harpBar.id = 'harpBar'; harpBar.className = 'harpbar'; harpBar.hidden = true;
+harpBar.setAttribute('aria-label', HARP_UI.title.en); document.body.append(harpBar);
+const harpRay = new T.Vector3(), harpCam = new T.Vector3(), harpTip = new T.Vector3();
+function setHarp(on) {
+  harpOn = !!on; harp.stop(); harpMoon = null;
+  for (const k in harpPrev) harpPrev[k] = null;
+  if (harpOn && mode !== 'overview') ladderGo('L:solar-system');
+  if (harpOn) { harp.warm([...Object.values(harpNotes), ...MOONS.map(m => m.midi)]); setHover(null); }
+  renderHarpBar(); harpBar.hidden = !harpOn || xr.active();
+}
+// Screen point → distance from the Sun on the orbital plane; crossing a ring between two samples plucks it · 屏幕点 → 到太阳的距离
+function harpAt(x, y, src) {
+  if (!harpOn || mode !== 'overview' || trans < 0.6) { harpPrev[src] = null; return; }
+  camera.getWorldPosition(harpCam); harpRay.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1, 0.5).unproject(camera).sub(harpCam).normalize();
+  harpSample(src, ringDistance(harpCam, harpRay));
+}
+function harpSample(src, r) {
+  const prev = harpPrev[src]; harpPrev[src] = r;
+  if (r == null || prev == null) return;
+  for (const i of crossed(prev, r, harpRadii)) harpPluck(planets[i]);
+}
+function harpPluck(b, quiet = false) {
+  const now = performance.now(); if (now - (b.harpAt || 0) < 110) return;   // one sweep = one pluck per string · 一次扫过只响一次
+  b.harpAt = now; b.harpGlow = 1; harp.play(harpNotes[b.p.id], quiet ? 0.6 : 0.85); harpLast = { b, at: now }; harpCount++;
+  renderHarpLast();
+}
+function harpAll() { if (mode !== 'overview') return; planets.forEach((b, i) => harp.later(i * 230, () => harpPluck(b, true))); }
+function harpMoons() {
+  harp.stop(); const beats = moonBeats(), notes = Object.fromEntries(MOONS.map(m => [m.id, m.midi]));
+  for (let k = 0; k < 16; k++) harp.later(k * 400, () => { const ids = beats[k % 4]; ids.forEach(id => harp.play(notes[id], 0.55)); harpMoon = { ids, at: performance.now(), k }; renderHarpMoons(); });
+  harp.later(16 * 400 + 300, () => { harpMoon = null; renderHarpMoons(); });
+}
+function harpTick(dt, inXR, now) {
+  if (harpOn && mode !== 'overview' && trans >= 1) setHarp(false);   // left the Solar System: the harp stops · 离开太阳系即停止
+  for (const b of planets) {
+    const g = b.harpGlow = (b.harpGlow || 0) * Math.exp(-dt * 2.2);
+    if (g < 0.002 && !b.harpTinted) continue;
+    b.line.material.color.copy(HARP_LINE).lerp(harpColor.set(b.p.color), Math.min(1, g * 1.4)); b.harpTinted = g >= 0.002;
+    b.line.scale.setScalar(1 + 0.006 * g * Math.sin(now * 0.09));   // the string trembles · 弦在颤动
+    b.harpRing.visible = g >= 0.002 && b.line.visible; b.harpRing.material.opacity = 0.6 * g; b.harpRing.scale.copy(b.line.scale);
+  }
+  if (!harpOn || !inXR || !xr.mrState()) return;
+  // Mixed reality (the system sits on your table, within reach): a real fingertip touching the orbital plane plucks too · 混合现实：指尖触碰轨道平面
+  for (const t of xr.tips()) {
+    harpTip.copy(t.p); const near = Math.abs(harpTip.y) < 0.05 * t.scale;
+    harpSample('tip' + t.i, near ? Math.hypot(harpTip.x, harpTip.z) : null);
+  }
+}
+const hName = (b, l) => nameOf(b.p)[Math.max(0, ['en', 'zh', 'es', 'pt'].indexOf(l))];
+const hNum = (n, l) => n.toLocaleString(l === 'zh' ? 'zh-CN' : l === 'pt' ? 'pt-BR' : l);
+function renderHarpBar() {
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  harpBar.innerHTML = `<div class="hbtop"><b>${quad(HARP_UI.button)}</b><button type="button" class="jback" id="harpClose">✕ ${quad(HARP_UI.close)}</button></div>
+    <p class="hbhint">${quad(HARP_UI.hint)}</p><p class="hblast" id="harpLast" aria-live="polite"></p>
+    <div class="hbmoons" id="harpMoons" hidden>${MOONS.map(m => `<span data-moon="${m.id}" style="--c:${m.color}"><i></i>${quad(m.names)}</span>`).join('')}</div>
+    <div class="hbacts"><button type="button" id="harpAll">${quad(HARP_UI.all)}</button><button type="button" id="harpMoonsBtn">${quad(HARP_UI.moons)}</button></div>
+    <details class="hbhow"><summary>${quad(HARP_UI.howTitle)}</summary><p>${quad(HARP_UI.how)}</p>
+    <p>${quad(HARP_UI.source)}: <a class="src" href="${esc(HARP_PERIODS_SRC)}" target="_blank" rel="noopener">NASA ↗</a> · ${RESONANCE_SRC.map((u, i) => `<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${i ? 'ESA' : 'NASA'} ↗</a>`).join(' · ')}</p></details>`;
+  renderHarpLast(); renderHarpMoons();
+}
+function renderHarpLast() {
+  const el = harpBar.querySelector('#harpLast'); if (!el || !harpLast) return;
+  const b = harpLast.b;
+  el.innerHTML = `<i style="--c:${b.p.color}"></i>${quad(L4(l => tr(HARP_UI.played, l).replace('{p}', hName(b, l)).replace('{n}', hNum(HARP_PERIODS[b.p.id], l))))} · ${noteName(harpNotes[b.p.id], lang())}`;
+}
+function renderHarpMoons() {
+  const box = harpBar.querySelector('#harpMoons'); if (!box) return;
+  box.hidden = !harpMoon; if (!harpMoon) return;
+  box.querySelectorAll('[data-moon]').forEach(s => { s.classList.remove('on'); void s.offsetWidth; if (harpMoon.ids.includes(s.dataset.moon)) s.classList.add('on'); });
+}
+$('#harpOpen').onclick = () => setHarp(!harpOn);
+harpBar.addEventListener('click', e => {
+  if (e.target.closest('#harpClose')) { setHarp(false); $('#moreBtn')?.focus(); }
+  else if (e.target.closest('#harpAll')) harpAll();
+  else if (e.target.closest('#harpMoonsBtn')) harpMoons();
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && harpOn && !xr.active()) { setHarp(false); e.stopImmediatePropagation(); } }, true);
+$('#language')?.addEventListener('change', () => setTimeout(() => { if (harpOn) renderHarpBar(); }, 0));
+// VR: a row to switch it on; open, two rows play every orbit / Jupiter's moons; the panel shows the last string · VR 行
+function harpRows(l) {
+  const head = { id: 'H:harp', text: tr(HARP_UI.button, l), depth: 0, color: '#9fe8c4', on: harpOn };
+  if (!harpOn) return [head];
+  return [head, { id: 'H:all', text: tr(HARP_UI.all, l), depth: 1, color: '#9fe8c4' }, { id: 'H:moons', text: tr(HARP_UI.moons, l), depth: 1, color: '#9fe8c4' }];
+}
+function harpGo(id) {
+  if (id === 'H:harp') { setHarp(!harpOn); return true; }
+  if (!harpOn) return false;
+  if (id === 'H:all') { harpAll(); return true; }
+  if (id === 'H:moons') { harpMoons(); return true; }
+  return false;
+}
+function harpPanel() {
+  const l = lang(), eyebrow = tr(HARP_UI.title, l).toUpperCase(), moonsOn = !!harpMoon;   // the moons panel stays while their rhythm plays · 节奏播放时保持
+  if (moonsOn) return { eyebrow, title: tr(HARP_UI.moons, l).replace(/^▶\s*/, ''), accent: '#ffd36b', text: tr(HARP_UI.moonsText, l),
+    facts: MOONS.map(m => [tr(m.names, l), harpMoon.ids.includes(m.id) ? '● ● ●' : '·']), hint: tr(HARP_UI.vrHint, l), hintColor: '#9fe8c4' };
+  if (mode !== 'overview') return { eyebrow, title: tr(HARP_UI.title, l), accent: '#9fe8c4', text: tr(HARP_UI.off, l), facts: [], hint: tr(HARP_UI.vrHint, l), hintColor: '#9fe8c4' };
+  const b = harpLast?.b;
+  return { eyebrow, title: b ? hName(b, l) : tr(HARP_UI.title, l), accent: b ? b.p.color : '#9fe8c4', text: tr(HARP_UI.how, l),
+    facts: b ? [[tr(HARP_UI.year, l), tr(HARP_UI.days, l).replace('{n}', hNum(HARP_PERIODS[b.p.id], l))], [tr(HARP_UI.note, l), noteName(harpNotes[b.p.id], l)]] : [],
+    hint: tr(HARP_UI.vrHint, l), hintColor: '#9fe8c4' };
+}
+/* ───────── 👏 Galaxy collision: the Milky Way and Andromeda (merger.js) · 星系碰撞 ───────── */
+// At the Local Group the two galaxies are replaced by a small simulation of thousands of stars: clap (VR), pinch
+// (webcam) or press Start. The frame runs from the Milky Way to Andromeda as drawn at this level. · 在本星系群层级播放
+const MERGE_MW = new T.Vector3(-30, 0, 10.5), MERGE_M31 = new T.Vector3(45, 4.5, -10.5);   // pieces/local-group.js, pieces/andromeda.js
+const MERGE_SECONDS = 32, MERGE_SECONDS_DEMO = 13;   // the whole story plays in about half a minute · 约半分钟播完
+const merge = { sim: null, shown: false, flying: false, done: false, root: new T.Group(), pts: null };
+{
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, '#fff'); gr.addColorStop(0.25, 'rgba(255,255,255,.7)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  merge.dot = new T.CanvasTexture(c);
+  const axis = MERGE_M31.clone().sub(MERGE_MW), sc = axis.length() / 8;   // the simulation starts 8 units apart · 模拟初始相距 8
+  merge.root.position.copy(MERGE_MW).add(MERGE_M31).multiplyScalar(0.5);
+  merge.root.quaternion.setFromUnitVectors(new T.Vector3(1, 0, 0), axis.normalize()); merge.root.scale.setScalar(sc);
+  merge.root.visible = false; merge.root.name = 'merger'; scene.add(merge.root);
+}
+const mergeBar = document.createElement('section'); mergeBar.id = 'mergeBar'; mergeBar.className = 'harpbar mergebar'; mergeBar.hidden = true;
+mergeBar.setAttribute('aria-label', MERGE_UI.title.en); document.body.append(mergeBar);
+const atLocalGroup = () => mode === 'journey' && journey.level === 'local-group' && !journey.piece;
+const nearLocalGroup = () => mode === 'journey' && journey.level === 'local-group';   // a close-up (Andromeda) still counts · 特写也算
+function setMerge(on) {
+  mergeOn = !!on; mergeStop();
+  if (mergeOn && !atLocalGroup()) { merge.flying = true; merge.flyAt = performance.now(); if (nearLocalGroup()) closePiece(); else ladderGo('L:local-group'); }
+  if (mergeOn) setHover(null);
+  renderMergeBar(); mergeBar.hidden = !mergeOn || xr.active();
+}
+function mergeStop() {
+  merge.sim = null; merge.done = false; merge.shown = false; merge.root.visible = false; journey.root.visible = true; document.body.classList.remove('merging');
+}
+function mergePlay() {
+  if (!mergeOn) return false;
+  if (!atLocalGroup() || trans < 1) { merge.flying = true; merge.flyAt = performance.now(); merge.pending = true; if (nearLocalGroup()) closePiece(); else ladderGo('L:local-group'); return true; }
+  merge.sim = createMergerSim({ n: 3000 }); merge.done = false; merge.acc = 0; merge.pending = false;
+  if (!merge.pts) {   // one set of GPU buffers, reused on every replay · 只创建一次缓冲区
+    const g = new T.BufferGeometry(), n = merge.sim.count;
+    g.setAttribute('position', new T.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new T.BufferAttribute(new Float32Array(n * 3), 3));
+    g.setAttribute('aSize', new T.BufferAttribute(new Float32Array(n).fill(1), 1));
+    merge.pts = new T.Points(g, pointsMaterial(T)); merge.pts.material.uniforms.uOpacity.value = 0.8;
+    merge.pts.frustumCulled = false; merge.root.add(merge.pts);
+  }
+  const g = merge.pts.geometry, pa = g.attributes.position;
+  pa.array.set(merge.sim.pos); merge.sim.pos = pa.array; pa.needsUpdate = true;   // the simulation writes straight into the GPU copy · 直接写入
+  g.attributes.color.array.set(merge.sim.col); g.attributes.color.needsUpdate = true;
+  merge.shown = true; merge.root.visible = true; journey.root.visible = false; document.body.classList.add('merging');
+  if (!xr.active() && zooms.journey < 1.5) { zooms.journey = 1.7; startTransition(); }   // desktop: move in closer: the galaxies fill the view · 拉近视角
+  sfx('chime'); renderMergeBar(); return true;
+}
+// 👏 in VR: at the Local Group a clap opens and starts it; with it open, a clap (re)plays · VR 拍手
+function mergeClap() {
+  if (!mergeOn && !nearLocalGroup()) return;
+  if (!mergeOn) { mergeOn = true; renderMergeBar(); }
+  mergePlay();
+}
+function mergeTick(dt) {
+  if (!mergeOn) return;
+  if (merge.pts) {   // the same soft, size-capped dots as the journey; VR: the world is scaled, so the dots are too · 与旅程相同的点
+    const u = merge.pts.material.uniforms; u.uSize.value = 0.61 / xr.sizeScale();
+    u.uViewH.value = (renderer.xr.isPresenting && renderer.xr.getCamera().cameras?.[0]?.viewport?.w) || renderer.domElement.height;
+  }
+  if (merge.flying) {
+    if (atLocalGroup() && trans >= 1 && !journey.busy) { merge.flying = false; if (merge.pending) mergePlay(); }
+    else { if (trans >= 1 && !journey.busy && !nearLocalGroup() && performance.now() - merge.flyAt > 1500) setMerge(false); return; }   // went somewhere else mid-flight · 中途去了别处
+  }
+  if (!nearLocalGroup()) { setMerge(false); return; }   // left the Local Group: it stops · 离开本星系群即停止
+  if (journey.piece && merge.shown) closePiece();   // the collision is shown on the whole group, not a close-up · 碰撞在整个星系群上播放
+  const s = merge.sim; if (!s || merge.done) return;
+  merge.acc += Math.min(0.1, dt) * SIM_END / (demoOn ? MERGE_SECONDS_DEMO : MERGE_SECONDS);   // the video demo plays it twice as fast · 演示中两倍速
+  while (merge.acc >= 0.02 && s.t < SIM_END) { s.step(0.02); merge.acc -= 0.02; }
+  merge.pts.geometry.attributes.position.needsUpdate = true;
+  if (s.t >= SIM_END) { merge.done = true; renderMergeBar(); }
+  renderMergeTime();
+}
+function renderMergeBar() {
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const src = (u, n) => `<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`;
+  mergeBar.innerHTML = `<div class="hbtop"><b>${quad(MERGE_UI.title)}</b><button type="button" class="jback" id="mergeClose">✕ ${quad(MERGE_UI.close)}</button></div>
+    <p class="hbhint">${quad(MERGE_UI.intro)}</p><p class="mgtime" id="mergeTime" aria-live="polite"></p>
+    <div class="hbacts"><button type="button" id="mergePlay">${quad(!merge.sim ? MERGE_UI.start : merge.done ? MERGE_UI.replay : MERGE_UI.restart)}</button></div>
+    <details class="hbhow"><summary>${quad(MERGE_UI.about)}</summary><p>${quad(MERGE_UI.scenario)}</p><p>${quad(MERGE_UI.odds)}</p><p>${quad(MERGE_UI.model)}</p>
+    <p>${quad(MERGE_UI.sources)}: ${src(MERGE_SRC.scenario, 'NASA')} · ${src(MERGE_SRC.elliptical, 'NASA SVS')} · ${src(MERGE_SRC.odds, 'ESA')}</p></details>`;
+  renderMergeTime(true);
+}
+let mergeTimeKey = '';
+function renderMergeTime(force) {
+  const el = mergeBar.querySelector('#mergeTime'); if (!el) return;
+  const s = merge.sim, key = s ? stageAt(s.t) + ':' + gyrAt(s.t).toFixed(1) : merge.flying ? 'fly' : '-';
+  if (key === mergeTimeKey && !force) return; mergeTimeKey = key;
+  el.innerHTML = s ? `<b>${quad(L4(l => whenText(gyrAt(s.t), l)))}</b><br>${quad(MERGE_UI.stages[stageAt(s.t)])}` : merge.flying ? quad(MERGE_UI.goThere) : '';
+}
+$('#mergeOpen').onclick = () => setMerge(!mergeOn);
+mergeBar.addEventListener('click', e => {
+  if (e.target.closest('#mergeClose')) { setMerge(false); $('#moreBtn')?.focus(); }
+  else if (e.target.closest('#mergePlay')) mergePlay();
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && mergeOn && !xr.active()) { setMerge(false); e.stopImmediatePropagation(); } }, true);
+$('#language')?.addEventListener('change', () => setTimeout(() => { if (mergeOn) renderMergeBar(); }, 0));
+// VR rows · VR 行
+function mergeRows(l) {
+  const head = { id: 'X:merge', text: tr(MERGE_UI.vrRow, l), depth: 0, color: '#ffb3c8', on: mergeOn };
+  return mergeOn ? [head, { id: 'X:play', text: tr(!merge.sim ? MERGE_UI.vrStart : merge.done ? MERGE_UI.replay : MERGE_UI.restart, l), depth: 1, color: '#ffb3c8' }] : [head];
+}
+function mergeGo(id) {
+  if (id === 'X:merge') { setMerge(!mergeOn); return true; }
+  if (id === 'X:play') return mergePlay();
+  return false;
+}
+function mergePanel() {
+  const l = lang(), s = merge.sim, eyebrow = tr(MERGE_UI.title, l).toUpperCase();
+  if (merge.flying || !atLocalGroup()) return { eyebrow, title: tr(MERGE_UI.vrRow, l), accent: '#ffb3c8', text: tr(MERGE_UI.goThere, l), facts: [], hint: tr(MERGE_UI.clapVR, l), hintColor: '#ffb3c8' };
+  if (!s) return { eyebrow, title: tr(MERGE_UI.clapVR, l), accent: '#ffb3c8', text: tr(MERGE_UI.scenario, l), facts: [], hint: tr(MERGE_UI.clapVR, l), hintColor: '#ffb3c8' };
+  return { eyebrow, title: whenText(gyrAt(s.t), l), accent: '#ffb3c8', text: tr(MERGE_UI.stages[stageAt(s.t)], l) + (merge.done ? '\n\n' + tr(MERGE_UI.odds, l) : ''),
+    facts: [], hint: tr(MERGE_UI.vrHint, l), hintColor: '#ffb3c8' };
+}
+/* ───────── 🧭 From the Universe to Me, and back (me.js) · 从宇宙到我 ───────── */
+// Down the levels to Earth, then the globe turns so your region faces you, with a glowing dot on it ("You are here").
+// "Me → Universe" plays it backwards. The same on the computer, phone and in VR. · 电脑、手机与 VR 相同
+const ME_KEY = 'cv-myplace';
+const meState = { run: 0, place: (() => { try { const p = JSON.parse(localStorage.getItem(ME_KEY) || 'null'); return p && isFinite(p.lat) && isFinite(p.lon) ? p : null; } catch { return null; } })() };
+const meMenu = document.createElement('div'); meMenu.id = 'meMenu'; meMenu.className = 'navplanets memenu'; meMenu.hidden = true; meMenu.setAttribute('role', 'menu');
+const meCard = document.createElement('section'); meCard.id = 'meCard'; meCard.className = 'calcard mecard'; meCard.hidden = true; meCard.setAttribute('role', 'dialog');
+const meTag = document.createElement('section'); meTag.id = 'meTag'; meTag.className = 'metag'; meTag.hidden = true; meTag.setAttribute('aria-live', 'polite');
+document.body.append(meMenu, meCard, meTag);
+function renderMeMenu() { meMenu.innerHTML = `<button type="button" data-me="up">${quad(ME_UI.up)}</button><button type="button" data-me="change">${quad(ME_UI.change)}</button>`; }
+function openMeMenu() {
+  renderMeMenu(); const r = $('#meMoreBtn').getBoundingClientRect(); meMenu.hidden = false;
+  meMenu.style.left = Math.min(innerWidth - meMenu.offsetWidth - 8, Math.max(8, r.right - meMenu.offsetWidth)) + 'px'; meMenu.style.bottom = (innerHeight - r.top + 8) + 'px';
+  $('#meMoreBtn').setAttribute('aria-expanded', 'true');
+}
+function closeMeMenu() { meMenu.hidden = true; $('#meMoreBtn')?.setAttribute('aria-expanded', 'false'); }
+function renderMeCard() {
+  meCard.innerHTML = `<div class="calhead"><b>🧭 ${quad(ME_UI.title)}</b><button type="button" class="jback" id="meCardClose">✕ ${quad(ME_UI.close)}</button></div>
+    <p>${quad(ME_UI.intro)}</p>
+    <button type="button" class="primary" id="meGeo">${quad(ME_UI.useGeo)}</button>
+    <form id="meForm" class="meform"><label for="meCity">${quad(ME_UI.or)}</label><input id="meCity" type="text" autocomplete="address-level2" placeholder="${tr(ME_UI.placeholder, lang())}"><button type="submit">${quad(ME_UI.go)}</button></form>
+    <p class="memsg" aria-live="polite"></p><p class="bsnote">🔒 ${quad(ME_UI.privacy)} · <a href="${ME_SRC.names}" target="_blank" rel="noopener">${ME_SRC.namesCredit}</a></p>`;
+}
+function openMeCard(then) { meState.then = then; renderMeCard(); meCard.hidden = false; $('#meCity').focus(); }
+const meMsg = m => { const el = meCard.querySelector('.memsg'); if (el) el.innerHTML = m ? quad(m) : ''; };
+async function nominatim(path) {
+  const r = await fetch('https://nominatim.openstreetmap.org/' + path + '&format=jsonv2&addressdetails=1&accept-language=' + ({ zh: 'zh', es: 'es', pt: 'pt' }[lang()] || 'en'));
+  if (!r.ok) throw new Error('nominatim ' + r.status); return r.json();
+}
+function meSave(lat, lon, names) {
+  meState.place = { ...roundPlace(lat, lon), names: names || {} };
+  try { localStorage.setItem(ME_KEY, JSON.stringify(meState.place)); } catch {}
+  meCard.hidden = true; const go = meState.then; meState.then = null; if (go) go();
+}
+// Location from the device (the browser or headset shows its own permission prompt), rounded before anything else · 设备定位
+function meGeo(then) {
+  if (!navigator.geolocation) { meMsg(ME_UI.geoDenied); return; }
+  meMsg(ME_UI.looking);
+  navigator.geolocation.getCurrentPosition(async p => {
+    const q = roundPlace(p.coords.latitude, p.coords.longitude); let names = {};
+    try { names = namesFrom((await nominatim(`reverse?lat=${q.lat}&lon=${q.lon}&zoom=10`)).address); } catch {}
+    if (then) meState.then = then; meSave(q.lat, q.lon, names);
+  }, () => meMsg(ME_UI.geoDenied), { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 });
+}
+meCard.addEventListener('click', e => {
+  if (e.target.closest('#meCardClose')) { meCard.hidden = true; meState.then = null; return; }
+  if (e.target.closest('#meGeo')) meGeo();
+});
+meCard.addEventListener('submit', async e => {
+  e.preventDefault(); const q = $('#meCity').value.trim(); if (!q) return;
+  const ll = q.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);   // "34.05, -118.24" works too · 也可输入坐标
+  if (ll) return meSave(+ll[1], +ll[2], {});
+  meMsg(ME_UI.looking);
+  try { const [hit] = await nominatim('search?q=' + encodeURIComponent(q) + '&limit=1'); if (!hit) return meMsg(ME_UI.notFound); meSave(+hit.lat, +hit.lon, namesFrom(hit.address)); }
+  catch { meMsg(ME_UI.notFound); }
+});
+// Wait until the camera has arrived, then hold a moment; false if the trip was cancelled · 等待到达
+async function meWait(id, hold) {
+  while (id === meState.run && (journey.busy || trans < 1)) await new Promise(r => setTimeout(r, 120));
+  await new Promise(r => setTimeout(r, hold)); return id === meState.run;
+}
+const mePlaceText = () => placeLine(meState.place?.names) || tr(ME_UI.yourArea, lang());
+// Earth turned to face you, with a glowing dot on your region · 地球转向你，并标出你的地区
+const mePin = { on: false, dot: null, v: new T.Vector3(), m: new T.Matrix4() };
+function earthPin(on) {
+  const b = bodyById.earth; if (!b) return;
+  if (on && meState.place) {
+    if (!mePin.dot) { mePin.dot = new T.Mesh(new T.SphereGeometry(1, 16, 12), new T.MeshBasicMaterial({ color: '#7dffcf', toneMapped: false, transparent: true })); mePin.dot.renderOrder = 5; }
+    const p = spherePoint(meState.place.lat, meState.place.lon);
+    mePin.p = p; mePin.dot.position.set(p.x, p.y, p.z).multiplyScalar(b.r * 1.015); mePin.dot.scale.setScalar(b.r * 0.03); b.spin.add(mePin.dot);
+    if (!mePin.on) { mePin.spinWas = b.spinOn; b.spinOn = false; } mePin.on = true;
+    if (zooms.focus < 1.5) { zooms.focus = 1.6; startTransition(); }   // a little closer: the whole continent in view · 稍微拉近
+    if (!xr.active()) goal.pitch = clamp(meState.place.lat * Math.PI / 180 * 0.85, -1.2, 1.2);   // look from your latitude · 从你的纬度看
+    meTag.innerHTML = `<small>${quad(ME_UI.here)}</small><b>${mePlaceText()}</b><button type="button" class="primary" id="meUpBtn">${quad(ME_UI.up)}</button><button type="button" class="jback" id="meClose">✕</button>`;
+    meTag.hidden = xr.active();
+  } else if (mePin.on) { mePin.on = false; mePin.dot?.parent?.remove(mePin.dot); b.spinOn = mePin.spinWas ?? true; meTag.hidden = true; }
+}
+function mePinTick(dt) {
+  if (!mePin.on) return;
+  const b = bodyById.earth; if (!(mode === 'focus' && focus === b)) { if (!document.body.classList.contains('me-trip')) earthPin(false); return; }
+  if (renderer.xr.isPresenting) mePin.v.setFromMatrixPosition(renderer.xr.getCamera().matrixWorld);   // the head, as last drawn (no re-compute) · 头部位置
+  else camera.getWorldPosition(mePin.v); b.tilt.updateMatrixWorld(); mePin.v.applyMatrix4(mePin.m.copy(b.tilt.matrixWorld).invert());   // viewer in the axis frame · 观看者在自转轴坐标中
+  const want = spinToFace(mePin.p, mePin.v), cur = b.spin.rotation.y;
+  b.spin.rotation.y = cur + wrapPI(want - cur) * Math.min(1, dt * 2.5);
+  mePin.dot.material.opacity = 0.6 + 0.4 * Math.sin(performance.now() / 300);
+}
+function meStop() { meState.run++; earthPin(false); document.body.classList.remove('me-trip'); }
+async function meDown() {
+  if (!meState.place) return xr.active() ? meGeo(meDown) : openMeCard(meDown);   // VR: the headset asks for the location · VR 由头显询问
+  const id = ++meState.run; welcome.close?.(); earthPin(false); document.body.classList.add('me-trip');
+  for (const lv of ME_LEVELS) { ladderGo('L:' + lv); if (!await meWait(id, 1000)) return; }
+  ladderGo('B:earth'); if (!await meWait(id, 600)) return;
+  earthPin(true);   // stays on "You are here" until closed · 停在“你在这里”
+  document.body.classList.remove('me-trip');
+}
+async function meUp() {
+  if (!meState.place) return xr.active() ? meGeo(meUp) : openMeCard(meUp);
+  const id = ++meState.run; document.body.classList.add('me-trip');
+  if (!(mode === 'focus' && focus?.p.id === 'earth')) { ladderGo('B:earth'); if (!await meWait(id, 400)) return; }
+  earthPin(true); if (!await meWait(id, 2500)) return;
+  earthPin(false);
+  for (const lv of [...ME_LEVELS].reverse()) { ladderGo('L:' + lv); if (!await meWait(id, 1000)) return; }
+  document.body.classList.remove('me-trip');
+}
+$('#meBtn').onclick = () => { closeMeMenu(); closeNavPlanets(); meDown(); };
+$('#meMoreBtn').onclick = e => { e.stopPropagation(); closeNavPlanets(); meMenu.hidden ? openMeMenu() : closeMeMenu(); };
+meMenu.addEventListener('click', e => { const b = e.target.closest('[data-me]'); if (!b) return; closeMeMenu();
+  if (b.dataset.me === 'up') meUp(); else { meStop(); openMeCard(null); } });
+meTag.addEventListener('click', e => { if (e.target.closest('#meUpBtn')) meUp(); else if (e.target.closest('#meClose')) meStop(); });
+addEventListener('pointerdown', e => {
+  if (!meMenu.hidden && !e.target.closest('#meMenu, #meMoreBtn')) closeMeMenu();
+  // taking the controls during the trip ends it · 旅途中访客操作即结束
+  if (document.body.classList.contains('me-trip') && (e.target === renderer.domElement || e.target.closest?.('#nav') && !e.target.closest('#meBtn, #meMoreBtn'))) meStop();
+}, true);
+addEventListener('keydown', e => { if (e.key !== 'Escape') return;
+  if (!meCard.hidden) { meCard.hidden = true; e.stopImmediatePropagation(); } else if (mePin.on || document.body.classList.contains('me-trip')) { meStop(); e.stopImmediatePropagation(); } }, true);
+// VR panel at the end of the trip · 旅程结束时的 VR 面板
+const mePanel = () => { const l = lang(); return { eyebrow: tr(ME_UI.eyebrow, l), title: tr(ME_UI.here, l), accent: '#7dffcf', text: placeLine(meState.place?.names) || tr(ME_UI.yourArea, l), facts: [], hint: tr(ME_UI.up, l), hintColor: '#7dffcf' }; };
+
 /* ───────── 🎙 Voice commands (vr-voice): a spoken or typed equivalent for every hand action · 语音指令 ───────── */
 let voiceNames = null;
 function voiceCommand(text, l = lang()) {
@@ -2018,4 +2525,6 @@ function voiceCommand(text, l = lang()) {
   if (c.type === 'planet') { if (inXR) pmVR = true; else openPM(myPlanet ? 'result' : 'edit'); return panel(VC_SAY.planet); }
   return null;
 }
-window.SolarAtlas = { voiceCommand, ask: t => chat.ask(t, true), get myPlanet() { return myPlanet; }, pmGo, openPM, vrPanel: () => pmVR ? pmPanel() : null,  get vrGuide() { return guideVR; }, vrMenuIds: () => vrMenu().rows.map(r => r.id), get vrAsk() { return { ...vrAsk, upAt: Math.round(hand.upAt || 0), downAt: Math.round(hand.downAt || 0), now: Math.round(performance.now()) }; }, get mode() { return mode; }, get mr() { return xr.mrState(); }, get focusId() { return focus?.p.id ?? null; }, ladderGo, demo: () => startDemo(), tour: { start: () => startTour(), pause: () => tour.pause(performance.now()), resume: () => tour.resume(performance.now()), stop: () => tour.stop(), get active() { return tour.active; }, get paused() { return tour.paused; }, get index() { return tour.index; }, get steps() { return tour.steps.length; }, get key() { return tour.step?.key ?? null; }, get phase() { return tour.state.phase; }, get user() { return !!tour.step?.user; } }, journey: { go: id => goLevel(id, 'up'), open: openPiece, back, pick: (x, y, px) => pickAt(x, y, px), get level() { return journey.level; }, get piece() { return journey.piece; }, get busy() { return journey.busy || trans < 1; } }, zoomBy, trajectory, PLANETS, selectPlanet: select, home, lineup, bodies: bodyById, scene, camera, simulateHand: onHand, screenOf: id => screenOf(bodyById[id]) };
+window.SolarAtlas = { harp: { go: id => harpGo(id), set: on => setHarp(on), at: (x, y) => harpAt(x, y, 'test'), get on() { return harpOn; }, get last() { return harpLast?.b.p.id ?? null; }, get plucks() { return harpCount; } }, me: { down: meDown, up: meUp, stop: meStop, set: (lat, lon, names) => meSave(lat, lon, names), get place() { return meState.place; }, get pinned() { return mePin.on; }, get trip() { return document.body.classList.contains('me-trip'); }, get spin() { return bodyById.earth.spin.rotation.y; } },
+  merge: { open: setMerge, play: mergePlay, clap: mergeClap, state: () => ({ on: mergeOn, flying: merge.flying, t: merge.sim ? +merge.sim.t.toFixed(1) : null, sep: merge.sim ? +merge.sim.sep().toFixed(2) : null, done: merge.done, shown: merge.shown, level: journey.level, drawn: merge.pts ? (() => { const a = merge.pts.geometry.attributes.position.array; let lo = 1e9, hi = -1e9; for (let i = 0; i < a.length; i += 3) { lo = Math.min(lo, a[i]); hi = Math.max(hi, a[i]); } return +(hi - lo).toFixed(2); })() : null }) },
+  birthday: { go: id => bsGo(id), open: y => openBS(y), get vr() { return bsVR; }, get year() { return bsYear; } }, voiceCommand, ask: t => chat.ask(t, true), get myPlanet() { return myPlanet; }, pmGo, openPM, vrPanel: () => pmVR ? pmPanel() : null,  get vrGuide() { return guideVR; }, vrMenuIds: () => vrMenu().rows.map(r => r.id), get vrAsk() { return { ...vrAsk, upAt: Math.round(hand.upAt || 0), downAt: Math.round(hand.downAt || 0), now: Math.round(performance.now()) }; }, get mode() { return mode; }, get mr() { return xr.mrState(); }, get focusId() { return focus?.p.id ?? null; }, ladderGo, demo: () => startDemo(), tour: { start: () => startTour(), pause: () => tour.pause(performance.now()), resume: () => tour.resume(performance.now()), stop: () => tour.stop(), get active() { return tour.active; }, get paused() { return tour.paused; }, get index() { return tour.index; }, get steps() { return tour.steps.length; }, get key() { return tour.step?.key ?? null; }, get phase() { return tour.state.phase; }, get user() { return !!tour.step?.user; } }, journey: { go: id => goLevel(id, 'up'), open: openPiece, back, pick: (x, y, px) => pickAt(x, y, px), get level() { return journey.level; }, get piece() { return journey.piece; }, get busy() { return journey.busy || trans < 1; } }, zoomBy, trajectory, PLANETS, selectPlanet: select, home, lineup, bodies: bodyById, scene, camera, simulateHand: onHand, screenOf: id => screenOf(bodyById[id]) };
