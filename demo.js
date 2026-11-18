@@ -19,6 +19,7 @@ const firstNOf = (byLang, n) => Object.fromEntries(VOICE_LANGS.map((l, i) => [l,
 export const DEMO_UI = {
   title: L('CosmoVerse demo', 'CosmoVerse 演示', 'Demo de CosmoVerse', 'Demo do CosmoVerse'),
   askName: L('Ask Cosmo', '问问 Cosmo', 'Pregunta a Cosmo', 'Pergunte ao Cosmo'),
+  clickVR: L('▶ Click to enter VR and start', '▶ 点击进入 VR 并开始', '▶ Haz clic para entrar en VR y empezar', '▶ Clique para entrar no VR e começar'),
   click: L('▶ Click anywhere to start (with sound)', '▶ 点击任意位置开始（有声音）', '▶ Haz clic en cualquier lugar para empezar (con sonido)', '▶ Clique em qualquer lugar para começar (com som)'),
 };
 // Cards shown full screen (title, hands, closing): heading, lines · 全屏卡片
@@ -98,7 +99,9 @@ export const DEMO_PLANETS = ['saturn'];   // chosen from the bar's ▾ list · �
 export const DEMO_BIRTH_YEAR = 1998;
 
 // Steps, same shape as tour.js plus card / piece / chat · 步骤（与游览相同，另加卡片、天体、问答）
-export function demoSteps() {
+// vr = true: the same story for inside the headset (no page cards: the VR panel shows each line; the clip, the birthday card
+// and the ☰ More menu are page-only, so they are left out) · VR 版：去掉只在网页上显示的步骤
+export function demoSteps(vr = false) {
   const piece = PIECES.find(p => p.id === DEMO_PIECE);
   const steps = [{ key: 'demo-title', text: DEMO_LINES.title, card: 'title', title: DEMO_UI.title, hold: 300 }];
   for (const id of DEMO_LEVELS) { const lv = levelById(id); steps.push({ key: 'level-' + id, text: levelSpeech(lv.blurb), go: id, title: lv.names }); }
@@ -112,6 +115,7 @@ export function demoSteps() {
   steps.push({ key: 'demo-vr', text: DEMO_LINES.vr, card: 'vr', title: DEMO_CARDS.vr.head, hold: 10500 });   // the clip is 19 s: show it whole · 片段 19 秒
   steps.push({ key: 'demo-more', text: DEMO_LINES.more, act: 'more', title: L('More', '更多', 'Más', 'Mais'), hold: 600 });   // ☰ More opens: Explore and Learn · 打开“更多”
   steps.push({ key: 'demo-end', text: DEMO_LINES.end, card: 'end', title: DEMO_UI.title, hold: 2500 });
+  if (vr) return steps.filter(x => !['demo-vr', 'demo-birthday', 'demo-more'].includes(x.key)).map(x => x.key === 'demo-merge' ? { ...x, hold: 9000 } : x);   // VR: let the collision play · VR：让碰撞播完
   return steps;
 }
 // Voice clips the demo adds (the others already exist: levels, pieces, tour-<planet>) · 新增语音

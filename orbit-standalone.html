@@ -8157,6 +8157,7 @@ const firstNOf = (byLang, n) => Object.fromEntries(VOICE_LANGS.map((l, i) => [l,
 const DEMO_UI = {
   title: L('CosmoVerse demo', 'CosmoVerse 演示', 'Demo de CosmoVerse', 'Demo do CosmoVerse'),
   askName: L('Ask Cosmo', '问问 Cosmo', 'Pregunta a Cosmo', 'Pergunte ao Cosmo'),
+  clickVR: L('▶ Click to enter VR and start', '▶ 点击进入 VR 并开始', '▶ Haz clic para entrar en VR y empezar', '▶ Clique para entrar no VR e começar'),
   click: L('▶ Click anywhere to start (with sound)', '▶ 点击任意位置开始（有声音）', '▶ Haz clic en cualquier lugar para empezar (con sonido)', '▶ Clique em qualquer lugar para começar (com som)'),
 };
 // Cards shown full screen (title, hands, closing): heading, lines · 全屏卡片
@@ -8236,7 +8237,9 @@ const DEMO_PLANETS = ['saturn'];   // chosen from the bar's ▾ list · 从底�
 const DEMO_BIRTH_YEAR = 1998;
 
 // Steps, same shape as tour.js plus card / piece / chat · 步骤（与游览相同，另加卡片、天体、问答）
-function demoSteps() {
+// vr = true: the same story for inside the headset (no page cards: the VR panel shows each line; the clip, the birthday card
+// and the ☰ More menu are page-only, so they are left out) · VR 版：去掉只在网页上显示的步骤
+function demoSteps(vr = false) {
   const piece = PIECES.find(p => p.id === DEMO_PIECE);
   const steps = [{ key: 'demo-title', text: DEMO_LINES.title, card: 'title', title: DEMO_UI.title, hold: 300 }];
   for (const id of DEMO_LEVELS) { const lv = levelById(id); steps.push({ key: 'level-' + id, text: levelSpeech(lv.blurb), go: id, title: lv.names }); }
@@ -8250,6 +8253,7 @@ function demoSteps() {
   steps.push({ key: 'demo-vr', text: DEMO_LINES.vr, card: 'vr', title: DEMO_CARDS.vr.head, hold: 10500 });   // the clip is 19 s: show it whole · 片段 19 秒
   steps.push({ key: 'demo-more', text: DEMO_LINES.more, act: 'more', title: L('More', '更多', 'Más', 'Mais'), hold: 600 });   // ☰ More opens: Explore and Learn · 打开“更多”
   steps.push({ key: 'demo-end', text: DEMO_LINES.end, card: 'end', title: DEMO_UI.title, hold: 2500 });
+  if (vr) return steps.filter(x => !['demo-vr', 'demo-birthday', 'demo-more'].includes(x.key)).map(x => x.key === 'demo-merge' ? { ...x, hold: 9000 } : x);   // VR: let the collision play · VR：让碰撞播完
   return steps;
 }
 // Voice clips the demo adds (the others already exist: levels, pieces, tour-<planet>) · 新增语音
@@ -9556,14 +9560,21 @@ function demoAct(st) {
     demoBirth = { saved: bsYear }; bsYear = DEMO_BIRTH_YEAR; renderBS(); bsCard.hidden = false;
   } else if (st.act === 'merge') { setMerge(true); mergePlay(); }
 }
-function startDemo() {
+function startDemo(vr = false) {
   welcome.close(); chat?.close?.(); setLadderOpen(false);
   demoOn = true; document.body.classList.add('demo');
-  tour.start(performance.now(), demoSteps());
+  tour.start(performance.now(), demoSteps(vr));
 }
 // After the demo the closing card stays (for the last frames of the video) until a click or a key · 结束卡片保留到点击或按键
 addEventListener('pointerdown', () => { if (!demoOn) demoCard(null); });
 addEventListener('keydown', () => { if (!demoOn) demoCard(null); });
+// ?demo=2: the demo inside VR. One click enters VR (the browser needs that click), then the story plays in the headset · VR 演示
+if (/[?&]demo=2/.test(location.search)) setTimeout(() => {
+  demoCard('title'); demoEl.insertAdjacentHTML('beforeend', `<p class="democlick">${quad(DEMO_UI.clickVR)}</p>`);
+  const go = () => { removeEventListener('click', go, true); $('#vr')?.click();
+    const t0 = performance.now(), wait = setInterval(() => { if (xr.active()) { clearInterval(wait); demoCard(null); setTimeout(() => startDemo(true), 1200); } else if (performance.now() - t0 > 20000) { clearInterval(wait); startDemo(false); } }, 200); };
+  addEventListener('click', go, true);
+}, 1500);
 // Browsers keep sound off until the first click, so the demo waits for one (the title card says so) · 浏览器需要先点击才有声音
 if (/[?&]demo=1/.test(location.search)) setTimeout(() => {
   if (navigator.userActivation?.isActive || navigator.userActivation?.hasBeenActive) return startDemo();

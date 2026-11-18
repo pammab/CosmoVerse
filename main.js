@@ -1194,14 +1194,21 @@ function demoAct(st) {
     demoBirth = { saved: bsYear }; bsYear = DEMO_BIRTH_YEAR; renderBS(); bsCard.hidden = false;
   } else if (st.act === 'merge') { setMerge(true); mergePlay(); }
 }
-function startDemo() {
+function startDemo(vr = false) {
   welcome.close(); chat?.close?.(); setLadderOpen(false);
   demoOn = true; document.body.classList.add('demo');
-  tour.start(performance.now(), demoSteps());
+  tour.start(performance.now(), demoSteps(vr));
 }
 // After the demo the closing card stays (for the last frames of the video) until a click or a key · 结束卡片保留到点击或按键
 addEventListener('pointerdown', () => { if (!demoOn) demoCard(null); });
 addEventListener('keydown', () => { if (!demoOn) demoCard(null); });
+// ?demo=2: the demo inside VR. One click enters VR (the browser needs that click), then the story plays in the headset · VR 演示
+if (/[?&]demo=2/.test(location.search)) setTimeout(() => {
+  demoCard('title'); demoEl.insertAdjacentHTML('beforeend', `<p class="democlick">${quad(DEMO_UI.clickVR)}</p>`);
+  const go = () => { removeEventListener('click', go, true); $('#vr')?.click();
+    const t0 = performance.now(), wait = setInterval(() => { if (xr.active()) { clearInterval(wait); demoCard(null); setTimeout(() => startDemo(true), 1200); } else if (performance.now() - t0 > 20000) { clearInterval(wait); startDemo(false); } }, 200); };
+  addEventListener('click', go, true);
+}, 1500);
 // Browsers keep sound off until the first click, so the demo waits for one (the title card says so) · 浏览器需要先点击才有声音
 if (/[?&]demo=1/.test(location.search)) setTimeout(() => {
   if (navigator.userActivation?.isActive || navigator.userActivation?.hasBeenActive) return startDemo();
