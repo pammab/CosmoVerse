@@ -6,9 +6,17 @@
 // Only fixed texts and prompts from narration-text.js can be requested, and successful audio is
 // cached by Vercel's CDN, so each clip is generated once per deployment, not once per visitor.
 import { NARRATION, SFX } from '../narration-text.js';
+import { LEVELS } from '../journey.js';
+import { PIECES } from '../pieces/index.js';
+import { tourClips } from '../tour.js';
+import { introClips } from '../intros.js';
+import { demoClips } from '../demo.js';
+import { clipList } from '../voice-clips.js';
+// Only these fixed texts can be spoken: planets, level blurbs, journey pieces · 只朗读固定文本
+const KNOWN = new Map(clipList({ narration: NARRATION, levels: LEVELS, pieces: PIECES, extra: [...tourClips(), ...demoClips(), ...introClips()] }).map(c => [c.key + '|' + c.lang, c.text]));
 
 const API = process.env.ELEVENLABS_API_BASE || 'https://api.elevenlabs.io';   // override only for testing
-const LANG_INDEX = { en: 0, zh: 1, es: 2 };
+const LANG_INDEX = { en: 0, zh: 1, es: 2, pt: 3 };
 const CACHE = 'public, max-age=86400, s-maxage=31536000, immutable';
 
 const hits = new Map();
@@ -48,13 +56,13 @@ export async function voice(query) {
   if (!key) return { status: 503, json: { error: 'config' } };
 
   if (query.kind === 'narrate') {
-    const lines = NARRATION[query.id], li = LANG_INDEX[query.lang];
-    if (!lines || li === undefined) return { status: 400, json: { error: 'bad' } };
+    const text = KNOWN.get(String(query.id) + '|' + String(query.lang));
+    if (!text || LANG_INDEX[query.lang] === undefined) return { status: 400, json: { error: 'bad' } };
     const voiceId = (process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL').replace(/[^\w]/g, '');
     // Narration is generated once and cached, so it uses ElevenLabs' most natural model.
     const model = process.env.ELEVENLABS_NARRATION_MODEL || 'eleven_multilingual_v2';
     const r = await eleven(`/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`, {
-      text: lines[li], model_id: model,
+      text, model_id: model,
       ...(model !== 'eleven_multilingual_v2' ? { language_code: query.lang } : {}),
       // A calm, warm documentary delivery · 沉稳温暖的纪录片语气
       voice_settings: { stability: 0.42, similarity_boost: 0.8, style: 0.35, use_speaker_boost: true, speed: 0.94 },

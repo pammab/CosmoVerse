@@ -7,7 +7,7 @@ import { NARRATION } from './narration-text.js';
 import { getLanguage } from './i18n.js';
 import { stopSpeaking } from './voice.js';
 
-const LANG_INDEX = { en: 0, zh: 1, es: 2 }, VOICE_LANG = { en: 'en-US', zh: 'zh-CN', es: 'es-ES' };
+const LANG_INDEX = { en: 0, zh: 1, es: 2, pt: 3 }, VOICE_LANG = { en: 'en-US', zh: 'zh-CN', es: 'es-ES', pt: 'pt-BR' };
 let enabled = true; try { enabled = localStorage.getItem('stellar-voice') !== 'off'; } catch {}
 let online = location.protocol !== 'file:';         // set false after the server says "no key"
 let ctx = null, audio = null, narrationId = 0;
@@ -79,12 +79,13 @@ function showCaption(text) {
 }
 function done(id) { if (id !== narrationId) return; audio = null; clearTimeout(captionTimer); window.__stellarSpeaking = false; showCaption(''); }
 // Split into sentences; each gets a share of the time proportional to its length · 按句显示字幕
-const sentences = text => text.match(/[^.!?。！？]+[.!?。！？]+["”’]?\s*|[^.!?。！？]+$/g)?.map(s => s.trim()).filter(Boolean) || [text];
+// A Latin stop ends a sentence only before a space or the end (keeps "2.5 million", "6.500") · 数字中的点不分句
+const sentences = text => text.match(/.+?(?:[.!?]["”’)]?(?=\s|$)|[。！？]["”’]?|$)\s*/g)?.map(s => s.trim()).filter(Boolean) || [text];
 function syncCaptions(parts, progress) {          // progress 0..1 → show the sentence being spoken
   const total = parts.reduce((n, s) => n + s.length, 0); let acc = 0;
   for (const s of parts) { acc += s.length; if (progress <= acc / total) { if (caption?.textContent !== s) showCaption(s); return; } }
 }
-// No ElevenLabs: captions only (no robotic voice) · 无 ElevenLabs 时只显示字幕
+// Last resort (no clip, no server, no browser voice): captions only · 最后手段：仅字幕
 let captionTimer = 0;
 function captionsOnly(text, lang, id) {
   const parts = sentences(text), perChar = lang === 'zh' ? 230 : 62; let i = 0;
@@ -102,41 +103,101 @@ function reverbBus() {
   reverbIn = c.createGain(); reverbIn.connect(dry).connect(c.destination); reverbIn.connect(lp).connect(conv).connect(wet).connect(c.destination);
   return reverbIn;
 }
-export async function narrate(bodyId) {
-  stopNarration();
-  if (!enabled) return;
-  const lines = NARRATION[bodyId]; if (!lines) return;
-  const lang = getLanguage(), text = lines[LANG_INDEX[lang] ?? 0], id = ++narrationId;
+// Pre-generated clips (tools/make-voice.mjs) listed in audio/narration/index.json; works on GitHub Pages (no server).
+// 预先生成的语音片段（无服务器也可用）
+let clips = null;
+const clipSet = () => clips || (clips = fetch('audio/narration/index.json').then(r => r.ok ? r.json() : null)
+  .then(j => new Set(j?.clips || [])).catch(() => new Set()));
+// Built-in browser voice, one sentence at a time so the caption follows it · 浏览器语音，逐句朗读并同步字幕
+let synthOn = false, utter = null;
+const hasSynth = () => 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
+function voicesReady() {
+  const v = speechSynthesis.getVoices(); if (v.length) return Promise.resolve(v);
+  return new Promise(res => { const t = setTimeout(() => res(speechSynthesis.getVoices()), 700);
+    speechSynthesis.addEventListener('voiceschanged', () => { clearTimeout(t); res(speechSynthesis.getVoices()); }, { once: true }); });
+}
+function bestVoice(voices, lang) {
+  const base = lang.slice(0, 2).toLowerCase(), same = voices.filter(v => v.lang?.toLowerCase().replace('_', '-').startsWith(base));
+  const exact = same.filter(v => v.lang?.replace('_', '-') === lang);
+  const nice = list => list.find(v => /natural|neural|premium|enhanced|google/i.test(v.name));
+  return nice(exact) || nice(same) || exact[0] || same[0] || null;
+}
+async function browserVoice(text, lang, id) {
+  const voice = bestVoice(await voicesReady(), VOICE_LANG[lang] || 'en-US');
+  if (id !== narrationId) return true;
+  if (!voice) return false;                                   // no voice for this language: captions only
+  const parts = sentences(text); let i = 0; synthOn = true;
+  const next = () => {
+    if (id !== narrationId) return;
+    if (i >= parts.length) { synthOn = false; return done(id); }
+    const u = new SpeechSynthesisUtterance(parts[i]); showCaption(parts[i++]);
+    u.voice = voice; u.lang = voice.lang; u.rate = 1; u.pitch = 1;
+    u.onend = next; u.onerror = e => { if (id !== narrationId) return; if (e.error === 'interrupted' || e.error === 'canceled') { synthOn = false; done(id); } else next(); };
+    utter = u; speechSynthesis.speak(u);            // keep a reference: Chrome can drop it before 'end' · 保持引用
+  };
+  speechSynthesis.cancel(); next(); return true;
+}
+function playClip(url, parts, id, revoke) {
+  return new Promise(res => {
+    audio = new Audio(url);
+    try { const bus = reverbBus(); if (bus && ctx.state === 'running') ctx.createMediaElementSource(audio).connect(bus); } catch {}   // only when audio is unlocked
+    audio.ontimeupdate = () => { if (id === narrationId && audio?.duration) syncCaptions(parts, audio.currentTime / audio.duration); };
+    audio.onended = () => { if (revoke) URL.revokeObjectURL(url); done(id); };
+    audio.onerror = () => { if (revoke) URL.revokeObjectURL(url); res(false); };
+    audio.play().then(() => res(true), () => res(false));
+  });
+}
+const pick = (texts, lang) => Array.isArray(texts) ? texts[LANG_INDEX[lang] ?? 0] : texts?.[lang] || texts?.en;
+// Cosmo speaks: a planet ('mars'), a level ('level-galaxy') or a journey piece ('piece-andromeda').
+// texts = { en, zh, es, pt } (or [en, zh, es, pt]); planets default to narration-text.js.
+// Voice order: static clip → ElevenLabs server (planets) → built-in browser voice → captions only.
+// 语音顺序：静态片段 → ElevenLabs 服务器（行星）→ 浏览器语音 → 仅字幕
+let lastKey = '';
+// What Cosmo is saying now (a narration key) or null · 当前朗读的键
+export const speakingKey = () => window.__stellarSpeaking ? lastKey : null;
+export async function narrate(key, texts = NARRATION[key]) {
+  stopNarration(); lastKey = key;
+  if (!enabled || !texts) return;
+  stopSpeaking();                                  // before taking a new id: stopSpeaking ends any narration too · 先停止
+  const lang = getLanguage(), text = pick(texts, lang), id = ++narrationId;
+  if (!text) return;
   const parts = sentences(text);
-  stopSpeaking(); window.__stellarSpeaking = true; showCaption(parts[0]);
-  if (online) {
+  window.__stellarSpeaking = true; showCaption(parts[0]);
+  if (location.protocol !== 'file:' && (await clipSet()).has(`${key}-${lang}`)) {
+    if (id !== narrationId) return;
+    if (await playClip(`audio/narration/${key}-${lang}.mp3`, parts, id, false)) return;
+    if (id !== narrationId) return;
+  }
+  // 'ut-…' = a line someone wrote in their own tour: no clip, the server can't voice it, so straight to the browser voice
+  // （用户自己写的台词：直接用浏览器语音，不询问服务器）
+  if (online && !key.startsWith('ut-')) {   // the server knows every planet, level and piece text (voice-clips.js) · 服务器只接受已知文本
     try {
-      const r = await fetch(`/api/voice?kind=narrate&id=${bodyId}&lang=${lang}`);
+      const r = await fetch(`/api/voice?kind=narrate&id=${key}&lang=${lang}`);
       if (id !== narrationId) return;
       if (r.ok) {
         const url = URL.createObjectURL(await r.blob());
         if (id !== narrationId) { URL.revokeObjectURL(url); return; }
-        audio = new Audio(url);
-        try { const bus = reverbBus(); if (bus && ctx.state === 'running') ctx.createMediaElementSource(audio).connect(bus); } catch {}   // only when audio is unlocked
-        audio.ontimeupdate = () => { if (id === narrationId && audio?.duration) syncCaptions(parts, audio.currentTime / audio.duration); };
-        audio.onended = () => { URL.revokeObjectURL(url); done(id); };
-        audio.onerror = () => { URL.revokeObjectURL(url); if (id === narrationId) captionsOnly(text, lang, id); };
-        await audio.play(); return;
+        if (await playClip(url, parts, id, true)) return;
+        if (id !== narrationId) return;
+      } else {
+        if (r.status === 503 || r.status === 404 || r.status === 405) online = false;
+        window.__stellarVoiceFallback(fallbackReason(r.status));
       }
-      if (r.status === 503 || r.status === 404) online = false;
-      window.__stellarVoiceFallback(fallbackReason(r.status));
     } catch { if (id !== narrationId) return; window.__stellarVoiceFallback('error'); }
-  } else window.__stellarVoiceFallback(location.protocol === 'file:' ? 'file' : 'config');
+  }
+  if (hasSynth() && await browserVoice(text, lang, id)) return;
+  if (id !== narrationId) return;
   captionsOnly(text, lang, id);
 }
 export function stopNarration() {
   narrationId++;
+  if (synthOn) { synthOn = false; try { speechSynthesis.cancel(); } catch {} }
   if (audio) { try { audio.pause(); } catch {} audio = null; }
   clearTimeout(captionTimer);
   window.__stellarSpeaking = false; showCaption('');
 }
 // When Cosmo answers in the chat, stop the narration · 对话朗读时停止介绍
-addEventListener('stellar-speak', () => { narrationId++; clearTimeout(captionTimer); if (audio) { try { audio.pause(); } catch {} audio = null; } showCaption(''); });
+addEventListener('stellar-speak', () => { narrationId++; synthOn = false; clearTimeout(captionTimer); if (audio) { try { audio.pause(); } catch {} audio = null; } showCaption(''); });
 
 /* ───────── On/off button · 开关 ───────── */
 function render() {
@@ -165,13 +226,14 @@ window.__stellarVoiceFallback = reason => {
   const s = document.getElementById('status'); if (!s) return;
   const why = {
     file: ['Opened as a file, so the ElevenLabs voice is off. Use the website or npm start.', '以文件方式打开，ElevenLabs 语音不可用。请使用网站或 npm start。', 'Abierto como archivo: la voz de ElevenLabs no está disponible. Usa la web o npm start.'],
-    config: ['ElevenLabs voice not connected: add ELEVENLABS_API_KEY on the server and redeploy. Showing captions for now.', 'ElevenLabs 语音未连接：请在服务器添加 ELEVENLABS_API_KEY 并重新部署。暂时只显示字幕。', 'Voz de ElevenLabs no conectada: añade ELEVENLABS_API_KEY en el servidor y vuelve a desplegar. Por ahora solo subtítulos.'],
+    config: ['ElevenLabs voice not connected: add ELEVENLABS_API_KEY on the server and redeploy. Using the browser voice for now.', 'ElevenLabs 语音未连接：请在服务器添加 ELEVENLABS_API_KEY 并重新部署。暂时使用浏览器语音。', 'Voz de ElevenLabs no conectada: añade ELEVENLABS_API_KEY en el servidor y vuelve a desplegar. Por ahora, la voz del navegador.'],
     missing: ['ElevenLabs voice not found on the server: upload api/voice.js and api/tts.js, then redeploy.', '服务器上没有 ElevenLabs 语音接口：请上传 api/voice.js 和 api/tts.js 并重新部署。', 'Falta la voz de ElevenLabs en el servidor: sube api/voice.js y api/tts.js y vuelve a desplegar.'],
-    error: ['ElevenLabs did not answer (key, credits or limit). Showing captions for now.', 'ElevenLabs 没有响应（密钥、额度或限制）。暂时只显示字幕。', 'ElevenLabs no respondió (clave, créditos o límite). Por ahora solo subtítulos.'],
+    error: ['ElevenLabs did not answer (key, credits or limit). Using the browser voice for now.', 'ElevenLabs 没有响应（密钥、额度或限制）。暂时使用浏览器语音。', 'ElevenLabs no respondió (clave, créditos o límite). Por ahora, la voz del navegador.'],
   }[reason] || null;
-  if (!why) return;
+  console.warn('[Cosmo voice] ElevenLabs not used:', reason);
+  // Visitors still hear the clips or the browser voice, so the setup hint is only shown to the developer · 仅开发者可见
+  if (!why || !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && reason !== 'error') return;
   s.innerHTML = window.bi(...why); s.style.display = 'block';
   clearTimeout(s.__t); s.__t = setTimeout(() => s.style.display = 'none', 9000);
-  console.warn('[Cosmo voice] ElevenLabs not used:', reason);
 };
 const fallbackReason = status => status === 503 ? 'config' : status === 404 || status === 405 ? 'missing' : 'error';

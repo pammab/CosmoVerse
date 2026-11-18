@@ -1,11 +1,11 @@
 # COSMOVERSE · The universe in the palm of your hand
 
-*(Started from the Stellar team's Solar System Explorer, PCC Hack 1.)*
+*(Grew out of Stellar, a Solar System prototype our team started at an earlier hackathon; continued with the team's permission.)*
 
-An interactive 3D Solar System for **PCC Hack 1 (theme: Space)**.
+An interactive 3D universe for the **Meta VR Start Developer Competition 2026**.
 The Sun and the eight planets are shown at their **true relative sizes**, and you can explore them
 with the mouse, your **hands** (webcam) or your **voice**, and ask **Cosmo**, an AI space guide
-powered by Claude, anything about what you're looking at. Switch the whole interface between **English, 中文 and Español** from the language menu.
+powered by Claude, anything about what you're looking at. Switch the whole interface between **English, 中文, Español and Português** from the language menu.
 
 ## Features
 
@@ -30,14 +30,14 @@ powered by Claude, anything about what you're looking at. Switch the whole inter
   | 🤏 Pinch | Open the planet under the cursor. Pinch and move up or down to zoom |
   | ✋ Open palm | Turn the Solar System. In close-up, scatter the particles |
   | ✊ Hold fist (1 s) | Go back to the overview |
-  | ✌ Victory | Start talking to Stellar |
+  | ✌ Victory | Talk to Cosmo: a voice command or a question |
 
 - **Hand sensitivity slider (1–5)** under the camera preview. Higher means smaller hand movements move the cursor further and react faster; lower is calmer and steadier. The setting is remembered on that device.
 - **Steadier tracking:** fingers are read from 3D joint angles, so a tilted hand still works. A gesture must win a short vote over recent frames, so it doesn't flicker. The cursor uses a One-Euro filter: steady when you hold still, quick when you move.
 - **Ask Cosmo (AI + voice)**
   - Type, or press 🎙 and speak. Answers can be read aloud (🔊).
   - Voice and text navigation work without the AI: "Go to Mars", "去火星", "Compare sizes", "Back".
-  - Stellar replies in the language you use. Voice input follows the chosen language (Português is also available in the chat's voice menu).
+  - Cosmo replies in the language you use. Voice input follows the chosen language (Português is also available in the chat's voice menu).
 
 ## VR mode (Meta Quest) · CosmoVerse
 
@@ -112,14 +112,22 @@ VS Code Live Server also works for the 3D part, but the AI chat needs `npm start
 Set a monthly spend limit for the key in the Anthropic Console. The server also limits each visitor
 to about 10 questions a minute and keeps answers short.
 
-## Stellar's voice (ElevenLabs, optional)
+## Put it online (Render, free)
+
+`render.yaml` is a Render Blueprint: one free Node web service that runs `server.mjs` (the app, the AI chat and the voice).
+On https://render.com choose **New → Blueprint**, pick the repo, and type `ANTHROPIC_API_KEY` and `ELEVENLABS_API_KEY`
+when Render asks (they are never stored in the repo). Free instances sleep after 15 minutes without visitors and take
+about a minute to wake up.
+On Render the server keeps each narration clip in memory, so each one is generated once per restart, not once per visitor.
+
+## Cosmo's voice (ElevenLabs, optional)
 
 Spoken answers use an ElevenLabs voice when the server has a key, and the browser's built-in voice otherwise.
 Add `ELEVENLABS_API_KEY` to `.env` (locally) or to Vercel → Settings → Environment Variables (online).
 Optional: `ELEVENLABS_VOICE_ID` (default Sarah) and `ELEVENLABS_MODEL` (default `eleven_multilingual_v2`, the most natural; `eleven_flash_v2_5` is faster and cheaper).
 Each reply is capped at 900 characters and each visitor at 12 spoken replies a minute, to protect your credits.
 
-With the key set, Stellar also:
+With the key set, Cosmo also:
 - introduces each planet in 2–3 sentences when you open it, with captions (text in `narration-text.js`);
 - plays whooshes and chimes for transitions, made with ElevenLabs Sound Effects (prompts in `narration-text.js`).
 
@@ -130,9 +138,11 @@ Without a key, the browser's voice and a synthesized whoosh are used instead.
 ## Privacy notes
 
 - **Camera:** hand tracking runs entirely in the browser. Video is never uploaded.
-- **Microphone:** speech recognition uses the browser's built-in service. In Chrome, audio is processed by Google.
+- **Microphone:** speech recognition uses the browser's built-in service when there is one (in Chrome, audio is processed by Google).
+  Where the browser has none (for example the Quest Browser), a short voice clip is sent through our server to ElevenLabs
+  Speech to Text (`/api/stt`, `ELEVENLABS_API_KEY`); the server does not store it.
 - **Spoken replies:** when ElevenLabs is on, the reply text (not your voice) is sent to ElevenLabs to be read aloud.
-- **AI questions:** questions typed or spoken to Stellar are sent to the Claude API through our server.
+- **AI questions:** questions typed or spoken to Cosmo are sent to the Claude API through our server.
   The API key is never sent to the browser.
 
 ## Credits

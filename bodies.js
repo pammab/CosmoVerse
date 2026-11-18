@@ -106,6 +106,12 @@ export function buildPlanet(p) {
   return body;
 }
 
+// Never mirror-sharp: a minimum roughness keeps the sun glint a soft sheen (r170 chunk name) · 最小粗糙度，使反光柔和
+function softGlint(m, min) {
+  m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n\troughnessFactor = max(roughnessFactor, ${min.toFixed(2)});`); };
+  m.customProgramCacheKey = () => 'soft-glint-' + min;
+}
+
 // Replace the low-res texture with a detailed one (done in the background).
 export function upgradeTexture(body, w = 1024) {
   if (body.hiRes) return;
@@ -125,8 +131,13 @@ export function applyMaps(body, M) {
   if (id === 'earth') {
     m.roughness = 0.58;
     if (M.normal) { m.normalMap = M.normal; m.normalScale.set(0.7, 0.7); }
-    if (M.roughness) { m.roughnessMap = M.roughness; m.roughness = 1; }
+    // a gentle ocean glint: the roughness map, but never mirror-sharp (a sharp map made a big white hotspot) · 柔和的海面反光
+    if (M.roughness) { m.roughnessMap = M.roughness; m.roughness = 1; softGlint(m, 0.66); }
     if (M.clouds && body.clouds) { const c = body.clouds.material; c.map.dispose(); c.map = M.clouds; c.opacity = 0.92; c.needsUpdate = true; body.clouds.scale.setScalar(body.r * 1.009); }
+    // earth-beauty (Pamela's wallpaper): slightly muted day colours and a thin, bright blue rim on the sunlit limb · 柔和的白天色彩与向阳面细亮的蓝色边缘
+    m.color.setRGB(0.86, 0.88, 0.9);
+    if (body.atmo) body.atmo.material.uniforms.strength.value = 0.75;   // a softer wide haze; the thin rim carries the blue edge · 更淡的大气光晕
+    if (!body.rim) { body.rim = atmosphere('#8cc6ff', 1.014, 1.3, 9.5); body.rim.scale.setScalar(body.r * 1.014); body.anchor.add(body.rim); }
   }
   if (id === 'mercury' && M.mercuryBump) { m.bumpMap = M.mercuryBump; m.bumpScale = 0.018; }
   if (id === 'mars' && M.marsBump) { m.bumpMap = M.marsBump; m.bumpScale = 0.022; m.roughness = 0.98; }

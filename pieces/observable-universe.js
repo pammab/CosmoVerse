@@ -1,0 +1,49 @@
+// The observable universe · 可观测宇宙 · Universo observable · Universo observável
+// Sources opened (re-checked 2026-11-14): ESA "Planck reveals an almost perfect Universe", ESA "Planck's new cosmic recipe",
+// NASA GSFC COBE science (Mather), NASA Science (large-scale structures), ESA/Hubble heic1620 (galaxy count).
+const PLANCK = 'https://www.esa.int/Science_Exploration/Space_Science/Planck/Planck_reveals_an_almost_perfect_Universe';
+const RECIPE = 'https://sci.esa.int/web/planck/-/51557-planck-new-cosmic-recipe';
+export default {
+  id: 'observable-universe', level: 'universe',
+  names: { en: 'Observable Universe', zh: '可观测宇宙', es: 'Universo observable', pt: 'Universo observável' },
+  type: { en: 'Everything we can see', zh: '我们能看到的一切', es: 'Todo lo que podemos ver', pt: 'Tudo o que podemos ver' },
+  shape: { kind: 'web', count: 52000, colors: ['#9fb8ff', '#ffe2b0', '#6b7bb0'], params: { nodes: 90 }, seed: 23 },
+  position: [0, 0, 0], size: 100,
+  facts: [
+    { label: { en: 'Age', zh: '年龄', es: 'Edad', pt: 'Idade' },
+      value: { en: 'About 13.8 billion years', zh: '约 138 亿年', es: 'Unos 13.800 millones de años', pt: 'Cerca de 13,8 bilhões de anos' },
+      source: { name: 'ESA', url: PLANCK } },
+    // −270 °C is converted from the page's 2.725 K · 由 2.725 K 换算
+    { label: { en: 'Big Bang afterglow', zh: '大爆炸余晖', es: 'Resplandor del Big Bang', pt: 'Brilho do Big Bang' },
+      value: { en: '2.725 K · about −270 °C', zh: '2.725 K · 约 −270 °C', es: '2,725 K · unos −270 °C', pt: '2,725 K · cerca de −270 °C' },
+      source: { name: 'NASA', url: 'https://asd.gsfc.nasa.gov/archive/mather/cobe/science.html' } },
+    { label: { en: 'Shape', zh: '结构', es: 'Forma', pt: 'Forma' },
+      value: { en: 'A cosmic web of filaments and voids', zh: '由纤维和空洞组成的宇宙网', es: 'Una red cósmica de filamentos y vacíos', pt: 'Uma teia cósmica de filamentos e vazios' },
+      source: { name: 'NASA', url: 'https://science.nasa.gov/universe/galaxies/large-scale-structures/' } },
+    { label: { en: 'Ordinary matter', zh: '普通物质', es: 'Materia ordinaria', pt: 'Matéria comum' },
+      value: { en: 'About 5% (4.9%)', zh: '约 5%（4.9%）', es: 'Cerca del 5 % (4,9 %)', pt: 'Cerca de 5% (4,9%)' },
+      source: { name: 'ESA', url: PLANCK } },
+    { label: { en: 'Dark matter · dark energy', zh: '暗物质 · 暗能量', es: 'Materia oscura · energía oscura', pt: 'Matéria escura · energia escura' },
+      value: { en: 'About 27% · about 68%', zh: '约 27% · 约 68%', es: 'Cerca del 27 % · cerca del 68 %', pt: 'Cerca de 27% · cerca de 68%' },
+      source: { name: 'ESA', url: RECIPE } },
+    { label: { en: 'Galaxies', zh: '星系数量', es: 'Galaxias', pt: 'Galáxias' },
+      value: { en: 'At least 10× the old estimate of 100–200 billion', zh: '至少是旧估计（1000 亿至 2000 亿）的 10 倍', es: 'Al menos 10 veces la antigua cifra de 100.000 a 200.000 millones', pt: 'Pelo menos 10 vezes a antiga estimativa de 100 a 200 bilhões' },
+      source: { name: 'ESA/Hubble', url: 'https://esahubble.org/news/heic1620/' } },
+  ],
+  // "What is it?" for beginners (explain-pieces, 2026-11-16) · 给初学者的“这是什么？”
+  whatIs: { en: "The part of the whole universe that can be seen from Earth.",
+    zh: "整个宇宙中能从地球上看到的那一部分。",
+    es: "La parte de todo el universo que se puede ver desde la Tierra.",
+    pt: "A parte de todo o universo que pode ser vista da Terra.",
+    source: { name: "NASA", url: "https://science.nasa.gov/universe/glossary/" } },
+  // Real image shown in the info panel (loaded from the official page's screen-size copy) · 信息面板中的真实图像
+  photo: {src: "https://cdn.esahubble.org/archives/images/screen/heic0406a.jpg", page: "https://esahubble.org/images/heic0406a/", credit: "NASA, ESA, and S. Beckwith (STScI) and the HUDF Team", license: "CC BY 4.0", kind: "photo", by: "Hubble", note: {en: "Nearly 10,000 galaxies in one tiny patch of sky (Hubble Ultra Deep Field)", zh: "一小片天空中近 1 万个星系（哈勃超深场）", es: "Casi 10 000 galaxias en un trocito de cielo (Campo Ultraprofundo del Hubble)", pt: "Quase 10.000 galáxias num pedacinho de céu (Campo Ultraprofundo do Hubble)"}, licenseUrl: "https://creativecommons.org/licenses/by/4.0/"},
+  narration: {
+    en: 'This is as far as we can see. Galaxies gather along threads and walls, a cosmic web around empty voids. The universe is about 13.8 billion years old, and ordinary matter, the stuff of stars and galaxies, is only about 5% of it.',
+    zh: '这是我们能看到的最远处。星系沿着纤维和墙状结构聚集，围绕着空洞，构成宇宙网。宇宙大约 138 亿岁，而构成恒星和星系的普通物质只占约 5%。',
+    es: 'Hasta aquí podemos ver. Las galaxias se agrupan en hilos y paredes, una red cósmica alrededor de vacíos. El universo tiene unos 13.800 millones de años, y la materia ordinaria, la de las estrellas y las galaxias, es solo cerca del 5 %.',
+    pt: 'Até aqui conseguimos ver. As galáxias se juntam em fios e paredes, uma teia cósmica em volta de vazios. O universo tem cerca de 13,8 bilhões de anos, e a matéria comum, a das estrelas e galáxias, é só cerca de 5% dele.',
+  },
+  clue: { en: 'A web with no spider: every thread is made of galaxies.', zh: '一张没有蜘蛛的网：每一根丝都由星系组成。', es: 'Una telaraña sin araña: cada hilo está hecho de galaxias.', pt: 'Uma teia sem aranha: cada fio é feito de galáxias.' },
+  youAreHere: { en: 'You are here · the centre of what we can see', zh: '你在这里 · 我们可见宇宙的中心', es: 'Estás aquí · el centro de lo que podemos ver', pt: 'Você está aqui · o centro do que podemos ver', at: [0, 0, 0] },
+};
